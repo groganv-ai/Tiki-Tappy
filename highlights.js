@@ -38,7 +38,7 @@ paintReplay=function(ctx,model,seconds){
   function star(x,y,outer,inner,color){ctx.fillStyle=color;ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?inner:outer;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.fill()}
   function ball(x,y,r=12){circle(x,y,r,'#fff');star(x,y,r*.6,r*.4,C.ink)}
   box(0,0,720,1080,C.paper);box(0,0,720,74,C.dark);
-  text('Touchline',28,47,30,C.lime,'800');text(model.clubName||'MATCH HIGHLIGHTS',438,44,16,'#d6e3d3','600',254);
+  text('TikiTapper',28,47,30,C.lime,'800');text(model.clubName||'MATCH HIGHLIGHTS',438,44,16,'#d6e3d3','600',254);
   box(24,96,672,159,C.dark,18);
   const runningScore=end?model.score:highlightScore(model,intro?-1:state.index);
   text(model.team,46,143,24,'#fff','700',250);text(model.opponent,432,143,24,'#fff','700',240);
@@ -130,7 +130,7 @@ paintReplay=function(ctx,model,seconds){
   text('0′',left-5,963,12,C.muted);text(model.ended?'FT':'NOW',right-22,963,12,C.muted);
   const caption=intro?'Kick-off · the match story begins':award?'Player of the Day · '+model.playerOfDay:end?(model.ended?'Full time · all moments recorded':'The story so far'):state.type==='replay'?'Replay · '+(e.assist?e.assist.player+' → ':'')+e.player:eventTimeLabel(e)+' · '+e.player+' · '+e.action;
   wrap(caption,44,1000,632,21,C.ink);
-  text('Touchline · small moments, big memories',28,1075,11,C.muted,'500');
+  text('TikiTapper · small moments, big memories',28,1075,11,C.muted,'500');
 };
 const timelineExportBefore=exportVideo;
 exportVideo=function(){timelineExportBefore();const status=$('#recordStatus');status.textContent=String(status.textContent||'').replace('Goals replay the assist pass, then the shot. Pitch zones are approximate, not tracking footage.','Text-led timeline highlights. Goals cut to a short pass → shot replay, then return to the timeline. Great actions have a gold star burst. Pitch locations are approximate.');};
