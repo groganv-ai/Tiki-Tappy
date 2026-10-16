@@ -1,0 +1,188 @@
+/* Constrain grid items, not the page: only the action grid and match tabs scroll. */
+main,.layout,.layout>*{min-width:0}
+.layout>*{max-width:100%}
+button,input,select,textarea{max-width:100%}
+input,select,textarea{min-width:0}
+.scoreline>div,.event>div,.top>div{min-width:0;overflow-wrap:anywhere}
+.matrixwrap{max-width:100%;overscroll-behavior-x:contain}
+.matches{max-width:100%;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+.matches button{scroll-snap-align:start}
+.header-identity{display:flex;align-items:center;gap:22px;min-width:0}
+.demo-button{font-size:12px;min-height:44px;padding:10px 14px;background:#ffffff0b;color:#d6ee83;border:1px solid #6a8c75;white-space:nowrap}
+header{gap:16px}
+.home-intro{margin-bottom:18px}
+.home-intro h1{line-height:1.12;margin:7px 0 6px}
+.home-intro .sub{line-height:1.45;margin:0}
+.home-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:20px}
+.home-actions button{min-height:46px}
+.home-layout{align-items:stretch}
+.home-layout>.card{margin-bottom:0}
+.home-toolkit h2{margin:18px 0 12px}
+.home-toolkit p{margin:0 0 14px;line-height:1.5}
+.retrohead{gap:12px;flex-wrap:wrap}
+.retrobody{overflow-wrap:anywhere}
+.event{grid-template-columns:70px minmax(0,1fr) 28px}
+.event button{min-height:44px;min-width:28px}
+@media(max-width:960px){
+ header{flex-wrap:wrap;padding:16px 20px;gap:12px}
+ .header-identity{flex:1;justify-content:space-between}
+ header nav{width:100%;justify-content:space-between;gap:4px}
+ header nav button{min-height:44px;padding:10px 12px}
+}
+@media(max-width:760px){
+ body{font-size:14px}
+ main{margin:18px auto 0;padding:0 14px calc(28px + env(safe-area-inset-bottom))}
+ header{padding:12px 14px;gap:8px}
+ .brand{font-size:25px}
+ .header-identity{width:100%;gap:12px}
+ header nav button{padding:10px 8px;font-size:12px}
+ .top{align-items:flex-start;gap:10px;margin-bottom:16px}
+ h1{font-size:26px;line-height:1.15;letter-spacing:-.8px;margin:6px 0}
+ h2{font-size:18px;line-height:1.3;margin-bottom:12px}
+ .eyebrow{font-size:10px;letter-spacing:1.4px;line-height:1.4}
+ .sub{font-size:12px;line-height:1.45;margin:6px 0 0}
+ .top>button{flex-shrink:0;max-width:105px;font-size:11px;padding:10px;min-height:44px}
+ .card{padding:16px;border-radius:14px;margin-bottom:16px}
+ .home-layout{gap:16px}
+ .home-actions{gap:12px;margin-top:16px}
+ .home-actions button{flex:1 1 140px}
+ .home-intro{margin-bottom:16px}
+ .score{padding:16px;border-radius:14px}
+ .scoreline{grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);margin:12px 0;gap:6px;font-size:12px;line-height:1.35}
+ .scoreline strong{font-size:30px;letter-spacing:1px}
+ .scoreline .crest{display:none}
+ .score #clock{font-size:28px}
+ .clock-meta{margin-top:8px;font-size:10px}
+ .clock-main{margin-top:10px}
+ .clock-main .clock-choice{min-height:46px;padding:8px 16px;min-width:140px}
+ .clock-choice small{margin-top:2px}
+ .clock-note{line-height:1.45}
+ .matches{margin-bottom:12px;gap:6px}
+ .matches button{min-width:130px;padding:10px 12px;font-size:12px}
+ .input-mode-bar{padding:10px 12px;margin-bottom:12px}
+ .input-mode-bar small{font-size:10px}
+ .input-mode-switch button{min-height:44px;padding:9px 12px}
+ .matrix{min-width:450px}
+ .matrix th{padding:9px 3px}
+ .matrix th:first-child,.matrix td:first-child{min-width:60px;padding:8px 6px}
+ .matrix button{width:44px;min-height:44px}
+ .matrix td{padding:2px}
+ .sectionhead{gap:8px;margin-bottom:12px}
+ .sectionhead h2{font-size:17px}
+ .action-gesture-guide{line-height:1.5;margin-bottom:10px}
+ .undo-toolbar{gap:8px;margin-bottom:10px}
+ .opponents{gap:8px}
+ .opponents button{min-width:0;min-height:44px;padding:10px 6px;font-size:11px}
+ .coach-goals{margin-top:12px;gap:10px}
+ .coach-goal-button{min-height:135px;padding:16px 10px;gap:8px}
+ .coach-goal-button strong{font-size:17px}
+ .coach-tools{flex-wrap:wrap}
+ .row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+ input,select,textarea{font-size:16px;min-height:44px;padding:10px}
+ .field{gap:6px;margin-bottom:13px}
+ .links{gap:10px}
+ .links>button,.links>a{min-height:44px;flex:1 1 120px;text-align:center}
+ .retrobody{padding:16px}
+ .retro h2{font-size:21px;line-height:1.35}
+ .retrohead{font-size:11px;padding:12px}
+ .event{gap:8px;font-size:12px;padding:12px 0;grid-template-columns:62px minmax(0,1fr) 28px}
+ .event strong{font-size:13px;line-height:1.4}
+ .event small{line-height:1.4}
+ .modal{padding:10px}
+ .sheet{width:100%;max-width:560px;max-height:calc(100dvh - 20px);padding:18px;border-radius:16px}
+ .sheet .close{min-width:44px;min-height:44px}
+ .squad button{min-height:44px}
+ .pitch-frame .pitch button{height:56px}
+ .timing-tooltip p{left:auto;right:-8px;max-width:calc(100vw - 60px)}
+ .quality{margin:18px 0;gap:8px}
+ .quality button{min-height:64px}
+}
+@media(max-width:380px){
+ .row{grid-template-columns:minmax(0,1fr)}
+ .home-actions{flex-direction:column}
+ .home-actions button{flex:auto;width:100%}
+ .input-mode-bar small{max-width:130px}
+ .scoreline{grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr)}
+ .coach-goal-button strong{font-size:15px}
+}
+@media(max-height:600px) and (orientation:landscape) and (pointer:coarse){
+ header{padding:8px 14px;flex-wrap:nowrap;gap:14px}
+ .header-identity{width:auto;flex:0 0 auto;gap:12px}
+ .brand{font-size:22px}
+ .tag,.demo-button{display:none}
+ header nav{width:auto;flex:1;justify-content:flex-end}
+ main{margin-top:12px;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+ #app[data-screen="live"][data-mode="player"] .layout{grid-template-columns:minmax(0,1fr)}
+ #app[data-screen="live"][data-mode="player"] .top h1{font-size:21px;margin:3px 0}
+ #app[data-screen="live"][data-mode="player"] .top .eyebrow{display:none}
+ #app[data-screen="live"][data-mode="player"] .top{margin-bottom:10px}
+ #app[data-screen="live"][data-mode="player"] .matches{margin-bottom:10px}
+ #app[data-screen="live"][data-mode="player"] .input-mode-bar{margin-bottom:10px;padding:8px 12px}
+ #app[data-screen="live"][data-mode="player"] .score{padding:10px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 20px;align-items:center}
+ #app[data-screen="live"][data-mode="player"] .score>.eyebrow{grid-column:1/-1;font-size:9px}
+ #app[data-screen="live"][data-mode="player"] .scoreline{margin:4px 0;grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr);font-size:12px;gap:8px}
+ #app[data-screen="live"][data-mode="player"] .scoreline .crest{display:none}
+ #app[data-screen="live"][data-mode="player"] .scoreline strong{font-size:28px}
+ #app[data-screen="live"][data-mode="player"] .clock{font-size:26px}
+ #app[data-screen="live"][data-mode="player"] .clock-meta{font-size:10px;margin:0}
+ #app[data-screen="live"][data-mode="player"] .clock-main{margin:0}
+ #app[data-screen="live"][data-mode="player"] .clock-choice{min-height:44px;padding:6px 14px}
+ #app[data-screen="live"][data-mode="player"] .clock-note,#app[data-screen="live"][data-mode="player"] .clock-paused-options{grid-column:1/-1}
+ #app[data-screen="live"][data-mode="player"] .matrix{min-width:540px;width:100%}
+ #app[data-screen="live"][data-mode="player"] .matrix button{width:100%;min-width:44px;min-height:44px}
+ #app[data-screen="live"][data-mode="player"] .matrix th:first-child{min-width:72px}
+}
+.home-footer{text-align:center;margin-top:28px;padding:20px 0 4px;border-top:1px solid var(--line);color:#718070}
+.home-footer h2{font-size:20px;margin:0 0 6px;color:var(--ink)}
+.home-footer p{font-size:13px;margin:0;line-height:1.45}
+.match-stepper{display:none}
+.action-info{margin:10px 0 0;color:#61745e;font-size:12px}
+.action-info summary{display:flex;align-items:center;gap:7px;cursor:pointer;min-height:44px;width:max-content;max-width:100%;list-style:none;font-weight:650}
+.action-info summary::-webkit-details-marker{display:none}
+.action-info summary span{font-size:20px}
+.action-info[open]{background:#f5f8ed;padding:0 12px 10px;border-radius:10px}
+.action-info p{margin:0 0 8px;line-height:1.5}
+#app[data-screen="live"]>.top .sub{margin:0;line-height:1.4}
+#app[data-screen="live"]>.top{align-items:center;margin-bottom:12px}
+@media(max-width:760px){
+ .matches{display:none}
+ .match-stepper{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center;margin-bottom:12px}
+ .match-stepper button{min-height:44px;padding:0;font-size:28px;line-height:1}
+ .match-stepper>div{text-align:center;min-width:0;overflow-wrap:anywhere}
+ .match-stepper small{display:block;color:#718070;font-size:10px;line-height:1.4}
+ .match-stepper strong{display:block;font-size:14px;margin-top:3px;line-height:1.3}
+ .home-footer{margin-top:20px;padding-top:16px}
+ .matrix th:first-child,.matrix td:first-child{min-width:84px;max-width:110px;white-space:normal;overflow-wrap:anywhere}
+}
+
+.opponents .opposition-goal,.coach-opposition-goal{background:#fde9e6;border-color:#eac0b9;color:#813e36}
+.opponents .opposition-goal{display:flex;align-items:center;justify-content:center;gap:7px}
+.opposition-goal .goal-ball{font-size:21px;line-height:1;flex-shrink:0}
+
+.moment-heading{position:relative;gap:10px}
+.moment-heading h2{flex:1;min-width:0}
+.moment-heading .action-info{margin:0;position:static;flex-shrink:0}
+.moment-heading .action-info summary{font-size:11px;gap:5px;white-space:nowrap}
+.moment-heading .action-info[open]{padding:0;background:transparent}
+.action-info-body{position:absolute;right:0;top:calc(100% + 6px);z-index:4;width:290px;max-width:calc(100vw - 64px);padding:14px;background:#f5f8ed;border:1px solid #cdd9b9;border-radius:12px;box-shadow:0 10px 30px #153f3226;font-weight:400}
+#app[data-screen="live"] .opponents+.undo-toolbar{margin:12px 0 0}
+@media(max-width:380px){.moment-heading{flex-wrap:wrap}}
+
+.input-mode-bar.mode-buttons{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;padding:0;border:0;background:none;margin-bottom:16px}
+.mode-buttons>button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:50px;border:2px solid #d1dacf;background:#fff;color:#6a7e70;font-size:14px;border-radius:12px}
+.mode-buttons>button.active{background:#215e49;border-color:#215e49;color:#fff;box-shadow:0 2px 6px #153f321a}
+.mode-mark{display:grid;place-items:center;width:20px;height:20px;border:1.5px solid #b4c4b6;border-radius:50%;font-size:12px;line-height:1;flex-shrink:0}
+.mode-buttons>button.active .mode-mark{background:#d6ee83;color:#193e35;border-color:#d6ee83}
+.match-bottom-tools{display:flex;justify-content:flex-end;margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.match-bottom-tools button{min-height:44px;font-size:12px}
+@media(max-width:760px){.input-mode-bar.mode-buttons{margin-bottom:12px;gap:10px}.mode-buttons>button{min-height:48px;font-size:13px}.match-bottom-tools button{width:100%}}
+.clock-button-label{display:flex;align-items:center;justify-content:center;gap:7px;line-height:1.25}
+.clock-icon{flex-shrink:0;pointer-events:none}
+.timer-block{margin:16px 0 0;text-align:center}
+.timer-status{font-size:11px;font-weight:750;letter-spacing:1.5px;color:#d6e8c6;margin-bottom:6px;line-height:1.3}
+.timer-row{display:flex;align-items:center;justify-content:center;gap:10px}
+.live-clock-dot{display:block;flex-shrink:0;width:9px;height:9px;border-radius:50%;background:#ff655f;box-shadow:0 0 0 4px #ff655f1f;animation:clock-live-pulse 1.2s ease-in-out infinite}
+@keyframes clock-live-pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.live-clock-dot{animation:none}}
+@media(max-width:760px){.timer-block{margin-top:10px}.timer-status{font-size:10px;margin-bottom:5px}.clock-button-label{gap:5px}.clock-icon{width:19px;height:19px}.clock-paused-options .clock-button-label{flex-direction:column;gap:5px}}
+@media(max-height:600px) and (orientation:landscape) and (pointer:coarse){#app[data-screen="live"][data-mode="player"] .timer-block{margin:0}.timer-status{font-size:9px;margin-bottom:3px}}
