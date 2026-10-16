@@ -100,7 +100,7 @@ async function sharePrepared(){
   const {blob,name}=preparedExport,f=new File([blob],name,{type:blob.type});
   const status=$('#shareStatus');
   if(!navigator.canShare?.({files:[f]})||!navigator.share){status.textContent='File sharing is unavailable in this browser. Tap Save file, then attach it in WhatsApp.';return}
-  try{await navigator.share({files:[f],title:'Touchline match highlights'});status.textContent='Returned from the share menu. Check WhatsApp to confirm it was sent.'}
+  try{await navigator.share({files:[f],title:'TikiTapper match highlights'});status.textContent='Returned from the share menu. Check WhatsApp to confirm it was sent.'}
   catch(e){status.textContent=e.name==='AbortError'?'Sharing cancelled. Your file is still ready.':`Could not open sharing (${e.name}). Tap Save file and attach it in WhatsApp.`}
 }
 exportImage=async function(){try{const c=await reportCanvas();const b=await new Promise(r=>c.toBlob(r,'image/png'));if(!b)throw Error();showPrepared(b,'match-report.png')}catch{toast('Could not create the image. Use Share text instead.')}};
@@ -113,7 +113,7 @@ function paintReplay(ctx,model,seconds){
   const W=720,H=1080,events=model.events,idx=Math.min(events.length-1,Math.floor(Math.max(0,seconds-2)/3)),e=seconds<2?null:events[idx],phase=((seconds-2)%3)/3;
   ctx.fillStyle='#122b36';ctx.fillRect(0,0,W,H);ctx.fillStyle='#215c58';ctx.fillRect(0,0,W,88);
   function text(t,x,y,size=22,color='#dfedb5'){ctx.font=`bold ${size}px monospace`;ctx.fillStyle=color;ctx.fillText(String(t).slice(0,48),x,y)}
-  text('TOUCHLINE / MATCH HIGHLIGHTS',28,54,26);text(model.team,28,126,25,'#fff');text('vs '+model.opponent,28,163,23,'#fff');text(model.date+' · '+model.score.join('–'),28,201,21);
+  text('TIKITAPPER / MATCH HIGHLIGHTS',28,54,26);text(model.team,28,126,25,'#fff');text('vs '+model.opponent,28,163,23,'#fff');text(model.date+' · '+model.score.join('–'),28,201,21);
   const px=90,py=265,pw=540,ph=540;
   ctx.fillStyle='#306347';ctx.fillRect(px,py,pw,ph);ctx.strokeStyle='#c5dfb2';ctx.lineWidth=3;ctx.strokeRect(px,py,pw,ph);
   // Goals at north and south, halfway line, centre circle and 12 zones.
