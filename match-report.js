@@ -24,16 +24,19 @@ async function makeMatchReportPages(snapshot=reportSnapshot()){
  function newPage(){if(canvas)footer();canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');ctx.fillStyle=C.paper;ctx.fillRect(0,0,W,H);pages.push(canvas);ctx.fillStyle=C.dark;ctx.fillRect(0,0,W,112);text('TikiTapper',M,62,32,C.lime,true);text('MATCH REPORT · '+(m.ended?'FULL TIME':'MATCH SO FAR'),W-M,58,17,'#fff',true,'right');text(snapshot.clubName,M,92,16,'#c4d9be');y=156;if(pages.length>1){paragraph(d.team+' '+score(m).join('–')+' '+m.opponent,M,y,W-2*M,28,C.ink,true);y+=80;text('Key actions · '+(mode==='summary'?'By action':'Timeline')+' · continued',M,y,20,C.muted);y+=45}}
  function ensure(height){if(y+height>bottom)newPage()}
  newPage();
- const leftName=lines(d.team,340,34,true),rightName=lines(m.opponent,340,34,true),nameHeight=Math.max(leftName.length,rightName.length)*43;
- ctx.fillStyle=C.dark;ctx.fillRect(M,y-26,W-2*M,nameHeight+134);const teamY=y+22;
- leftName.forEach((t,i)=>text(t,270,teamY+i*43,34,'#fff',true,'center'));rightName.forEach((t,i)=>text(t,810,teamY+i*43,34,'#fff',true,'center'));text(score(m).join('–'),540,teamY+6,48,C.lime,true,'center');
- text(d.date+' · '+(m.time||'Kick-off TBC'),540,y+nameHeight+38,20,'#c4d9be',false,'center');paragraph(d.location,540,y+nameHeight+70,850,18,'#c4d9be',false,'center');y+=nameHeight+144;
- const goals=m.events.filter(e=>e.action==='Goal'),own=goals.filter(e=>!e.opp),opposition=goals.filter(e=>e.opp);
- function twoColumns(left,right){let lh=0,rh=0;const colWidth=430;const rowHeight=Math.max(left.reduce((h,t)=>h+lines(t,colWidth,22).length*31,0),right.reduce((h,t)=>h+lines(t,colWidth,22).length*31,0));ensure(rowHeight+15);for(const t of left){lh+=paragraph(t,M+8,y+lh,colWidth,22)}for(const t of right){rh+=paragraph(t,W-M-8,y+rh,colWidth,22,C.ink,false,'right')}y+=Math.max(lh,rh)+15}
- ensure(50);text('GOALS',M,y,18,C.muted,true);text('GOALS',W-M,y,18,C.muted,true,'right');y+=34;
- // A row per goal keeps very high-scoring matches paginatable too.
- for(let i=0;i<Math.max(own.length,opposition.length,1);i++)twoColumns([...(own[i]?[own[i].player+' · '+eventTimeLabel(own[i])]:i===0?['—']:[])],[...(opposition[i]?[eventTimeLabel(opposition[i])]:i===0?['—']:[])]);
- ensure(50);text('ASSISTS',M,y,18,C.muted,true);y+=34;const assists=own.filter(e=>e.assist);for(const e of assists)twoColumns([e.assist.player+' · '+eventTimeLabel(e)],[]);if(!assists.length)twoColumns(['—'],[]);
+ const leftName=lines(d.team,300,34,true),rightName=lines(m.opponent,300,34,true),nameHeight=Math.max(leftName.length,rightName.length)*43;
+ const top=y-26,boardHeight=Math.max(200,nameHeight+125),ht=halfTimeScore(m),result=score(m);
+ ctx.fillStyle=C.dark;ctx.fillRect(M,top,W-2*M,boardHeight);
+ text(matchDateLabel(d.date)+' · '+(m.time||'Kick-off TBC'),540,top+35,21,'#bdd1bb',false,'center');
+ leftName.forEach((t,i)=>text(t,245,top+100+i*43,34,'#fff',true,'center'));rightName.forEach((t,i)=>text(t,835,top+100+i*43,34,'#fff',true,'center'));
+ text(result[0],500,top+112,68,'#fff',true,'center');text(result[1],580,top+112,68,'#fff',true,'center');ctx.fillStyle=C.lime;ctx.fillRect(539,top+55,2,65);
+ text(m.ended?'FT':m.halfTime?'HT':m.running?'IN PLAY':clockHasStarted(m)?'Paused':'Ready',540,top+150,22,C.lime,true,'center');if(ht)text('HT '+ht.join('–'),540,top+179,20,'#bdd1bb',false,'center');y=top+boardHeight;
+ const goals=[...m.events].filter(e=>e.action==='Goal').sort((a,b)=>a.at-b.at),own=goals.filter(e=>!e.opp),opposition=goals.filter(e=>e.opp);
+ function scoreColumns(left,right,bold=false){const size=26,colWidth=410,h=Math.max(1,...left.map(t=>lines(t,colWidth,size,bold).length),...right.map(t=>lines(t,colWidth,size,bold).length))*35+15;ensure(h);ctx.fillStyle=C.dark;ctx.fillRect(M,y,W-2*M,h);let lh=0,rh=0;for(const t of left)lh+=paragraph(t,285,y+31+lh,colWidth,size,'#fff',bold,'center');for(const t of right)rh+=paragraph(t,795,y+31+rh,colWidth,size,'#fff',bold,'center');y+=h}
+ for(let i=0;i<Math.max(own.length,opposition.length,1);i++)scoreColumns([...(own[i]?[own[i].player+' ('+eventTimeLabel(own[i])+')']:i===0?['—']:[])],[...(opposition[i]?['('+eventTimeLabel(opposition[i])+')']:i===0?['—']:[])],true);
+ ensure(65);ctx.fillStyle=C.dark;ctx.fillRect(M,y,W-2*M,65);ctx.strokeStyle='#57755c';ctx.beginPath();ctx.moveTo(M+35,y+10);ctx.lineTo(W-M-35,y+10);ctx.stroke();text('Assists',540,y+48,27,'#fff',true,'center');y+=65;
+ const assists=own.filter(e=>e.assist);for(let i=0;i<Math.max(assists.length,1);i++)scoreColumns([assists[i]?assists[i].assist.player+' ('+eventTimeLabel(assists[i])+')':'—'],i===0?['—']:[]);
+ const venueLines=lines('Venue: '+d.location,850,20),venueHeight=venueLines.length*29+32;ensure(venueHeight);ctx.fillStyle=C.dark;ctx.fillRect(M,y,W-2*M,venueHeight);paragraph('Venue: '+d.location,540,y+30,850,20,'#bdd1bb',false,'center');y+=venueHeight+30;
  ensure(110);rule(y);y+=45;text('KEY ACTIONS',M,y,26,C.ink,true);text(mode==='summary'?'By action':'Timeline',W-M,y,19,C.muted,false,'right');y+=45;
  if(!m.events.length){text('No actions recorded yet.',M,y,24,C.muted);y+=50}
  if(mode==='summary'){

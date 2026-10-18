@@ -21,7 +21,7 @@ function selectClock(action){
     else if(action==='restart'){m.elapsed=0;m.running=false;m.started=null;m.clockStarted=false;m.ended=false;m.halfTime=false;m.period=1;m.firstHalfElapsed=0;m.events=[];pending=null;undoMode=false;feedback='Match reset'}
     else return;
   }
-  save();render();showActionFeedback(feedback,action==='restart'?'00:00 · all match actions cleared':clockText(m),false,'clock');
+  save();render();showActionFeedback(feedback,action==='restart'?'0′ · all match actions cleared':clockText(m),false,'clock');
 }
 toggleClock=function(){selectClock('toggle')};
 endMatch=function(){selectClock('full')};

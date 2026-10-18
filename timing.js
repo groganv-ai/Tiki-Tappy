@@ -13,5 +13,11 @@ function formatPeriodTime(period,periodAt,halfMs,precise=false){
   if(periodAt>halfMs){const extra=periodAt-halfMs;return precise?`${fmt(limit)} +${fmt(extra)}`:`${limit/60000}+${Math.max(1,Math.ceil(extra/60000))}′`}
   return fmt(base+periodAt);
 }
-function eventTimeLabel(e,precise=false){return e.period&&Number.isFinite(e.periodAt)?`${e.twoHalves===false?'':e.period+'H · '}${formatPeriodTime(e.period,e.periodAt,e.halfLengthMs||900000,precise)}`:fmt(e.at)}
-function clockText(m){return formatPeriodTime(m.period===2?2:1,elapsed(m),halfLengthMs(m),true)}
+// Football minute labels are presentation only; exact milliseconds remain saved.
+function minuteTimeLabel(period,periodAt,halfMs,roundUp=true){
+ const base=(period-1)*halfMs,limit=period*halfMs;
+ if(periodAt>halfMs)return `${limit/60000}+${Math.max(1,Math.ceil((periodAt-halfMs)/60000))}′`;
+ return `${Math.max(0,(roundUp?Math.ceil:Math.floor)((base+periodAt)/60000))}′`;
+}
+function eventTimeLabel(e){return e.period&&Number.isFinite(e.periodAt)?minuteTimeLabel(e.period,e.periodAt,e.halfLengthMs||900000):`${Math.max(0,Math.ceil((Number(e.at)||0)/60000))}′`}
+function clockText(m){return minuteTimeLabel(m.period===2?2:1,elapsed(m),halfLengthMs(m),false)}
