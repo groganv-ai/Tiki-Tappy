@@ -1,6 +1,7 @@
 // One set of outline geometry powers both SVG buttons and canvas video icons.
 // Keeping the geometry shared avoids platform-dependent emoji rendering.
 const actionVectors={
+  setpiece:{circles:[[17,6.5,2],[6,17.5,2]],paths:[[['M',4.5,1.5],['L',19.5,1.5],['Q',22.5,1.5,22.5,4.5],['L',22.5,19.5],['Q',22.5,22.5,19.5,22.5],['L',4.5,22.5],['Q',1.5,22.5,1.5,19.5],['L',1.5,4.5],['Q',1.5,1.5,4.5,1.5]],[['M',4.5,5],['L',8.5,9]],[['M',8.5,5],['L',4.5,9]],[['M',15,17],['L',19,21]],[['M',19,17],['L',15,21]],[['M',15,13],['L',17,11],['L',19,13]]],dashedPaths:[[['M',10,6.5],['L',13,6.5]],[['M',9,17.5],['Q',17,17.5,17,11.5]]]},
   save:{paths:[[['M',7,18],['L',5,16],['L',2.5,11],['Q',1.5,9,3,8.5],['Q',4,8,5,10],['L',6.5,12],['L',6.5,4],['Q',6.5,2.5,8,2.5],['Q',9.5,2.5,9.5,4],['L',9.5,9],['L',9.5,2.5],['Q',9.5,1,11,1],['Q',12.5,1,12.5,2.5],['L',12.5,9],['L',12.5,3.2],['Q',12.5,1.7,14,1.7],['Q',15.5,1.7,15.5,3.2],['L',15.5,9],['L',15.5,5],['Q',15.5,3.5,17,3.5],['Q',18.5,3.5,18.5,5],['L',18.5,12],['Q',18.5,16,17,18],['Z']],[['M',7,18],['L',17,18],['L',17,22],['L',7,22],['Z']],[['M',7,20],['L',17,20]],[['M',9,12],['Q',12.5,10.5,16,12],['L',15,15.5],['L',10,15.5],['Z']]]},
   skill:{paths:[[['M',3,18],['L',13,8],['L',16,11],['L',6,21],['Z']],[['M',10,11],['L',13,14]],[['M',18,2],['L',19,5],['L',22,6],['L',19,7],['L',18,10],['L',17,7],['L',14,6],['L',17,5],['Z']],[['M',5,3],['L',5,7]],[['M',3,5],['L',7,5]]]},
   // A simplified angled kicking boot, short ankle and football; no brand marks.
@@ -13,13 +14,15 @@ function vectorActionKey(action){return String(action).replace(/^(great|good|ama
 function actionIconSVG(action){
   const v=actionVectors[vectorActionKey(action)];if(!v)return '';
   const paths=(v.paths||[]).map(commands=>`<path d="${commands.map(c=>c.join(' ')).join(' ')}"/>`).join('');
+  const dashed=(v.dashedPaths||[]).map(commands=>`<path stroke-dasharray="1 2.5" d="${commands.map(c=>c.join(' ')).join(' ')}"/>`).join('');
   const circles=(v.circles||[]).map(([cx,cy,r])=>`<circle cx="${cx}" cy="${cy}" r="${r}"/>`).join('');
-  return `<svg class="action-line-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths}${circles}</svg>`;
+  return `<svg class="action-line-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths}${dashed}${circles}</svg>`;
 }
 function drawActionIcon(ctx,action,cx,cy,size,color){
   const v=actionVectors[vectorActionKey(action)];if(!v)return false;
   ctx.save();ctx.translate(cx-size/2,cy-size/2);ctx.scale(size/24,size/24);ctx.strokeStyle=color;ctx.lineWidth=1.7;ctx.lineCap='round';ctx.lineJoin='round';
-  for(const path of v.paths||[]){ctx.beginPath();for(const [op,...n]of path){if(op==='M')ctx.moveTo(...n);if(op==='L')ctx.lineTo(...n);if(op==='Q')ctx.quadraticCurveTo(...n);if(op==='C')ctx.bezierCurveTo(...n);if(op==='Z')ctx.closePath()}ctx.stroke()}
+  for(const path of [...(v.paths||[]),...(v.dashedPaths||[])]){ctx.setLineDash((v.dashedPaths||[]).includes(path)?[1,2.5]:[]);ctx.beginPath();for(const [op,...n]of path){if(op==='M')ctx.moveTo(...n);if(op==='L')ctx.lineTo(...n);if(op==='Q')ctx.quadraticCurveTo(...n);if(op==='C')ctx.bezierCurveTo(...n);if(op==='Z')ctx.closePath()}ctx.stroke()}
+  ctx.setLineDash([]);
   for(const [x,y,r]of v.circles||[]){ctx.beginPath();ctx.arc(x,y,r,0,2*Math.PI);ctx.stroke()}
   ctx.restore();return true;
 }
