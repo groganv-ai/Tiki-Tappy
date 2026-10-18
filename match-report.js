@@ -32,7 +32,7 @@ async function makeMatchReportPages(snapshot=reportSnapshot()){
  function twoColumns(left,right){let lh=0,rh=0;const colWidth=430;const rowHeight=Math.max(left.reduce((h,t)=>h+lines(t,colWidth,22).length*31,0),right.reduce((h,t)=>h+lines(t,colWidth,22).length*31,0));ensure(rowHeight+15);for(const t of left){lh+=paragraph(t,M+8,y+lh,colWidth,22)}for(const t of right){rh+=paragraph(t,W-M-8,y+rh,colWidth,22,C.ink,false,'right')}y+=Math.max(lh,rh)+15}
  ensure(50);text('GOALS',M,y,18,C.muted,true);text('GOALS',W-M,y,18,C.muted,true,'right');y+=34;
  // A row per goal keeps very high-scoring matches paginatable too.
- for(let i=0;i<Math.max(own.length,opposition.length,1);i++)twoColumns([own[i]?own[i].player+' · '+eventTimeLabel(own[i]):'—'],[opposition[i]?eventTimeLabel(opposition[i]):'—']);
+ for(let i=0;i<Math.max(own.length,opposition.length,1);i++)twoColumns([...(own[i]?[own[i].player+' · '+eventTimeLabel(own[i])]:i===0?['—']:[])],[...(opposition[i]?[eventTimeLabel(opposition[i])]:i===0?['—']:[])]);
  ensure(50);text('ASSISTS',M,y,18,C.muted,true);y+=34;const assists=own.filter(e=>e.assist);for(const e of assists)twoColumns([e.assist.player+' · '+eventTimeLabel(e)],[]);if(!assists.length)twoColumns(['—'],[]);
  ensure(110);rule(y);y+=45;text('KEY ACTIONS',M,y,26,C.ink,true);text(mode==='summary'?'By action':'Timeline',W-M,y,19,C.muted,false,'right');y+=45;
  if(!m.events.length){text('No actions recorded yet.',M,y,24,C.muted);y+=50}
@@ -50,7 +50,7 @@ async function makeMatchReportPages(snapshot=reportSnapshot()){
   for(const row of reportTimelineRows(m)){
    const height=Math.max(...[row.left,row.right].map(side=>side.reduce((n,t,i)=>n+lines(t,385,i?21:24,!i).length*(i?30:33),0)),58)+30;ensure(height);
    [row.left,row.right].forEach((side,j)=>{let at=y;side.forEach((t,i)=>{at+=paragraph(t,j?640:440,at,385,i?21:24,i?C.muted:C.ink,!i,j?'left':'right')})});
-   text(row.time,540,y,17,C.muted,false,'center');drawActionIcon(ctx,row.action,540,y+29,26,C.ink);y+=height;rule(y-14);
+   text(row.time,540,y,17,C.muted,false,'center');if(!drawActionIcon(ctx,['Tackle','Block','Clearance'].includes(row.action)?'Tackle':row.action,540,y+29,26,C.ink))text(row.action==='Goal'?'⚽':row.action==='Team Values'?'♡':'●',540,y+38,26,C.ink,false,'center');y+=height;rule(y-30);
   }
  }
  if(m.ended&&m.playerOfDay){ensure(135);ctx.fillStyle='#e7f1cc';ctx.fillRect(M,y-15,W-2*M,115);text('PLAYER OF THE DAY',M+22,y+15,18,C.muted,true);paragraph(m.playerOfDay,M+22,y+55,W-2*M-44,30,C.ink,true);y+=135}
@@ -61,7 +61,7 @@ async function makeMatchReportPages(snapshot=reportSnapshot()){
 function clearMatchReportFiles(){for(const url of matchReportURLs)URL.revokeObjectURL(url);matchReportURLs=[];matchReportFiles=[]}
 async function exportMatchReport(){
  if(matchReportBusy)return;matchReportBusy=true;toast('Creating your report…');
- try{const snapshot=reportSnapshot();disposeExport();clearMatchReportFiles();const pages=await makeMatchReportPages(snapshot);for(let i=0;i<pages.length;i++){const blob=await new Promise(resolve=>pages[i].toBlob(resolve,'image/png'));if(!blob)throw Error('Image creation failed');matchReportFiles.push({blob,name:`match-report-${snapshot.view==='summary'?'actions':'timeline'}${pages.length>1?'-'+(i+1):''}.png`});matchReportURLs.push(URL.createObjectURL(blob))}
+ try{const snapshot=reportSnapshot();disposeExport();clearMatchReportFiles();const pages=await makeMatchReportPages(snapshot);for(let i=0;i<pages.length;i++){const blob=await new Promise(resolve=>pages[i].toBlob(resolve,'image/png'));if(!blob)throw Error('Image creation failed');pages[i].width=0;pages[i].height=0;matchReportFiles.push({blob,name:`match-report-${snapshot.view==='summary'?'actions':'timeline'}${pages.length>1?'-'+(i+1):''}.png`});matchReportURLs.push(URL.createObjectURL(blob))}
  exportPanel('Your match report',`<p class="hint">${snapshot.view==='summary'?'By action':'Timeline'} report · ${pages.length} image${pages.length>1?'s':''}. Preview, then share or save.</p><div class="links"><button class="primary" onclick="shareMatchReportImages()">Share report ↗</button>${matchReportFiles.map((f,i)=>`<a href="${matchReportURLs[i]}" download="${f.name}">Save ${pages.length>1?'page '+(i+1):'image'}</a>`).join('')}</div><p class="hint" id="matchReportShareStatus">Choose WhatsApp in your phone’s share menu, or save the image and attach it.</p>${matchReportURLs.map((url,i)=>`<img src="${url}" alt="${snapshot.view==='summary'?'Action':'Timeline'} match report, page ${i+1}">`).join('')}`);
  }catch(e){toast('Could not create the report image. Try again, or use the text log.');clearMatchReportFiles()}finally{matchReportBusy=false}
 }
