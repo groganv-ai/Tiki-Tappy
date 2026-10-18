@@ -16,3 +16,16 @@ run('reduced={...model,allEvents:model.events,events:[model.events[100]]}');asse
 run('match().elapsed=37*60000;match().durationMinutes=70;selectClock("half");selectClock("toggle")');assert.equal(run('match().period'),2);assert(run('clockText(match()).startsWith("35:")'));run('selectClock("toggle");selectClock("restart")');assert.equal(run('match().events.length'),0);
 const restored=boot(c.saved);assert.equal(restored.run('match().events.length'),0);assert.equal(restored.run('view'),'home');
 console.log('PASS: production load order; scorer/assist and shot/keeper atomic flows; opposition goal; all defence variants; Team Values; cancellation/full-time guards; 26 nonoverlapping zones; legacy data; mode switching; 321-event highlight cap and true score; halftime/reset/persistence.');
+// Video uses the same vector icons as capture and leads linked saves with our keeper.
+const videoTexts=[],videoIcons=[];c.videoTexts=videoTexts;c.videoIcons=videoIcons;
+c.ctx={save(){},restore(){},translate(){},scale(){},rect(){},roundRect(){},fill(){},fillRect(){},strokeRect(){},beginPath(){},moveTo(){},lineTo(){},quadraticCurveTo(){},bezierCurveTo(){},arc(){},stroke(){},setLineDash(){},closePath(){},fillText(t,x,y){videoTexts.push({t,x,y})},measureText(t){return {width:String(t).length*10}}};
+run(`drawOriginal=drawActionIcon;drawActionIcon=function(ctx,action,...rest){videoIcons.push(action);return drawOriginal(ctx,action,...rest)};
+shot={id:'s',action:'Shot',player:'Cae',at:60000,qualityLabel:'Good effort',qualityRank:0,outcome:'Off target'};
+saveShot={...shot,id:'k',opp:true,player:'Opposition',qualityRank:2,save:{player:'E.J',qualityLabel:'Great save',qualityRank:1}};
+videoModel={team:'Blues',opponent:'Visitors',date:'2026-10-18',score:[0,0],events:[shot],timelineEnd:60000};
+paintReplay(ctx,videoModel,2.5)`);
+assert(videoIcons.includes('Shot'));assert(!videoTexts.some(x=>x.t==='✦'));assert(run("actionIconSVG('Shot').includes('cx=\"12\"')"));
+videoTexts.length=0;videoIcons.length=0;const source=JSON.stringify(c.saveShot);
+run('videoModel.events=[saveShot];paintReplay(ctx,videoModel,2.5)');
+assert.equal(videoTexts.find(x=>x.x===225&&x.y===430).t,'Great Save');assert.equal(videoTexts.find(x=>x.x===225&&x.y===478).t,'E.J');assert.equal(videoTexts.find(x=>x.x===225&&x.y===566).t,'Opponent · Good shot');assert(videoIcons.every(a=>a==='Save'));assert.equal(JSON.stringify(c.saveShot),source);assert.equal(run('v2HighlightPriority(saveShot)'),1);assert.equal(run("highlightMoment({...saveShot,save:{...saveShot.save,qualityLabel:'Incredible save'}}).label"),'Incredible Save');
+console.log('PASS: shared target SVG/canvas; save-first main card, recent moments and timeline icons; secondary opponent shot wording; keeper-quality selection priority; unchanged source records.');

@@ -96,11 +96,11 @@ paintReplay=function(ctx,model,seconds){
       const cx=126,cy=444;
       if(great){const pop=state.local<.7?58+28*Math.sin(state.local/.7*Math.PI):65;star(cx,cy,pop,pop*.5,'#f7d96d')}
       else circle(cx,cy,50,'#edf2e5');
-      if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,e.action,cx,cy,56,C.green))text(highlightGlyph(e),cx-27,cy+18,54,C.green,'700');
+      if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,highlightMoment(e).action,cx,cy,56,C.green))text(highlightGlyph(e),cx-27,cy+18,54,C.green,'700');
       text(great?'★ GREAT MOMENT':state.type==='return'?'BACK TO THE TIMELINE':'MOMENT RECORDED',225,375,13,great?'#987213':C.muted,'800');
-      text(v2Description(e),225,430,37,C.ink,'800',430);
-      wrap(e.player,225,478,420,31,C.ink);
-      text(e.save?e.save.player+' · '+e.save.qualityLabel:e.opp?model.opponent:model.team,225,566,19,C.muted,'500',420);
+      text(highlightMoment(e).label,225,430,37,C.ink,'800',430);
+      wrap(highlightMoment(e).player,225,478,420,31,C.ink);
+      text(highlightMoment(e).detail||(e.opp?model.opponent:model.team),225,566,19,C.muted,'500',420);
     }
     const history=model.events.slice(0,intro?0:state.index+1).slice(-4);
     text('RECENT MOMENTS',32,644,12,C.muted,'800');
@@ -108,8 +108,8 @@ paintReplay=function(ctx,model,seconds){
       const y=677+j*43;line(32,y+16,688,y+16,C.line,1);
       text(eventTimeLabel(h),34,y,15,C.muted,'600',140);
       if(isGreatHighlight(h))star(193,y-6,12,6,C.gold);
-      if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,h.action,193,y-7,23,C.green))text(highlightGlyph(h),185,y,20,C.green);
-      text(h.player+' · '+v2Description(h),217,y,19,C.ink,'600',465);
+      if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,highlightMoment(h).action,193,y-7,23,C.green))text(highlightGlyph(h),185,y,20,C.green);
+      text(highlightMoment(h).player+' · '+highlightMoment(h).label,217,y,19,C.ink,'600',465);
     });
   }
   // A time-scaled timeline stays visible during goal replays and resumes at
@@ -127,11 +127,11 @@ paintReplay=function(ctx,model,seconds){
     else if(h.action==='Goal'){ball(x,y,active?12:10);return}
     else circle(x,y,active?17:14,'#fff');
     const iconSize=active?24:20;
-    if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,h.action,x,y,iconSize,C.green))text(highlightGlyph(h),x-iconSize*.45,y+iconSize*.34,iconSize,C.green,'700');
+    if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,highlightMoment(h).action,x,y,iconSize,C.green))text(highlightGlyph(h),x-iconSize*.45,y+iconSize*.34,iconSize,C.green,'700');
   });
   if(intro||!model.events.length)circle(left,y,7,C.green);
   text('0′',left-5,963,12,C.muted);text(model.ended?'FT':'NOW',right-22,963,12,C.muted);
-  const caption=intro?'Kick-off · the match story begins':award?'Player of the Day · '+model.playerOfDay:end?(model.ended?'Full time · all moments recorded':'The story so far'):state.type==='replay'?'Replay · '+(e.assist?e.assist.player+' → ':'')+e.player:eventTimeLabel(e)+' · '+e.player+' · '+v2Description(e);
+  const caption=intro?'Kick-off · the match story begins':award?'Player of the Day · '+model.playerOfDay:end?(model.ended?'Full time · all moments recorded':'The story so far'):state.type==='replay'?'Replay · '+(e.assist?e.assist.player+' → ':'')+e.player:eventTimeLabel(e)+' · '+highlightMoment(e).player+' · '+highlightMoment(e).label+(highlightMoment(e).detail?' · '+highlightMoment(e).detail:'');
   wrap(caption,44,1000,632,21,C.ink);
   text('TikiTapper · small moments, big memories',28,1075,11,C.muted,'500');
 };

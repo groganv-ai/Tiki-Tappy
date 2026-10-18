@@ -1,5 +1,9 @@
 # v0.2 — 2026-10-18
 
+- Refined low-cut football boot icon with laces, sole plate and four bladed studs.
+- Shared target geometry for shot buttons and highlight video icons.
+- Linked opposition shots lead with our keeper’s save quality/name/glove icon in highlights; shot quality is secondary.
+
 - Action-first Coach mode: Goal, Shot, Defence, Pass and Special.
 - Per-action quality and Team Values contributions, separated from player choices.
 - Linked goal/assist and opposition shot/keeper save capture.
