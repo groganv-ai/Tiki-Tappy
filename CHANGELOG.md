@@ -1,5 +1,9 @@
 # v0.2 — 2026-10-18
 
+- Report now leads with the scorecard and switchable By action / Timeline views.
+- Share the chosen report as readable PNG pages with scorers, assists, key actions, notes, award and photo.
+- Video highlights are secondary; the full text/event log is collapsed for reference.
+
 - Refined low-cut football boot icon with laces, sole plate and four bladed studs.
 - Shared target geometry for shot buttons and highlight video icons.
 - Linked opposition shots lead with our keeper’s save quality/name/glove icon in highlights; shot quality is secondary.
