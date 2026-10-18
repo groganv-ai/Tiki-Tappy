@@ -51,10 +51,13 @@ paintReplay=function(ctx,model,seconds){
     const px=112,py=362,pw=496,ph=374;
     box(px,py,pw,ph,'#386b4b');ctx.strokeStyle='#d0e3c3';ctx.lineWidth=3;ctx.strokeRect(px,py,pw,ph);ctx.strokeRect(300,py-18,120,18);ctx.strokeRect(300,py+ph,120,18);
     line(px,py+ph/2,px+pw,py+ph/2,'#b9d2ae',2);ctx.beginPath();ctx.arc(360,py+ph/2,41,0,Math.PI*2);ctx.stroke();
-    ctx.setLineDash([4,7]);for(let j=1;j<3;j++)line(px+j*pw/3,py,px+j*pw/3,py+ph,'#9ebd96',1);for(let j=1;j<4;j++)line(px,py+j*ph/4,px+pw,py+j*ph/4,'#9ebd96',1);ctx.setLineDash([]);
+    ctx.strokeStyle='#d0e3c3';ctx.lineWidth=2;
+    ctx.strokeRect(px+pw*.13,py,pw*.74,ph*.25);ctx.strokeRect(px+pw*.13,py+ph*.75,pw*.74,ph*.25);
+    ctx.strokeRect(px+pw*.31,py,pw*.38,ph*.1);ctx.strokeRect(px+pw*.31,py+ph*.9,pw*.38,ph*.1);
+    circle(px+pw*.5,py+ph*.18,2,'#d0e3c3');circle(px+pw*.5,py+ph*.82,2,'#d0e3c3');
     text('OPPOSITION GOAL',270,340,13,C.muted);text('OUR GOAL',322,773,13,C.muted);
-    function point(z){if(!z||z<1||z>12)return null;return{x:px+((z-1)%3+.5)*pw/3,y:py+(3-Math.floor((z-1)/3)+.5)*ph/4}}
-    const shot=point(e.zone),assist=point(e.assist?.zone),goal={x:360,y:e.opp?py+ph+9:py-9};
+    function point(z,p){if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))return {x:px+p.x*pw,y:py+p.y*ph};if(!z||z<1||z>12)return null;return{x:px+((z-1)%3+.5)*pw/3,y:py+(3-Math.floor((z-1)/3)+.5)*ph/4}}
+    const shot=point(e.zone,e.point),assist=point(e.assist?.zone,e.assist?.point),goal={x:360,y:e.opp?py+ph+9:py-9};
     function path(a,b,color){line(a.x,a.y,b.x,b.y,color,4);const angle=Math.atan2(b.y-a.y,b.x-a.x);line(b.x,b.y,b.x-13*Math.cos(angle-.5),b.y-13*Math.sin(angle-.5),color,4);line(b.x,b.y,b.x-13*Math.cos(angle+.5),b.y-13*Math.sin(angle+.5),color,4)}
     function player(p,name,color){if(!p)return;circle(p.x,p.y,9,color);text(name,Math.max(px+4,Math.min(p.x-30,px+pw-120)),p.y+27,17,color,'700',125)}
     if(shot){
@@ -88,16 +91,16 @@ paintReplay=function(ctx,model,seconds){
       box(42,337,636,245,e.opp?'#f7e4dc':'#e8f2cf',12);
       text('GOAL!',62,432,Math.round(64*pulse),C.green,'900');
       wrap(e.player+' scores'+(e.opp?' for '+model.opponent:'')+'!',64,489,570,30);
-      text(e.assist?'Assist: '+e.assist.player:'Goal replay coming up…',64,555,21,C.muted,'500',570);
+      text(e.assist?'Assist: '+e.assist.player:(e.qualityLabel||'Goal replay coming up…'),64,555,21,C.muted,'500',570);
     }else{
       const cx=126,cy=444;
       if(great){const pop=state.local<.7?58+28*Math.sin(state.local/.7*Math.PI):65;star(cx,cy,pop,pop*.5,'#f7d96d')}
       else circle(cx,cy,50,'#edf2e5');
       if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,e.action,cx,cy,56,C.green))text(highlightGlyph(e),cx-27,cy+18,54,C.green,'700');
       text(great?'★ GREAT MOMENT':state.type==='return'?'BACK TO THE TIMELINE':'MOMENT RECORDED',225,375,13,great?'#987213':C.muted,'800');
-      text(e.action,225,430,37,C.ink,'800',430);
+      text(v2Description(e),225,430,37,C.ink,'800',430);
       wrap(e.player,225,478,420,31,C.ink);
-      text(e.opp?model.opponent:model.team,225,566,19,C.muted,'500',420);
+      text(e.save?e.save.player+' · '+e.save.qualityLabel:e.opp?model.opponent:model.team,225,566,19,C.muted,'500',420);
     }
     const history=model.events.slice(0,intro?0:state.index+1).slice(-4);
     text('RECENT MOMENTS',32,644,12,C.muted,'800');
@@ -106,7 +109,7 @@ paintReplay=function(ctx,model,seconds){
       text(eventTimeLabel(h),34,y,15,C.muted,'600',140);
       if(isGreatHighlight(h))star(193,y-6,12,6,C.gold);
       if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,h.action,193,y-7,23,C.green))text(highlightGlyph(h),185,y,20,C.green);
-      text(h.player+' · '+h.action,217,y,19,C.ink,'600',465);
+      text(h.player+' · '+v2Description(h),217,y,19,C.ink,'600',465);
     });
   }
   // A time-scaled timeline stays visible during goal replays and resumes at
@@ -128,11 +131,11 @@ paintReplay=function(ctx,model,seconds){
   });
   if(intro||!model.events.length)circle(left,y,7,C.green);
   text('0′',left-5,963,12,C.muted);text(model.ended?'FT':'NOW',right-22,963,12,C.muted);
-  const caption=intro?'Kick-off · the match story begins':award?'Player of the Day · '+model.playerOfDay:end?(model.ended?'Full time · all moments recorded':'The story so far'):state.type==='replay'?'Replay · '+(e.assist?e.assist.player+' → ':'')+e.player:eventTimeLabel(e)+' · '+e.player+' · '+e.action;
+  const caption=intro?'Kick-off · the match story begins':award?'Player of the Day · '+model.playerOfDay:end?(model.ended?'Full time · all moments recorded':'The story so far'):state.type==='replay'?'Replay · '+(e.assist?e.assist.player+' → ':'')+e.player:eventTimeLabel(e)+' · '+e.player+' · '+v2Description(e);
   wrap(caption,44,1000,632,21,C.ink);
   text('TikiTapper · small moments, big memories',28,1075,11,C.muted,'500');
 };
 const timelineExportBefore=exportVideo;
 exportVideo=function(){timelineExportBefore();const status=$('#recordStatus');status.textContent=String(status.textContent||'').replace('Goals replay the assist pass, then the shot. Pitch zones are approximate, not tracking footage.','Text-led timeline highlights. Goals cut to a short pass → shot replay, then return to the timeline. Great actions have a gold star burst. Pitch locations are approximate.');};
 const reportBeforeTimeline=renderReport;
-renderReport=function(){reportBeforeTimeline();const app=$('#app');app.innerHTML=app.innerHTML.replace('create a retro image or animated pitch highlights','create a report image or text-led timeline highlights').replace('Preview the linked pass → shot → goal animation, then create a video.','Follow the text-led timeline, with short goal replays and gold-star Great moments, then create a video.');};
+renderReport=function(){reportBeforeTimeline();const app=$('#app');app.innerHTML=app.innerHTML.replace('create a retro image or animated pitch highlights','create a report image or text-led timeline highlights').replace('Preview the linked pass → shot → goal animation, then create a video.','Follow the text-led timeline, with short goal replays and quality labels, then create a video.');};
