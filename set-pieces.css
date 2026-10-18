@@ -24,3 +24,5 @@
 .sp-modal .banner{background:#edf2e5;border-radius:12px;padding:13px;font-size:12px;line-height:1.6;margin-bottom:16px}
 .sp-modal .flow-player{font-weight:700;margin:0 0 16px}
 .sp-modal .sheet{width:540px;max-width:100%}.sp-modal .flow-head .eyebrow{display:flex;align-items:center;gap:8px}.sp-main{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#edf3df;margin:16px 0}.sp-main strong,.sp-main small{display:block}.sp-main small{font-size:11px;color:#647360;margin-top:5px}.sp-outcome-tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:10px 0;border-bottom:1px solid #dce2d5;font-size:11px}.sp-outcome-tools button{font-size:11px;padding:8px}.sp-keeper-field{margin-top:16px}@media(max-width:500px){.sp-modal{padding:8px}.sp-modal .sheet{padding:20px}.sp-modal .quality button{font-size:11px;padding:10px 4px}}
+
+.sp-modal button.selected{background:#193e35!important;color:#fff!important;border-color:#193e35!important}
