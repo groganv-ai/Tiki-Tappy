@@ -5,3 +5,4 @@
 .v2-matrix .v2-held{background:#f4e1a4!important;border-color:#c49b38!important;transform:scale(1.06)}
 
 .v2-matrix{min-width:330px!important;table-layout:fixed}.v2-matrix th:first-child{width:80px;min-width:80px!important}.v2-matrix td button{width:100%;min-width:44px!important}.v2-matrix .v2-held::after{content:"";position:absolute;bottom:0;left:0;height:3px;background:#a47b20;animation:player-pass-hold 3s linear forwards;border-radius:3px}@keyframes player-pass-hold{from{width:0}to{width:100%}}
+.v2-matrix thead th:first-child button{width:100%;font-size:10px;padding:4px 0;min-height:44px;white-space:nowrap}
