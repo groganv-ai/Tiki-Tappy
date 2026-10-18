@@ -1,6 +1,3 @@
-// The same substitution arrows appear in the timeline, report images and manual highlights.
-actionVectors.substitution={paths:[[['M',3,7],['L',21,7]],[['M',17,3],['L',21,7],['L',17,11]],[['M',21,17],['L',3,17]],[['M',7,13],['L',3,17],['L',7,21]]]};
-
 // Keep the available squad and starting team separate. Replay substitutions for Undo.
 const TEAM_ROLES=['GK','DF','MD','AT'],TEAM_ROLE_NAMES={GK:'Goalkeeper',DF:'Defenders',MD:'Midfielders',AT:'Attackers'};
 let teamDraft=null,subDraft=null;

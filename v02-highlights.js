@@ -25,5 +25,5 @@ function highlightMoment(e){
   const shotQuality=({'Good effort':'Good shot','Great strike':'Great shot','Incredible strike':'Incredible shot'})[e.qualityLabel]||e.qualityLabel||'Shot saved';
   return {action:'Save',player:e.save.player,label:(e.save.qualityLabel||'Save').replace(/\bsave\b/i,'Save'),detail:'Opponent · '+shotQuality};
  }
- return {action:e?.action||'',player:e?.player||'',label:e?v2Description(e):'',detail:''};
+ return {action:e?gameEventIcon(e):'',player:e?.player||'',label:e?v2Description(e):'',detail:''};
 }

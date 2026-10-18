@@ -36,7 +36,7 @@ paintReplay=function(ctx,model,seconds){
   function line(x1,y1,x2,y2,color,width=2){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
   function circle(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
   function star(x,y,outer,inner,color){ctx.fillStyle=color;ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?inner:outer;const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.fill()}
-  function ball(x,y,r=12){circle(x,y,r,'#fff');star(x,y,r*.6,r*.4,C.ink)}
+  function ball(x,y,r=12){circle(x,y,r,'#fff');drawActionIcon(ctx,'Goal',x,y,r*2,C.ink)}
   box(0,0,720,1080,C.paper);box(0,0,720,74,C.dark);
   text('TikiTapper',28,47,30,C.lime,'800');text(model.clubName||'MATCH HIGHLIGHTS',438,44,16,'#d6e3d3','600',254);
   box(24,96,672,159,C.dark,18);
@@ -124,7 +124,6 @@ paintReplay=function(ctx,model,seconds){
     if(!end&&(intro||i>state.index)){circle(x,y,5,'#cbd3c4');return}
     if(active)circle(x,y,27,'#e8f2cf');
     if(isGreatHighlight(h))star(x,y,active?25:20,active?12:10,C.gold);
-    else if(h.action==='Goal'){ball(x,y,active?12:10);return}
     else circle(x,y,active?17:14,'#fff');
     const iconSize=active?24:20;
     if(typeof drawActionIcon!=='function'||!drawActionIcon(ctx,highlightMoment(h).action,x,y,iconSize,C.green))text(highlightGlyph(h),x-iconSize*.45,y+iconSize*.34,iconSize,C.green,'700');
