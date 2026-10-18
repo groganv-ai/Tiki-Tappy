@@ -1,3 +1,6 @@
+// The same substitution arrows appear in the timeline, report images and manual highlights.
+actionVectors.substitution={paths:[[['M',3,7],['L',21,7]],[['M',17,3],['L',21,7],['L',17,11]],[['M',21,17],['L',3,17]],[['M',7,13],['L',3,17],['L',7,21]]]};
+
 // Keep the available squad and starting team separate. Replay substitutions for Undo.
 const TEAM_ROLES=['GK','DF','MD','AT'],TEAM_ROLE_NAMES={GK:'Goalkeeper',DF:'Defenders',MD:'Midfielders',AT:'Attackers'};
 let teamDraft=null,subDraft=null;
@@ -34,5 +37,3 @@ const teamSummaryBefore=v2SummaryHTML;v2SummaryHTML=function(m){const html=teamS
 function teamCardHTML(m){const s=teamState(m);return `<section class="card team-live-card"><div class="sectionhead"><h2>${s?'Team & substitutes':'Team selection'}</h2><button onclick="${s&&clockHasStarted(m)?'openSubstitution()':'lineupModal()'}" ${m.ended?'disabled':''}>${s&&clockHasStarted(m)?'Substitute':'Select team'}</button></div>${s?`${teamPitchHTML(s.onPitch,s.roles,m)}<p class="team-count">${s.onPitch.length} on pitch · ${m.lineup.length-s.onPitch.length} substitutes${s.captain?' · Captain: '+esc(s.captain):''}</p><div class="team-bench"><h3>Substitutes</h3>${teamPlayers(m).filter(n=>!s.onPitch.includes(n)).map(n=>`<span class="pill">${esc(n)}</span>`).join('')||'<span class="hint">None</span>'}</div>`:'<p class="hint">Choose the available squad, starting positions, captain and substitutes before kick-off.</p>'}${m.ended?awardControls(m):''}<button class="v2-wide" onclick="view='report';render()">View match report ↗</button></section>`}
 const teamRenderBefore=render;render=function(){teamRenderBefore();if(view!=='live'||!match())return;const app=$('#app'),m=match();app.innerHTML=app.innerHTML.replace(/<div class="card"><div class="sectionhead"><h2>Today’s lineup<\/h2>[\s\S]*?View match report ↗<\/button><\/div>/,teamCardHTML(m));if(m.teamStart&&clockHasStarted(m)&&!m.ended)app.innerHTML=app.innerHTML.replace('<div class="undo-toolbar">',`<button class="team-sub-shortcut v2-wide" onclick="openSubstitution()">${v2Icon('Substitution')} Make substitution</button><div class="undo-toolbar">`)};
 render();
-// The same substitution arrows appear in the timeline, report images and manual highlights.
-actionVectors.substitution={paths:[[['M',3,7],['L',21,7]],[['M',17,3],['L',21,7],['L',17,11]],[['M',21,17],['L',3,17]],[['M',7,13],['L',3,17],['L',7,21]]]};
