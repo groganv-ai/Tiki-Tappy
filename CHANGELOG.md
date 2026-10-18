@@ -1,5 +1,10 @@
 # v0.2 — 2026-10-18
 
+- Player mode now uses five columns: Goal, Shot, Defence, Pass and Special.
+- Goal skips the already-selected scorer; Shot combines quality and outcome.
+- Defence uses explicit subtype/quality choices; Special combines named contributions with aggregate counts and undo.
+- Pass keeps tap / 1.5-second / 3-second quality capture. Both modes share event records and reports.
+
 - Report now leads with the scorecard and switchable By action / Timeline views.
 - Share the chosen report as readable PNG pages with scorers, assists, key actions, notes, award and photo.
 - Video highlights are secondary; the full text/event log is collapsed for reference.
