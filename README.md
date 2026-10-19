@@ -1,6 +1,6 @@
-# Touchline v0.2
+# TikiTapper v0.2
 
-Mobile-friendly youth football matchday tracker. Internal project name: TikiTapper.
+Mobile-friendly youth football matchday tracker.
 
 This is a buildless static app. Publish the repository root with GitHub Pages.
 
@@ -15,7 +15,11 @@ This is a buildless static app. Publish the repository root with GitHub Pages.
 
 ## Data
 
-Match data is stored in this browser using localStorage. Use Manage → Export backup to transfer it to another device. GitHub Pages and the original hosted app are different origins, so export a backup from the original app and import it on the new site.
+Free matchdays start with a blank team name and squad. Players are entered once per matchday and reused across its matches. Both Coach and Player modes remain available. One temporary localStorage draft supports refresh recovery; Finish matchday clears it after confirmation. Download or share reports before finishing. No reusable squad library or new match archive is provided.
+
+The demo uses randomised fictional boys’ and girls’ names and does not overwrite a real draft. Previous-version local match records are retained for explicit export/clear rather than silently deleted. Old squad-sharing URL imports are retired.
+
+Photos require an unchecked-by-default permission acknowledgement, are re-encoded to JPEG without the original file metadata, and remain in the temporary browser draft unless exported/shared. Sharing previews include a permission reminder. The acknowledgement is not a substitute for obtaining consent or complying with club safeguarding policies.
 
 No installation or build step is required. All asset paths are relative to support repository-based GitHub Pages URLs.
 

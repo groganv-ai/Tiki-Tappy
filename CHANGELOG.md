@@ -35,3 +35,12 @@ Initial Touchline version for GitHub Pages.
 - Undo and action editing
 - Timelines, reports, animated highlights and Player of the Day
 - Mobile layouts and device-local backups
+# Free matchday update — 2026-10-20
+
+- Remove built-in real squads and reusable team-profile links from the current app.
+- Start each matchday with a blank team name and player list; reuse the squad within that day only.
+- Keep both input modes available, with one refresh-recovery draft and explicit Finish & clear.
+- Isolate the demo from real drafts and randomise fictional boys’/girls’ names.
+- Add required photo-permission acknowledgement, local-processing note and sharing reminder.
+- Preserve prior local match records for owner-controlled export/clear.
+
