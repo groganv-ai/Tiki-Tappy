@@ -48,16 +48,12 @@ paintReplay=function(ctx,model,seconds){
   text(state.type==='replay'?'GOAL REPLAY':award?'PLAYER OF THE DAY':end?'THE MATCHDAY STORY':'MATCH COMMENTARY',32,298,13,C.muted,'800');
   if(state.type==='replay'){
     box(24,316,672,512,'#fff',16);
-    const px=112,py=362,pw=496,ph=374;
-    box(px,py,pw,ph,'#386b4b');ctx.strokeStyle='#d0e3c3';ctx.lineWidth=3;ctx.strokeRect(px,py,pw,ph);ctx.strokeRect(300,py-18,120,18);ctx.strokeRect(300,py+ph,120,18);
-    line(px,py+ph/2,px+pw,py+ph/2,'#b9d2ae',2);ctx.beginPath();ctx.arc(360,py+ph/2,41,0,Math.PI*2);ctx.stroke();
-    ctx.strokeStyle='#d0e3c3';ctx.lineWidth=2;
-    ctx.strokeRect(px+pw*.13,py,pw*.74,ph*.25);ctx.strokeRect(px+pw*.13,py+ph*.75,pw*.74,ph*.25);
-    ctx.strokeRect(px+pw*.31,py,pw*.38,ph*.1);ctx.strokeRect(px+pw*.31,py+ph*.9,pw*.38,ph*.1);
-    circle(px+pw*.5,py+ph*.18,2,'#d0e3c3');circle(px+pw*.5,py+ph*.82,2,'#d0e3c3');
-    text('OPPOSITION GOAL',270,340,13,C.muted);text('OUR GOAL',322,773,13,C.muted);
-    function point(z,p){if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))return {x:px+p.x*pw,y:py+p.y*ph};if(!z||z<1||z>12)return null;return{x:px+((z-1)%3+.5)*pw/3,y:py+(3-Math.floor((z-1)/3)+.5)*ph/4}}
-    const shot=point(e.zone,e.point),assist=point(e.assist?.zone,e.assist?.point),goal={x:360,y:e.opp?py+ph+9:py-9};
+    const pitch=drawMatchPitch(ctx,{x:80,y:350,width:560,height:420});
+    const {x:px,y:py,width:pw,height:ph}=pitch;
+    text('OPPOSITION GOAL',270,340,13,C.muted);text('OUR GOAL',322,788,13,C.muted);
+    const shot=replayPitchPoint(e.zone,e.point,pitch),assist=replayPitchPoint(e.assist?.zone,e.assist?.point,pitch);
+    const goalPoint=MATCH_PITCH.goals[e.opp?'south':'north'];
+    const goal={x:px+goalPoint.x/MATCH_PITCH.width*pw,y:py+goalPoint.y/MATCH_PITCH.height*ph};
     function path(a,b,color){line(a.x,a.y,b.x,b.y,color,4);const angle=Math.atan2(b.y-a.y,b.x-a.x);line(b.x,b.y,b.x-13*Math.cos(angle-.5),b.y-13*Math.sin(angle-.5),color,4);line(b.x,b.y,b.x-13*Math.cos(angle+.5),b.y-13*Math.sin(angle+.5),color,4)}
     function player(p,name,color){if(!p)return;circle(p.x,p.y,9,color);text(name,Math.max(px+4,Math.min(p.x-30,px+pw-120)),p.y+27,17,color,'700',125)}
     if(shot){
@@ -68,7 +64,7 @@ paintReplay=function(ctx,model,seconds){
       ball(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t,9);
     }else text('Shot location not recorded',198,550,23,'#fff','600',330);
     text(e.assist?e.assist.player+' → '+e.player:e.player+' → Goal',46,806,23,C.ink,'700',628);
-    text('Approximate zones · not match footage',46,826,12,C.muted,'500');
+    text('Approximate locations · not match footage',46,826,12,C.muted,'500');
   }else{
     box(24,316,672,286,'#fff',16);
     if(intro){
