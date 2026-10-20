@@ -15,7 +15,11 @@ function initialiseFreeMatchday(){
 }
 initialiseFreeMatchday();
 function leaveFreeDemo(){if(!freeDemoActive)return;data=freeRealDraft||fresh();freeRealDraft=null;freeDemoActive=false;mi=0}
-function startFreeSetup(){leaveFreeDemo();closeModal();view='setup';render()}
+function startFreeSetup(){
+ if(!freeDemoActive&&day()){$('#modal').innerHTML=`<div class="modal"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="new-day-warning"><h2 id="new-day-warning">Start a new matchday?</h2><p>Creating a new matchday will delete the current matchday’s team, players, results, actions, photo and saved report progress from this device. Save or share anything you want to keep first.</p><p>Your current draft stays intact until you confirm replacement on the setup screen.</p><div class="links"><button onclick="closeModal()">Keep current matchday</button><button class="danger" onclick="openFreeSetup()">Continue to new matchday</button></div></section></div>`;return}
+ openFreeSetup();
+}
+function openFreeSetup(){leaveFreeDemo();closeModal();view='setup';render()}
 function returnToFreeDraft(){leaveFreeDemo();mi=0;view=day()?'live':'home';render()}
 function freeLegacyHTML(){return data.legacyDays?.length?`<section class="card free-legacy"><h2>Previous local match records</h2><p class="hint">${data.legacyDays.length} older matchday(s) from the previous version remain on this device. They are not reusable squads. Download a copy if needed, then clear them.</p><div class="links"><button onclick="exportPreviousRecords()">Download previous records</button><button class="danger" onclick="askClearPreviousRecords()">Clear previous records</button></div></section>`:''}
 function exportPreviousRecords(){download(new Blob([JSON.stringify({days:data.legacyDays||[]})],{type:'application/json'}),'tikitapper-previous-matchdays.json')}
@@ -36,7 +40,7 @@ createDay=function(e){
   if(!f.team||f.team.length>120||f.squad.length<2||f.squad.length>60||f.squad.some(n=>n.length>80)||!f.date||!f.location||!f.opponents.length||f.opponents.length>20||f.opponents.some(x=>!x.split(',')[0].trim()))return toast('Enter a team name, 2–60 players, date, venue and at least one opponent.');
   if(f.durationMinutes<2||f.durationMinutes>180)return toast('Choose a match length between 2 and 180 minutes.');
   leaveFreeDemo();freePendingDay=f;
-  if(day()){$('#modal').innerHTML=`<div class="modal"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="replace-title"><h2 id="replace-title">Replace your current matchday?</h2><p>Download or share your current reports first. Continuing clears this matchday’s team, events, photo and reports from this device.</p><div class="links"><button onclick="freePendingDay=null;closeModal()">Cancel</button><button class="primary" onclick="confirmFreeDay()">Replace & create matchday</button></div></section></div>`;return}
+  if(day()){$('#modal').innerHTML=`<div class="modal"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="replace-title"><h2 id="replace-title">Replace your current matchday?</h2><p>Download or share your current reports first. Continuing permanently deletes this matchday’s team, players, results, actions, photo and saved report progress from this device.</p><div class="links"><button onclick="freePendingDay=null;closeModal()">Cancel</button><button class="primary" onclick="confirmFreeDay()">Delete current & create new</button></div></section></div>`;return}
   confirmFreeDay();
 };
 function confirmFreeDay(){

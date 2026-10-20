@@ -42,9 +42,11 @@ function drawMatchPitch(ctx,area,half=null){
   ctx.restore();ctx.restore();return rect;
 }
 function replayHalfForGoal(e){
-  if(e?.action!=='Goal'||e.opp||!e.assist)return null;
-  const rect={x:0,y:0,width:1,height:1},shot=replayPitchPoint(e.zone,e.point,rect),assist=replayPitchPoint(e.assist.zone,e.assist.point,rect);
-  return shot&&assist&&shot.y>=0&&shot.y<=.5&&assist.y>=0&&assist.y<=.5?'north':null;
+  if(e?.action!=='Goal')return null;
+  const rect={x:0,y:0,width:1,height:1},point=e.point||e.setPiece?.point||(e.setPiece?.type==='Penalty'?{x:.5,y:e.opp?.8:.2}:null);
+  const shot=replayPitchPoint(e.zone,point,rect),assist=e.assist?replayPitchPoint(e.assist.zone,e.assist.point,rect):null;
+  const within=p=>p&&p.x>=0&&p.x<=1&&p.y>=(e.opp?.5:0)&&p.y<=(e.opp?1:.5);
+  return within(shot)&&(!e.assist||within(assist))?(e.opp?'south':'north'):null;
 }
 function replayPitchPoint(zone,point,rect){
   if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y))return {x:rect.x+point.x*rect.width,y:rect.y+point.y*rect.height};

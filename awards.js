@@ -16,7 +16,6 @@ const clockBeforeAward=selectClock;
 selectClock=function(action){
   clockBeforeAward(action);const m=match();
   if(action==='restart'&&m&&!clockHasStarted(m)&&!m.events.length){delete m.playerOfDay;save();render()}
-  if(action==='full'&&m?.ended&&!m.playerOfDay)playerDayModal();
 };
 function awardControls(m){return `<div class="award-inline"><div class="eyebrow">★ Player of the Day</div><strong>${m.playerOfDay?esc(m.playerOfDay):'Choose your standout player'}</strong><button onclick="playerDayModal()">${m.playerOfDay?'Change selection':'Choose player'}</button></div>`}
 const renderBeforeAward=render;

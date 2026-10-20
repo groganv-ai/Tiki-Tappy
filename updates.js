@@ -169,7 +169,7 @@ async function recordReplay(){
     await done;clearTimeout(timer);const cancelled=state.cancelled;stopReplay();
     if(cancelled){toast('Recording cancelled or interrupted. Try again with this tab in the foreground.');return exportVideo(modelCopy.highlightFilter||'major')}
     const type=rec.mimeType.split(';')[0],blob=new Blob(chunks,{type});if(blob.size<1000)throw new Error('The encoder produced an empty video');
-    showPrepared(blob,'match-highlights.'+(type.includes('mp4')?'mp4':'webm'));
+    showPrepared(blob,(modelCopy.isMatchday?'matchday-highlights.':'match-highlights.')+(type.includes('mp4')?'mp4':'webm'));
   }catch(e){clearTimeout(timer);if(rec?.state==='recording')rec.stop();stream?.getTracks().forEach(t=>t.stop());stopReplay();status.textContent='Video could not be created: '+e.message+'. Try another browser, or use Report image.';const b=$('#recordButton');if(b)b.disabled=false}
 }
 // Demo goals have a linked assist for easy testing without entering a real game.

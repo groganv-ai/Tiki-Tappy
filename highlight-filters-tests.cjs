@@ -28,10 +28,8 @@ assert.deepEqual(ids('goals-saves'),['own-goal','opp-goal','good-save','great-sa
 assert.deepEqual(ids('major'),['own-goal','opp-goal','great-save','top-shot','top-pass','top-block','legacy-save']);
 assert.deepEqual(ids('key'),fixtures.filter(e=>!['missed-shot','corner','sub','opponent-shot'].includes(e.id)).map(e=>e.id));
 assert.equal(ids('all').length,fixtures.length);assert.equal(run('highlightQualityRank({action:"Pass",qualityLabel:"World-class pass"})'),2);
-run('exportVideo()');assert.equal(run('highlightDraft.filter'),'major');assert(!el('#modal').innerHTML.includes('type="checkbox"'));assert(!el('#modal').innerHTML.includes('v2budget'));
-run('highlightDraft.model.events=fixtures;v2SetHighlightFilter("all")');assert.equal(run('highlightDraft.selected.size'),fixtures.length);
-run('highlightDraft.model.events=Array.from({length:321},(_,i)=>({id:String(i),action:"Pass",at:i*1000,qualityRank:0}));v2SetHighlightFilter("all")');assert.equal(run('highlightDraft.selected.size'),321);assert(el('#modal').innerHTML.includes('longer video'));
-run('v2SetHighlightFilter("major")');assert.equal(run('highlightDraft.selected.size'),0);assert(el('#modal').innerHTML.includes('disabled'));
+run('exportVideo()');assert.equal(run('dayFlow().stage'),'review');assert(!run('highlightDraft'));assert(!el('#modal').innerHTML.includes('type="checkbox"'));
+run('largeEvents=Array.from({length:321},(_,i)=>({id:String(i),action:"Pass",at:i*1000,qualityRank:0}))');assert.equal(run('highlightPresetEvents(largeEvents,"all").length'),321);assert.equal(run('highlightPresetEvents(largeEvents,"major").length'),0);
 assert.equal(run('replayHalfForGoal(fixtures[0])'),'north');run('fixtures[0].assist.point.y=.7');assert.equal(run('replayHalfForGoal(fixtures[0])'),null);assert.equal(run('replayHalfForGoal(fixtures[1])'),null);
-run('view="live";match().ended=false;match().running=false;selectClock("full")');assert.equal(run('view'),'report');assert(el('#app').innerHTML.includes('Full time. Share your match.'));assert(el('#app').innerHTML.includes('Optional finishing touches'));assert(el('#app').innerHTML.includes('photo-permission'));assert(el('#app').innerHTML.indexOf('report-output')<el('#app').innerHTML.indexOf('video-output'));
-console.log('PASS: five exact filter definitions; save-first linked events; legacy qualities; no manual selection; 321-event All keeps every event; empty presets; attacking-half replay detection; full-time sharing screen and photo safeguards.');
+run('view="live";match().ended=false;match().running=false;match().clockStarted=true;selectClock("full")');assert.equal(run('view'),'live');assert(el('#app').innerHTML.includes('Next match'));assert(!el('#modal').innerHTML.includes('Player of the Day'));
+console.log('PASS: exact presets; save-first linked events; legacy qualities; 321-event All keeps every event; attacking-half detection; full time ends one game without an award or final report.');

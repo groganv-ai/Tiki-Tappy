@@ -14,13 +14,13 @@ run('setInputMode("coach");save()');assert.equal(boot(c.saved).run('match().inpu
 run('demo()');assert.equal(c.saved,draft);assert(run('day().isDemo'));assert(!run('day().team.includes("Test")'));assert(run('match().lineup.some(n=>FREE_DEMO_BOYS.includes(n))'));assert(run('match().lineup.some(n=>FREE_DEMO_GIRLS.includes(n))'));
 for(let i=0;i<10;i++){run('demo()');assert.equal(c.saved,draft);assert.equal(run('new Set(data.teams[0].squad).size'),10)}
 run('setInputMode("player");returnToFreeDraft()');assert.equal(run('day().id'),originalID);assert.equal(run('match().inputMode'),'player');
-run('startFreeSetup()');assert(!el('#app').innerHTML.includes('value="Test United"'));assert(!el('#app').innerHTML.includes('>Avery'));
+run('startFreeSetup()');assert(el('#modal').innerHTML.includes('will delete'));assert.equal(run('day().id'),originalID);run('openFreeSetup()');assert(!el('#app').innerHTML.includes('value="Test United"'));assert(!el('#app').innerHTML.includes('>Avery'));
 run("createDay({preventDefault(){},target:{teamName:'Next team',players:['Casey','Taylor'].join(String.fromCharCode(10)),date:'2026-10-21',location:'New field',opponents:'Visitors'}})");
 assert.equal(run('day().id'),originalID);assert(el('#modal').innerHTML.includes('Replace your current matchday?'));run('freePendingDay=null;closeModal()');
-run('view="report";render()');assert(el('#app').innerHTML.includes('Check permission before adding a photo'));assert(el('#app').innerHTML.includes('image/webp" disabled'));assert(el('#app').innerHTML.includes('not consent itself'));
+run('day().matches.forEach(m=>m.ended=true);startDayFlow();confirmDayReview();render()');assert(el('#app').innerHTML.includes('Check permission before adding a photo'));assert(el('#app').innerHTML.includes('image/webp" disabled'));assert(el('#app').innerHTML.includes('not consent itself'));
 run("addPhoto({files:[{type:'image/png',size:100}],value:'x'})");assert(!run('day().photo'));assert(el('#toast').textContent.includes('Confirm'));
 run('confirmPhotoPermission(true)');assert.equal(run('photoPermissionDay'),originalID);assert.equal(el('#reportphoto').disabled,false);
-run('askFinishFreeDay()');assert(el('#modal').innerHTML.includes('Download')||el('#modal').innerHTML.includes('download'));assert.equal(run('day().id'),originalID);
+run('askClearFreeDay()');assert(el('#modal').innerHTML.includes('Download')||el('#modal').innerHTML.includes('download'));assert.equal(run('day().id'),originalID);
 run('confirmFinishFreeDay()');assert.equal(run('data.days.length'),0);assert.equal(run('data.teams[0].squad.length'),0);assert(!c.saved.includes('Avery'));assert.equal(run('view'),'home');
 const cleared=boot(c.saved);assert.equal(cleared.run('data.selected'),null);
 const legacy=JSON.stringify({clubName:'Old club',teams:[{name:'Old reusable squad',squad:['Unused name']}],selected:'active',days:[{id:'active',team:'Current team',date:'2026-10-20',location:'Field',matches:[{opponent:'Visitors',time:'',lineup:['Casey','Taylor'],events:[],elapsed:0}]},{id:'older',team:'Older team',matches:[{lineup:['Historic player'],events:[]}]}]});
