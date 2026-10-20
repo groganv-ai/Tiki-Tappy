@@ -4,7 +4,9 @@ const c={window:{addEventListener(){}},document:{querySelector:el,addEventListen
 const {c,el,run}=boot();run('demo()');
 assert.equal(run('eventTimeLabel({at:300000})'),'5′');assert.equal(run('eventTimeLabel({at:300001})'),'6′');
 assert.equal(run('eventTimeLabel({period:1,periodAt:960000,halfLengthMs:900000})'),'15+1′');assert.equal(run('eventTimeLabel({period:2,periodAt:60000,halfLengthMs:900000})'),'16′');assert.equal(run('eventTimeLabel({period:2,periodAt:1020000,halfLengthMs:900000})'),'30+2′');
-run('match().durationMinutes=30;match().period=2;match().elapsed=0;match().running=false;match().firstHalfElapsed=1020000');assert.equal(run('clockText(match())'),'15′');assert.deepEqual(Array.from(run('halfTimeScore(match())')),[1,0]);
+run('match().durationMinutes=30;match().period=1;match().elapsed=960000;match().running=false');assert.equal(run('clockText(match())'),'15:00 +01:00');
+run('match().period=2;match().elapsed=65000;match().firstHalfElapsed=1020000');assert.equal(run('clockText(match())'),'16:05');
+run('match().elapsed=0');assert.equal(run('clockText(match())'),'15:00');assert.deepEqual(Array.from(run('halfTimeScore(match())')),[1,0]);
 run('match().events.push({id:"second-half",action:"Goal",player:"Ava",period:2,periodAt:60000,halfLengthMs:900000,twoHalves:true,at:1080000,opp:false})');assert.deepEqual(Array.from(run('halfTimeScore(match())')),[1,0]);assert.deepEqual(Array.from(run('score(match())')),[2,0]);
 run('match().ended=true;render()');assert(el('#app').innerHTML.includes('HT 1–0'));assert(el('#app').innerHTML.includes('(16′)'));assert(el('#app').innerHTML.includes('score-assists'));assert(!run('eventTimeLabel(match().events[0]).includes(":")'));
 run('match().twoHalves=false');assert.equal(run('halfTimeScore(match())'),null);

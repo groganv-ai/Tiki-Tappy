@@ -20,4 +20,4 @@ function minuteTimeLabel(period,periodAt,halfMs,roundUp=true){
  return `${Math.max(0,(roundUp?Math.ceil:Math.floor)((base+periodAt)/60000))}′`;
 }
 function eventTimeLabel(e){return e.period&&Number.isFinite(e.periodAt)?minuteTimeLabel(e.period,e.periodAt,e.halfLengthMs||900000):`${Math.max(0,Math.ceil((Number(e.at)||0)/60000))}′`}
-function clockText(m){return minuteTimeLabel(m.period===2?2:1,elapsed(m),halfLengthMs(m),false)}
+function clockText(m){return formatPeriodTime(m.period===2?2:1,elapsed(m),halfLengthMs(m),true)}

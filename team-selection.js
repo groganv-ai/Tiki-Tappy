@@ -1,6 +1,19 @@
 // Keep the available squad and starting team separate. Replay substitutions for Undo.
 const TEAM_ROLES=['GK','DF','MD','AT'],TEAM_ROLE_NAMES={GK:'Goalkeeper',DF:'Defenders',MD:'Midfielders',AT:'Attackers'};
 let teamDraft=null,subDraft=null;
+let benchSwapDraft=null;
+function teamIsSubstitute(name,m=match()){const s=teamState(m);return !!s&&m.lineup.includes(name)&&!s.onPitch.includes(name)}
+function promptBenchPlayer(name){
+ const m=match();if(!m||m.ended)return toast('Match finished. Reopen to make changes.');if(!teamIsSubstitute(name,m))return;
+ v2CancelGridHold();captureV2=null;benchSwapDraft={match:m,name};
+ $('#modal').innerHTML=`<div class="modal"><section class="sheet team-sheet" role="dialog" aria-modal="true" aria-labelledby="bench-title"><div class="team-sheet-head"><span class="eyebrow">Substitute</span><button aria-label="Cancel player swap" onclick="benchSwapDraft=null;closeModal()">×</button></div><h2 id="bench-title">${esc(name)} is a substitute</h2><p>Swap them with a player on the pitch?</p><p class="hint">Choose who comes off. After confirming the swap, tap the action again to record it.</p><div class="team-sub-choices">${teamPlayers(m).filter(n=>!teamIsSubstitute(n,m)).map(n=>`<button data-player="${esc(n)}" onclick="chooseBenchSwap(this.dataset.player)"><strong>${teamName(n,m)}</strong><small>${esc(teamRoleBadge(n,m))}</small></button>`).join('')}</div><button class="v2-wide" onclick="benchSwapDraft=null;closeModal()">Keep as substitute</button></section></div>`;
+}
+function chooseBenchSwap(off){
+ const f=benchSwapDraft,m=match();if(!f||f.match!==m||m.ended||!teamIsSubstitute(f.name,m)||!teamState(m).onPitch.includes(off))return;
+ const on=f.name;benchSwapDraft=null;
+ if(clockHasStarted(m)){openSubstitution();subDraft.off=off;subDraft.on=on;drawSubstitution();return}
+ openTeamSelection('match');teamDraft.stage='positions';const role=teamDraft.assignments[off];teamAssign(off,'SUB');teamAssign(on,role);drawTeamSelection();
+}
 function teamState(m,events=m.events){if(!m.teamStart)return null;const s={onPitch:m.teamStart.onPitch.filter(n=>m.lineup.includes(n)),roles:{...m.teamStart.roles},captain:m.teamStart.captain||'',valid:true};for(const e of events){if(!e.substitution)continue;const {off,on,role,captain}=e.substitution;if(!s.onPitch.includes(off)||s.onPitch.includes(on)||!m.lineup.includes(on)){s.valid=false;continue}s.onPitch[s.onPitch.indexOf(off)]=on;s.roles[on]=role;if(s.captain===off){s.captain=captain||'';if(s.captain&&!s.onPitch.includes(s.captain))s.valid=false}}return s}
 function teamOrdered(m,names,roles){return [...names].sort((a,b)=>{const ra=TEAM_ROLES.indexOf(roles[a]),rb=TEAM_ROLES.indexOf(roles[b]);return (ra<0?4:ra)-(rb<0?4:rb)||m.lineup.indexOf(a)-m.lineup.indexOf(b)})}
 function teamPlayers(m=match()){const s=teamState(m);return s?[...teamOrdered(m,s.onPitch,s.roles),...teamOrdered(m,m.lineup.filter(n=>!s.onPitch.includes(n)),s.roles)]:[...m.lineup]}
