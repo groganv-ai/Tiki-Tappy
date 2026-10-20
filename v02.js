@@ -11,7 +11,7 @@ function captureFields(e){return {at:e.at,period:e.period,periodAt:e.periodAt,ha
 function beginV2(action,known='',opposition=false){
  const m=match();if(m.ended)return toast('Match finished. Reopen to add actions.');if(!clockHasStarted(m))return toast('Start the match clock first.');
  if(undoMode){const e=[...v2Expanded(m)].reverse().find(e=>(opposition?e.opp:!e.opp&&(!known||e.player===known))&&(action==='Defence'?['Tackle','Block','Clearance'].includes(e.category):action==='Special'?V2_SPECIAL.includes(e.category):e.category===action));return e?removeUndoEvent(e.sourceId):toast('No matching action to remove.');}
- if(!undoMode&&!opposition&&known&&typeof teamIsSubstitute==='function'&&teamIsSubstitute(known,m))return promptBenchPlayer(known);
+ if(!undoMode&&!opposition&&known&&typeof teamIsSubstitute==='function'&&teamIsSubstitute(known,m))return promptBenchAction(known,action);
  captureV2={match:m,event:{id:crypto.randomUUID(),action,...captureEventTime(m,elapsed(m)),opp:opposition,player:opposition?'Opposition':known},known,stage:action==='Defence'?'defence':action==='Special'?'special':'player',quality:0};
  if(known&&action==='Goal')return v2ChoosePlayer(known,opposition);
  drawV2Capture();
@@ -65,7 +65,7 @@ function v2Grid(m){
   const opp=i===names.length,bench=!opp&&typeof teamIsSubstitute==='function'&&teamIsSubstitute(n,m),label=opp?'Opposition':playerLabel(n);
   return `<tr class="${opp?'v2-opposition-row':bench?'v2-bench-row':''}" data-player-row="${esc(n)}"><th scope="row">${bench?`<button class="v2-bench-name" data-player="${esc(n)}" aria-label="${esc(n)}: substitute, swap player" onclick="promptBenchPlayer(this.dataset.player)">${esc(label)}</button>`:esc(label)}${!opp&&typeof teamRoleBadge==='function'?'<small class="team-row-role">'+esc(teamRoleBadge(n,m))+'</small>':''}</th>${V2_GRID.map(a=>{
    const rows=v2Expanded(m).filter(e=>!!e.opp===opp&&(opp||e.player===n)&&(a==='Defence'?['Tackle','Block','Clearance'].includes(e.category):a==='Special'?V2_SPECIAL.includes(e.category):e.category===a));
-   return `<td>${!opp||['Goal','Shot'].includes(a)?`<button aria-label="${esc(n)}: ${a}${bench?' (substitute)':''}" data-player="${esc(n)}" onclick="${bench?`undoMode?beginV2('${a}',this.dataset.player,false):promptBenchPlayer(this.dataset.player)`:`beginV2('${a}',this.dataset.player,${opp})`}">${v2Icon(a)}${rows.length?`<span class="v2-count">${rows.length}</span>`:''}</button>`:'—'}</td>`
+   return `<td>${!opp||['Goal','Shot'].includes(a)?`<button aria-label="${esc(n)}: ${a}${bench?' (substitute)':''}" data-player="${esc(n)}" onclick="${bench?`undoMode?beginV2('${a}',this.dataset.player,false):promptBenchAction(this.dataset.player,'${a}')`:`beginV2('${a}',this.dataset.player,${opp})`}">${v2Icon(a)}${rows.length?`<span class="v2-count">${rows.length}</span>`:''}</button>`:'—'}</td>`
   }).join('')}</tr>`
  }).join('')}</tbody></table></div>`
 }
