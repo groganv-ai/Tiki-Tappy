@@ -44,3 +44,11 @@ Initial Touchline version for GitHub Pages.
 - Add required photo-permission acknowledgement, local-processing note and sharing reminder.
 - Preserve prior local match records for owner-controlled export/clear.
 
+# Highlights and post-match update — 2026-10-20
+
+- Replace individual event selection and fixed duration limits with five automatic highlight filters.
+- Default to Major Events; retain every matching parent event and its linked assist/save/set piece.
+- Promote the shareable report and highlights at full time, with optional finishing touches.
+- Zoom goal replays to the attacking half when both shot and assist were recorded there.
+- Preserve the selected filter when recording is cancelled.
+

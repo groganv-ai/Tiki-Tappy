@@ -153,7 +153,8 @@ async function recordReplay(){
   const modelCopy=model;stopReplay();
   let stream,rec,timer;
   try{
-    stream=canvas.captureStream(30);const chunks=[];
+    paintReplay(canvas.getContext('2d'),modelCopy,0);
+    stream=canvas.captureStream(24);const chunks=[];
     rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2200000});
     playback={canvas,model:modelCopy,stream,recording:true,recorder:rec,raf:null,cancelled:false};
     const state=playback;
@@ -166,7 +167,7 @@ async function recordReplay(){
     state.raf=requestAnimationFrame(frame);
     timer=setTimeout(()=>{if(rec.state==='recording'){state.cancelled=true;rec.stop()}},duration*1000+20000);
     await done;clearTimeout(timer);const cancelled=state.cancelled;stopReplay();
-    if(cancelled){toast('Recording cancelled or interrupted. Try again with this tab in the foreground.');return exportVideo()}
+    if(cancelled){toast('Recording cancelled or interrupted. Try again with this tab in the foreground.');return exportVideo(modelCopy.highlightFilter||'major')}
     const type=rec.mimeType.split(';')[0],blob=new Blob(chunks,{type});if(blob.size<1000)throw new Error('The encoder produced an empty video');
     showPrepared(blob,'match-highlights.'+(type.includes('mp4')?'mp4':'webm'));
   }catch(e){clearTimeout(timer);if(rec?.state==='recording')rec.stop();stream?.getTracks().forEach(t=>t.stop());stopReplay();status.textContent='Video could not be created: '+e.message+'. Try another browser, or use Report image.';const b=$('#recordButton');if(b)b.disabled=false}

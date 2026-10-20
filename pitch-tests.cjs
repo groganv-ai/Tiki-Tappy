@@ -17,4 +17,6 @@ for(const z of run('v2Zones()')){c.zone=z;run('p=replayPitchPoint(null,{x:(zone.
 assert.equal(run('replayPitchPoint(1,null,pitchRect).y'),717.5);
 assert.equal(run('replayPitchPoint("v2-1",null,pitchRect)'),null);
 assert.equal(run('MATCH_PITCH.goals.north.y'),9);assert.equal(run('MATCH_PITCH.goals.south.y'),551);
+c.pitchContext.rect=(...n)=>calls.push(['rect',...n]);c.pitchContext.clip=()=>calls.push(['clip']);
+run('halfRect=drawMatchPitch(pitchContext,{x:80,y:350,width:560,height:420},"north")');assert.equal(run('halfRect.width'),540);assert.equal(run('halfRect.height'),840);assert(calls.some(x=>x[0]==='clip'));assert.deepEqual(calls.find(x=>x[0]==='rect'),['rect',90,350,540,420]);
 console.log('PASS: shared entry/replay geometry; portrait aspect ratio; unwarped centre circle; penalty arcs and four corners; all 26 captured zone centres aligned; legacy numeric locations preserved; no replay grid or attack arrow.');

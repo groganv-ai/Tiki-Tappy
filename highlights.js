@@ -48,9 +48,9 @@ paintReplay=function(ctx,model,seconds){
   text(state.type==='replay'?'GOAL REPLAY':award?'PLAYER OF THE DAY':end?'THE MATCHDAY STORY':'MATCH COMMENTARY',32,298,13,C.muted,'800');
   if(state.type==='replay'){
     box(24,316,672,512,'#fff',16);
-    const pitch=drawMatchPitch(ctx,{x:80,y:350,width:560,height:420});
+    const replayHalf=replayHalfForGoal(e),pitch=drawMatchPitch(ctx,{x:80,y:350,width:560,height:420},replayHalf);
     const {x:px,y:py,width:pw,height:ph}=pitch;
-    text('OPPOSITION GOAL',270,340,13,C.muted);text('OUR GOAL',322,788,13,C.muted);
+    text(replayHalf?'ATTACKING HALF · OPPOSITION GOAL':'OPPOSITION GOAL',replayHalf?200:270,340,13,C.muted);if(!replayHalf)text('OUR GOAL',322,788,13,C.muted);
     const shot=replayPitchPoint(e.zone,e.point,pitch),assist=replayPitchPoint(e.assist?.zone,e.assist?.point,pitch);
     const goalPoint=MATCH_PITCH.goals[e.opp?'south':'north'];
     const goal={x:px+goalPoint.x/MATCH_PITCH.width*pw,y:py+goalPoint.y/MATCH_PITCH.height*ph};
