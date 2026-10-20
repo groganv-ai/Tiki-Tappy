@@ -20,8 +20,8 @@ async function makeMatchReportPages(snapshot=reportSnapshot()){
  function text(value,x,at,size=24,color=C.ink,bold=false,align='left'){font(size,bold);ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(String(value),x,at);ctx.textAlign='left'}
  function paragraph(value,x,at,width,size=24,color=C.ink,bold=false,align='left'){const rows=lines(value,width,size,bold);rows.forEach((row,i)=>text(row,x,at+i*(size+9),size,color,bold,align));return rows.length*(size+9)}
  function rule(at){ctx.strokeStyle=C.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(M,at);ctx.lineTo(W-M,at);ctx.stroke()}
- function footer(){rule(1842);text('TikiTapper · Small moments. Big memories.',M,1876,18,C.muted);text('Page '+pages.length,W-M,1876,18,C.muted,false,'right');text('© 2026 Vincent Grogan. All rights reserved.',M,1904,14,C.muted)}
- function newPage(){if(canvas)footer();canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');ctx.fillStyle=C.paper;ctx.fillRect(0,0,W,H);pages.push(canvas);ctx.fillStyle=C.dark;ctx.fillRect(0,0,W,112);text('TikiTapper',M,62,32,C.lime,true);text('MATCH REPORT · '+(m.ended?'FULL TIME':'MATCH SO FAR'),W-M,58,17,'#fff',true,'right');text(snapshot.clubName,M,92,16,'#c4d9be');y=156;if(pages.length>1){paragraph(d.team+' '+score(m).join('–')+' '+m.opponent,M,y,W-2*M,28,C.ink,true);y+=80;text('Key actions · '+(mode==='summary'?'By action':'Timeline')+' · continued',M,y,20,C.muted);y+=45}}
+ function footer(){rule(1842);text('TikiTapper · Small moments. Big memories.',M,1876,18,C.muted);text('Page '+((snapshot.pageOffset||0)+pages.length),W-M,1876,18,C.muted,false,'right');text('© 2026 Vincent Grogan. All rights reserved.',M,1904,14,C.muted)}
+ function newPage(){if(canvas)footer();canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');ctx.fillStyle=C.paper;ctx.fillRect(0,0,W,H);pages.push(canvas);ctx.fillStyle=C.dark;ctx.fillRect(0,0,W,112);text('TikiTapper',M,62,32,C.lime,true);text((snapshot.matchday?'MATCHDAY REPORT · ':'MATCH REPORT · ')+(m.ended?'FULL TIME':'MATCH SO FAR'),W-M,58,17,'#fff',true,'right');text(snapshot.clubName,M,92,16,'#c4d9be');y=156;if(pages.length>1){paragraph(d.team+' '+score(m).join('–')+' '+m.opponent,M,y,W-2*M,28,C.ink,true);y+=80;text('Key actions · '+(mode==='summary'?'By action':'Timeline')+' · continued',M,y,20,C.muted);y+=45}}
  function ensure(height){if(y+height>bottom)newPage()}
  newPage();
  const leftName=lines(d.team,300,34,true),rightName=lines(m.opponent,300,34,true),nameHeight=Math.max(leftName.length,rightName.length)*43;
@@ -38,7 +38,7 @@ async function makeMatchReportPages(snapshot=reportSnapshot()){
  const assists=own.filter(e=>e.assist);for(let i=0;i<Math.max(assists.length,1);i++)scoreColumns([assists[i]?assists[i].assist.player+' ('+eventTimeLabel(assists[i])+')':'—'],i===0?['—']:[]);
  const venueLines=lines('Venue: '+d.location,850,20),venueHeight=venueLines.length*29+32;ensure(venueHeight);ctx.fillStyle=C.dark;ctx.fillRect(M,y,W-2*M,venueHeight);paragraph('Venue: '+d.location,540,y+30,850,20,'#bdd1bb',false,'center');y+=venueHeight+30;
  ensure(110);rule(y);y+=45;text('KEY ACTIONS',M,y,26,C.ink,true);text(mode==='summary'?'By action':'Timeline',W-M,y,19,C.muted,false,'right');y+=45;
- if(!m.events.length){text('No actions recorded yet.',M,y,24,C.muted);y+=50}
+ if(!m.events.length){text(snapshot.filter?'No matching moments for this filter.':'No actions recorded yet.',M,y,24,C.muted);y+=50}
  if(mode==='summary'){
   for(const group of reportSummaryGroups(m)){
    ensure(120);drawActionIcon(ctx,group.category,M+16,y-9,25,C.ink);text(group.title,W/2,y,26,C.ink,true,'center');y+=40;
