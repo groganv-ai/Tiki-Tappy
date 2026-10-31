@@ -70,10 +70,26 @@ function ttSetPlayHTML(){
  const choices=[['Open Play','Goal'],['Free Kick','Free kick'],['Corner','Corner'],['Penalty','Penalty']];
  return '<div class="tt-set-play"><p class="hint">Chance type (optional)</p><div class="tt-set-play-row" role="group" aria-label="Chance type">'+choices.map(([type,icon])=>`<button type="button" class="tt-set-play-option ${type===selected?'active':''}" aria-pressed="${type===selected}" onclick="ttSetPlaySelect('${type}')"><span aria-hidden="true">${actionIconSVG(icon)}</span><span>${type}</span></button>`).join('')+'</div></div>';
 }
+function ttRotatePitch(){
+ const m=match();if(!m)return;
+ m.pitchRotation=((Number(m.pitchRotation)||0)+90)%360;
+ save();drawV2Capture();
+}
 function v2PitchHTML(){
- const opposition=!!captureV2?.event?.opp,ttPitchFlipped=ttIsPitchFlipped();
+ const opposition=!!captureV2?.event?.opp,rotation=Number(match()?.pitchRotation)||0;
+ const landscape=rotation%180!==0;
  const zones=v2Zones(),display=zones.map(z=>ttPitchZoneDisplay(z,opposition));
- return `<p class="v2-pitch-label">${opposition?'OPPOSITION ATTACK':'OUR ATTACK'} ${ttPitchFlipped?'↓':'↑'} <span>${ttPitchFlipped?'Manual 180° flip':'Both teams attack upwards'}</span></p><button type="button" class="v2-wide" onclick="ttFlipPitch()" aria-pressed="${ttPitchFlipped}">↻ Flip pitch ${ttPitchFlipped?'(on)':'(off)'}</button><div class="v2-pitch"><div style="position:absolute;inset:0;pointer-events:none;transform:rotate(${ttPitchFlipped?180:0}deg)">${entryPitchSVG().replace('<svg ','<svg style="width:100%;height:100%" ')}</div>${display.map((z,i)=>`<button aria-label="${esc(zones[i].label)}" onclick="v2ChooseZone(${i})" style="left:${z.x/3.6}%;top:${z.y/5.6}%;width:${z.w/3.6}%;height:${z.h/5.6}%">${zones[i].text}</button>`).join('')}</div><p class="v2-pitch-label">${ttPitchFlipped?'Visual orientation flipped':'Attacking direction ↑'} <span>${day()?.ageGroup&&day().ageGroup<14?'Goal area and field zones':'6 = six-yard · 18 = penalty area'}</span></p><details class="v2-zone-list"><summary>Choose a named zone instead</summary><div class="v2-choices">${zones.map((z,i)=>`<button onclick="v2ChooseZone(${i})">${esc(z.label)}</button>`).join('')}</div></details><button class="v2-wide" onclick="v2ChooseZone(-1)">Location unknown</button>`;
+ const rotateZone=z=>{
+  if(rotation===90)return {x:560-z.y-z.h,y:z.x,w:z.h,h:z.w};
+  if(rotation===180)return {x:360-z.x-z.w,y:560-z.y-z.h,w:z.w,h:z.h};
+  if(rotation===270)return {x:z.y,y:360-z.x-z.w,w:z.h,h:z.w};
+  return z;
+ };
+ const canvasWidth=landscape?560:360,canvasHeight=landscape?360:560;
+ const pitchSvg=entryPitchSVG().replace('<svg ','<svg style="width:100%;height:100%" ');
+ const angle=rotation;
+ const svgStyle=landscape?'position:absolute;width:155.5556%;height:64.2857%;left:-27.7778%;top:17.8571%;transform:rotate('+angle+'deg);pointer-events:none':'position:absolute;inset:0;width:100%;height:100%;transform:rotate('+angle+'deg);pointer-events:none';
+ return `<div class="tt-pitch-header"><span>${opposition?'OPPOSITION':'OUR'} ATTACK</span><button type="button" class="tt-rotate-btn" onclick="ttRotatePitch()" aria-label="Rotate pitch 90 degrees clockwise" title="Rotate pitch 90 degrees clockwise"><span aria-hidden="true">⟳</span> Rotate</button></div><div class="v2-pitch tt-orient-${landscape?'landscape':'portrait'}"><div style="${svgStyle}">${pitchSvg}</div>${display.map((z,i)=>{const q=rotateZone(z);return `<button aria-label="${esc(zones[i].label)}" onclick="v2ChooseZone(${i})" style="left:${q.x/canvasWidth*100}%;top:${q.y/canvasHeight*100}%;width:${q.w/canvasWidth*100}%;height:${q.h/canvasHeight*100}%">${zones[i].text}</button>`}).join('')}</div><p class="v2-pitch-label">Tap the area where the action happened <span>${landscape?'Landscape':'Portrait'} view</span></p><details class="v2-zone-list"><summary>Choose a named zone instead</summary><div class="v2-choices">${zones.map((z,i)=>`<button onclick="v2ChooseZone(${i})">${esc(z.label)}</button>`).join('')}</div></details><button class="v2-wide" onclick="v2ChooseZone(-1)">Location unknown</button>`;
 }
 function v2ChooseZone(i){
  const f=captureV2,z=v2Zones()[i],target=f.stage==='assist-location'?f.event.assist:f.event;
