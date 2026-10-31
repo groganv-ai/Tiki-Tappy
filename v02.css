@@ -47,3 +47,9 @@
 .v2-quality .tt-quality-level-2 .tt-quality-icon{color:#245bb1}
 .v2-quality .tt-quality-level-3 .tt-quality-icon{color:#99721b}
 .v2-quality .tt-quality-help{margin:10px 0 0;color:#68736c;font-size:12px;line-height:1.45}
+
+.v2-quality .tt-quality-four .tt-quality-level .tt-quality-icon{box-sizing:content-box;width:24px;height:24px;padding:7px;border-radius:9px;color:#fff;stroke:#fff}
+.v2-quality .tt-quality-level-0 .tt-quality-icon{background:#64748b;color:#fff}
+.v2-quality .tt-quality-level-1 .tt-quality-icon{background:#168452;color:#fff}
+.v2-quality .tt-quality-level-2 .tt-quality-icon{background:#2563eb;color:#fff}
+.v2-quality .tt-quality-level-3 .tt-quality-icon{background:#bb861a;color:#fff}
