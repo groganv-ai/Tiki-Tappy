@@ -55,8 +55,9 @@ function v2Zones(){const zones=[],add=(x,y,w,h,label,text)=>zones.push({x,y,w,h,
 function ttIsPitchFlipped(){return !!match()?.pitchFlipped}
 function ttFlipPitch(){const m=match();if(!m)return;m.pitchFlipped=!m.pitchFlipped;save();drawV2Capture()}
 function ttPitchZoneDisplay(z,opposition){
- const rotate=Boolean(opposition)!==ttIsPitchFlipped();
- return rotate?{...z,x:360-z.x-z.w,y:560-z.y-z.h}:z;
+ // The pitch SVG is drawn in its natural coordinates; only the user-selected
+ // 90-degree orientation is applied later to both markings and hit areas.
+ return z;
 }
 function ttSetPlaySelect(type){
  if(!captureV2||!['Goal','Shot'].includes(captureV2.event.action))return;
