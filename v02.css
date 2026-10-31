@@ -23,3 +23,8 @@
 
 .v2-pitch.tt-opposition-pitch{background:#8d4646!important}
 .v2-pitch.tt-opposition-pitch>button{border-color:rgba(255,235,230,.35)}
+
+.v2-players.team-player-picker:has(.tt-opposition-first){display:flex;flex-direction:column}
+.v2-players.team-player-picker .tt-opposition-first{order:1;margin:10px 0 12px}
+.v2-players.team-player-picker:has(.tt-opposition-first)>h3{order:0}
+.v2-players.team-player-picker:has(.tt-opposition-first)>:not(h3):not(.tt-opposition-first){order:2}
