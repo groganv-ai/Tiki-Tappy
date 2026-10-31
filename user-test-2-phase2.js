@@ -44,3 +44,15 @@ highlightQualityRank=function(e,category=v2Category(e)){
  if(Number.isFinite(e?.qualityRank))return Math.min(3,e.qualityRank+1);
  return ttPreviousHighlightRank(e,category);
 };
+
+// Keep opposition immediately above the formation and quality beneath it.
+const ttPhase2OriginalDraw=drawV2Capture;
+drawV2Capture=function(){
+ ttPhase2OriginalDraw();
+ const f=captureV2;
+ if(!f||!['player','keeper'].includes(f.stage)||f.known)return;
+ const sheet=document.querySelector('#modal .v2-capture');
+ const picker=sheet?.querySelector('.team-player-picker');
+ const quality=sheet?.querySelector('.v2-quality');
+ if(picker&&quality)picker.insertAdjacentElement('afterend',quality);
+};
