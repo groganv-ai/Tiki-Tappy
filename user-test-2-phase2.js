@@ -5,9 +5,15 @@ for(const action of ['Goal','Shot','Pass','Tackle','Block','Clearance','Save','S
  V2_QUALITY[action]=TT_PHASE2_LEVELS.map(level=>level+' '+(action==='Team Values'?'contribution':action.toLowerCase()));
 }
 const ttOldQualityHTML=v2QualityHTML;
+const TT_QUALITY_ICONS=[
+ '<circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16 9"/>',
+ '<path d="m12 2 3.1 6.3 7 .9-5.1 5 1.2 7-6.2-3.3-6.2 3.3 1.2-7-5.1-5 7-.9z"/>',
+ '<path d="m12 2 3.1 6.3 7 .9-5.1 5 1.2 7-6.2-3.3-6.2 3.3 1.2-7-5.1-5 7-.9z"/>',
+ '<path d="m12 2 3.1 6.3 7 .9-5.1 5 1.2 7-6.2-3.3-6.2 3.3 1.2-7-5.1-5 7-.9z"/>'
+];
 v2QualityHTML=function(action){
  if(!captureV2)return '';
- return '<section class="v2-quality"><h3>Quality</h3><div class="tt-quality-four">'+TT_PHASE2_LEVELS.map((level,i)=>'<button type="button" class="'+(captureV2.quality===i?'selected':'')+'" aria-pressed="'+(captureV2.quality===i)+'" onclick="captureV2.quality='+i+';drawV2Capture()"><span class="tt-quality-icon" aria-hidden="true">'+Array.from({length:i+1},()=>'<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.7 1.1 6.6L12 17.6l-5.8 3.1 1.1-6.6-4.8-4.7 6.6-.9z"/></svg>').join('')+'</span><span>'+level+'</span></button>').join('')+'</div></section>';
+ return '<section class="v2-quality"><h3>Quality</h3><div class="tt-quality-four">'+TT_PHASE2_LEVELS.map((level,i)=>'<button type="button" class="tt-quality-level tt-quality-level-'+i+' '+(captureV2.quality===i?'selected':'')+'" aria-pressed="'+(captureV2.quality===i)+'" onclick="captureV2.quality='+i+';drawV2Capture()"><svg class="tt-quality-icon" viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+TT_QUALITY_ICONS[i]+'</svg><span>'+level+'</span></button>').join('')+'</div><p class="tt-quality-help">Default: Good. Tap a higher quality only when the action deserves it.</p></section>';
 };
 // Existing highlight selections are still supported when loading older saved matchdays.
 HIGHLIGHT_FILTERS.splice(0,HIGHLIGHT_FILTERS.length,
