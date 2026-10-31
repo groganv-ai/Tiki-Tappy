@@ -54,8 +54,11 @@ function ttAgePitchSVG(showAttack=true){
    markings+='<circle cx="180" cy="'+(y+h-Math.min(h*.25,ah+25))+'" r="2" fill="#e3f0cf"/>';
   }
  }
+ const goalWidth=Math.min(76,Math.max(46,w*(t.format==='11v11'?8/width:6/width)));
+ const goalX=180-goalWidth/2;
+ const goals='<path d="M'+goalX.toFixed(1)+' 18V7H'+(goalX+goalWidth).toFixed(1)+'V18 M'+goalX.toFixed(1)+' 542V553H'+(goalX+goalWidth).toFixed(1)+'V542" fill="none" stroke="#e3f0cf" stroke-width="3"/>';
  const arrow=showAttack?'<path d="M180 354V246 M125 288L180 228L235 288" fill="none" stroke="#d6ee83" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" opacity=".72"/>':'';
- return '<svg viewBox="0 0 360 560" aria-hidden="true"><rect width="360" height="560" fill="#326749"/>'+arrow+'<g fill="none" stroke="#e3f0cf" stroke-width="2.4">'+markings+'</g></svg>';
+ return '<svg viewBox="0 0 360 560" aria-hidden="true"><rect width="360" height="560" fill="#326749"/>'+arrow+'<g fill="none" stroke="#e3f0cf" stroke-width="2.4">'+markings+'</g>'+goals+'</svg>';
 }
 // Compact, age-appropriate hit zones replace the 11v11 six-/18-yard labels.
 const ttBeforeZones=v2Zones;
