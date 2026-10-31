@@ -33,10 +33,17 @@ function saveTeamSelection(){const f=teamDraft,m=match();if(!f||f.match!==m||f.d
 lineupModal=function(){const m=match();if(m?.teamStart&&clockHasStarted(m))return openSubstitution();openTeamSelection(day().teamSelection?'match':'day')};
 function teamChoiceSections(handler,exclude='',m=match()){const s=teamState(m),button=n=>`<button data-player="${esc(n)}" onclick="${handler}(this.dataset.player)">${teamName(n,m)}</button>`;if(!s)return `<div>${teamPlayers(m).filter(n=>n!==exclude).map(button).join('')}</div>`;if(isCoachMode(m))return teamFormationChoices(handler,exclude,m);return TEAM_ROLES.filter(role=>s.onPitch.some(n=>s.roles[n]===role&&n!==exclude)).map(role=>`<section class="team-player-group"><h4>${TEAM_ROLE_NAMES[role]}</h4><div>${teamOrdered(m,s.onPitch.filter(n=>s.roles[n]===role&&n!==exclude),s.roles).map(button).join('')}</div></section>`).join('')+(m.lineup.some(n=>!s.onPitch.includes(n)&&n!==exclude)?`<details class="team-bench-choices"><summary>Substitutes</summary><div>${teamPlayers(m).filter(n=>!s.onPitch.includes(n)&&n!==exclude).map(button).join('')}</div></details>`:'')}
 function teamFormationChoices(handler,exclude='',m=match()){
- const s=teamState(m),button=n=>`<button data-player="${esc(n)}" onclick="${handler}(this.dataset.player)">${teamName(n,m)}</button>`;
- const pitch=`<div class="team-pitch team-action-pitch" aria-label="Choose player from formation">${[...TEAM_ROLES].reverse().map(role=>`<section><h3>${TEAM_ROLE_NAMES[role]}</h3><div>${teamOrdered(m,s.onPitch.filter(n=>s.roles[n]===role&&n!==exclude),s.roles).map(button).join('')||'<small>—</small>'}</div></section>`).join('')}</div>`;
- const bench=teamPlayers(m).filter(n=>!s.onPitch.includes(n)&&n!==exclude);
- return pitch+`<section class="team-action-bench"><h4>Substitutes</h4><div>${bench.map(button).join('')||'<p class="hint">No substitutes available.</p>'}</div></section>`;
+ const state=teamState(m);
+ if(!state)return '';
+ const shirt='<svg viewBox="0 0 24 24" aria-hidden="true" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M8 3 5 4 2 7l2 5 3-1v10h10V11l3 1 2-5-3-3-3-1c-.5 2-2 3-4 3s-3.5-1-4-3z"/></svg>';
+ const button=(n,i,total)=>'<button type="button" class="tt-formation-player" data-player="'+esc(n)+'" onclick="'+handler+'(this.dataset.player)" aria-label="Select '+esc(n)+'"><span class="tt-formation-shirt">'+shirt+'</span><span class="tt-formation-name">'+esc(n)+'</span></button>';
+ const roles=[...TEAM_ROLES].reverse();
+ const pitch='<div class="team-pitch team-action-pitch tt-formation-pitch" aria-label="Choose player from formation">'+roles.map(role=>{
+  const names=teamOrdered(m,state.onPitch.filter(n=>state.roles[n]===role&&n!==exclude),state.roles);
+  return '<section class="tt-formation-line tt-role-'+role+'"><div>'+names.map(button).join('')+'</div></section>';
+ }).join('')+'</div>';
+ const bench=teamPlayers(m).filter(n=>!state.onPitch.includes(n)&&n!==exclude);
+ return pitch+'<section class="team-action-bench"><h4>Substitutes</h4><div>'+(bench.map(n=>'<button data-player="'+esc(n)+'" onclick="'+handler+'(this.dataset.player)">'+esc(n)+'</button>').join('')||'<p class="hint">No substitutes available.</p>')+'</div></section>';
 }
 // Guard every player picker, including assists and alternative goalkeepers.
 const teamChoosePlayerBefore=v2ChoosePlayer;
