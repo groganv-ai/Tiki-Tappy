@@ -1,5 +1,7 @@
 // v0.2: richer events extend the v1 record; original IDs and timestamps survive.
 const V2_QUALITY={Goal:['Great goal','Amazing goal','Worldie goal'],Shot:['Good effort','Great strike','Incredible strike'],Pass:['Great pass','Brilliant pass','World-class pass'],Tackle:['Strong tackle','Brilliant tackle','Outstanding tackle'],Block:['Important block','Brilliant block','Outstanding block'],Clearance:['Important clearance','Great clearance','Outstanding clearance'],Save:['Good save','Great save','Incredible save'],Skill:['Close control','Beat a player','Trick or turn'],Teamwork:['Supporting run','Combination play','Helping a teammate'],'Team Values':['Encouraged someone','Applied coaching','Showed fair play']};
+// Phase 2 quality labels are available before any action modal opens.
+for(const action of Object.keys(V2_QUALITY))V2_QUALITY[action]=['Good','Great','Amazing','Worldie'].map(level=>level+' '+(action==='Team Values'?'contribution':action.toLowerCase()));
 const V2_SPECIAL=['Skill','Teamwork','Team Values'],V2_GRID=['Goal','Shot','Defence','Pass','Special'];
 let captureV2=null,keyActionsOpen=false,keyActionsView='summary';
 function v2Category(e){if(e.category)return e.category;const a=e.action.replace(/^(Great|Good|Amazing|Worldie)\s+/i,'');return ({goal:'Goal',shot:'Shot',pass:'Pass',tackle:'Tackle',block:'Block',clearance:'Clearance',save:'Save',skill:'Skill',teamwork:'Teamwork','team work':'Teamwork',sportsmanship:'Team Values','team values':'Team Values',assist:'Assist'})[a.toLowerCase()]||a}
