@@ -55,6 +55,30 @@ function ttAgePitchSVG(showAttack=true){
  const arrow=showAttack?'<path d="M320 340v-70l-7 12m7-12 7 12" fill="none" stroke="#d6ee83" stroke-width="3"/>':'';
  return '<svg viewBox="0 0 360 560" aria-hidden="true"><rect width="360" height="560" fill="#326749"/><g fill="none" stroke="#e3f0cf" stroke-width="1.7">'+markings+'</g>'+arrow+'</svg>';
 }
+// Compact, age-appropriate hit zones replace the 11v11 six-/18-yard labels.
+const ttBeforeZones=v2Zones;
+v2Zones=function(){
+ const t=ttPitchDimensions();
+ if(t.format==='11v11')return ttBeforeZones();
+ const result=[],add=(x,y,w,h,label,text)=>result.push({x,y,w,h,label,text,id:'v2-'+result.length});
+ const length=t.lengthYards,width=t.widthYards;
+ const area=t.format==='4v4'?null:t.format==='5v5'?{depth:7,width:12}:t.format==='7v7'?{depth:10,width:15}:{depth:12,width:28};
+ const half=280,margin=18,innerWidth=324,innerHeight=524;
+ for(const south of [false,true]){
+  const team=south?'Defensive':'Attacking',transform=(y,h)=>south?560-y-h:y;
+  const depth=area?Math.min(130,innerHeight*area.depth/length):0;
+  const boxWidth=area?Math.min(280,innerWidth*area.width/width):0;
+  const bx=180-boxWidth/2;
+  if(area){
+   for(let i=0;i<3;i++)add(bx+i*boxWidth/3,transform(18,depth),boxWidth/3,depth,team+' goal area, '+['left','centre','right'][i],['GL','GC','GR'][i]);
+   add(margin,transform(18,depth),bx-margin,depth,team+' left wing','LW');
+   add(bx+boxWidth,transform(18,depth),342-bx-boxWidth,depth,team+' right wing','RW');
+  }
+  const start=18+depth,remaining=half-start;
+  for(let i=0;i<3;i++)add(margin+i*innerWidth/3,transform(start,remaining),innerWidth/3,remaining,team+' '+['left','centre','right'][i]+' field', ['Left','Centre','Right'][i]);
+ }
+ return result;
+};
 const ttBeforePitchSVG=entryPitchSVG;
 entryPitchSVG=function(showAttack=true){return day()?.ageGroup?ttAgePitchSVG(showAttack):ttBeforePitchSVG(showAttack)};
 
