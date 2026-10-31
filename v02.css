@@ -20,3 +20,6 @@
 .tt-rotate-btn{width:auto!important;padding:7px 12px!important;font-size:13px!important}
 .v2-pitch.tt-orient-landscape{aspect-ratio:560/360;height:auto;width:100%}
 .v2-pitch.tt-orient-portrait{aspect-ratio:360/560;height:auto;width:100%}
+
+.v2-pitch.tt-opposition-pitch{background:#8d4646!important}
+.v2-pitch.tt-opposition-pitch>button{border-color:rgba(255,235,230,.35)}
