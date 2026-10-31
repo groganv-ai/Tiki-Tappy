@@ -11,8 +11,9 @@ renderSetup=function(){
  ttBeforeSetup();
  const form=document.querySelector('#app form');
  if(form&&!form.querySelector('[name="ageGroup"]')){
-  const players=form.querySelector('[name="players"]')?.closest('.field');
-  if(players)players.insertAdjacentHTML('afterend',ttAgeField(ttCurrentAge()));
+  const anchor=form.querySelector('[name="players"]')?.closest('.field') || form.querySelector('[name="location"]')?.closest('.field');
+  if(anchor)anchor.insertAdjacentHTML('afterend',ttAgeField(ttCurrentAge()));
+  else form.insertAdjacentHTML('afterbegin',ttAgeField(ttCurrentAge()));
  }
 };
 let ttPendingAge=null;
@@ -22,6 +23,7 @@ createDay=function(e){
  ttPendingAge=TT_AGE_GROUPS.includes(age)?age:null;
  ttBeforeCreateDay(e);
  if(freePendingDay&&ttPendingAge)freePendingDay.ageGroup=ttPendingAge;
+ if(day()&&ttPendingAge&&day().ageGroup!==ttPendingAge){day().ageGroup=ttPendingAge;save();}
 };
 const ttBeforeConfirmDay=confirmFreeDay;
 confirmFreeDay=function(){
