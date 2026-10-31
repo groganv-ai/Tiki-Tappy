@@ -87,5 +87,30 @@ v2Zones=function(){
 const ttBeforePitchSVG=entryPitchSVG;
 entryPitchSVG=function(showAttack=true){return day()?.ageGroup?ttAgePitchSVG(showAttack):ttBeforePitchSVG(showAttack)};
 
+// All action flows share the same on-pitch formation selector, with a list fallback.
+let ttUsePlayerList=false;
+function ttTogglePlayerList(){ttUsePlayerList=!ttUsePlayerList;render()}
+const ttExistingTeamChoices=teamChoiceSections;
+teamChoiceSections=function(handler,exclude='',m=match()){
+ const formation=teamState(m);
+ if(!formation||ttUsePlayerList){
+  const names=teamPlayers(m).filter(n=>n!==exclude);
+  return '<div class="tt-player-list">'+names.map(n=>'<button data-player="'+esc(n)+'" onclick="'+handler+'(this.dataset.player)">'+teamName(n,m)+'</button>').join('')+'</div><button type="button" class="tt-picker-toggle" onclick="ttTogglePlayerList()">Show formation</button>';
+ }
+ return teamFormationChoices(handler,exclude,m)+'<button type="button" class="tt-picker-toggle" onclick="ttTogglePlayerList()">Show player list</button>';
+};
+// Make corner locations selectable in the pitch picker, including assist locations.
+const ttZonesWithoutCorners=v2Zones;
+v2Zones=function(){
+ const zones=ttZonesWithoutCorners();
+ const size=31;
+ for(const south of [false,true]){
+  const y=south?542-size:18,side=south?'Defensive':'Attacking';
+  zones.push({x:18,y,w:size,h:size,label:side+' left corner',text:'◜',id:'v2-corner-'+(south?'s':'n')+'-l'});
+  zones.push({x:342-size,y,w:size,h:size,label:side+' right corner',text:'◝',id:'v2-corner-'+(south?'s':'n')+'-r'});
+ }
+ return zones;
+};
+
 // Refresh the setup screen if the page was opened directly on it.
 if(view==='setup')render();
