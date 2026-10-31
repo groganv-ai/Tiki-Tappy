@@ -62,8 +62,8 @@ const TT_PITCH_TEMPLATES=Object.freeze({
   u9:{format:'5v5',lengthYards:35,widthYards:25,markings:'small-sided'},
   u11:{format:'7v7',lengthYards:44,widthYards:40,markings:'junior-7v7'},
   u12:{format:'9v9',lengthYards:64,widthYards:44,markings:'junior-9v9'},
-  u13:{format:'9v9',lengthYards:76,widthYards:null,markings:'junior-9v9'},
-  u17:{format:'11v11',lengthYards:null,widthYards:null,markings:'full'}
+  u13:{format:'9v9',lengthYards:76,widthYards:44,markings:'junior-9v9'},
+  u17:{format:'11v11',lengthYards:100,widthYards:64,markings:'full'}
 });
 function ttPitchTemplate(age){
   const n=Number(String(age??'').replace(/[^0-9]/g,''));
