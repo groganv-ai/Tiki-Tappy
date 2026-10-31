@@ -88,16 +88,11 @@ const ttBeforePitchSVG=entryPitchSVG;
 entryPitchSVG=function(showAttack=true){return day()?.ageGroup?ttAgePitchSVG(showAttack):ttBeforePitchSVG(showAttack)};
 
 // All action flows share the same on-pitch formation selector, with a list fallback.
-let ttUsePlayerList=false;
-function ttTogglePlayerList(){ttUsePlayerList=!ttUsePlayerList;if(captureV2)drawV2Capture();else if(typeof spValid==='function'&&spValid())spDrawFlow();else render()}
-const ttExistingTeamChoices=teamChoiceSections;
+// Formation-only player selection. Keep a simple fallback when no formation exists.
 teamChoiceSections=function(handler,exclude='',m=match()){
  const formation=teamState(m);
- if(!formation||ttUsePlayerList){
-  const names=teamPlayers(m).filter(n=>n!==exclude);
-  return '<div class="tt-player-list">'+names.map(n=>'<button data-player="'+esc(n)+'" onclick="'+handler+'(this.dataset.player)">'+teamName(n,m)+'</button>').join('')+'</div><button type="button" class="tt-picker-toggle" onclick="ttTogglePlayerList()">Show formation</button>';
- }
- return teamFormationChoices(handler,exclude,m)+'<button type="button" class="tt-picker-toggle" onclick="ttTogglePlayerList()">Show player list</button>';
+ if(formation)return teamFormationChoices(handler,exclude,m);
+ return '<div class="tt-player-list">'+teamPlayers(m).filter(n=>n!==exclude).map(n=>'<button data-player="'+esc(n)+'" onclick="'+handler+'(this.dataset.player)">'+teamName(n,m)+'</button>').join('')+'</div>';
 };
 // Make corner locations selectable in the pitch picker, including assist locations.
 const ttZonesWithoutCorners=v2Zones;
