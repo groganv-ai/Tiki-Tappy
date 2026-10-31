@@ -50,9 +50,30 @@ function v2Zones(){const zones=[],add=(x,y,w,h,label,text)=>zones.push({x,y,w,h,
  ['left','centre','right'].forEach((s,i)=>add(117+i*42,y(72,84),42,84,`${team} penalty area, ${s} channel`,['18L','18C','18R'][i]));
  add(18,y(18,138),42,138,`${team} left wing`,'LW');add(300,y(18,138),42,138,`${team} right wing`,'RW');
  ['left','centre','right'].forEach((s,i)=>add(18+i*108,y(156,124),108,124,`${team} midfield, ${s}`,['Left','Centre','Right'][i]));}return zones}
-function v2PitchHTML(){return `<p class="v2-pitch-label">OPPOSITION GOAL <span>↑ OUR ATTACK</span></p><div class="v2-pitch">${entryPitchSVG()}${v2Zones().map((z,i)=>`<button aria-label="${z.label}" onclick="v2ChooseZone(${i})" style="left:${z.x/3.6}%;top:${z.y/5.6}%;width:${z.w/3.6}%;height:${z.h/5.6}%">${z.text}</button>`).join('')}</div><p class="v2-pitch-label">OUR GOAL <span>6 = six-yard · 18 = penalty area</span></p><details class="v2-zone-list"><summary>Choose a named zone instead</summary><div class="v2-choices">${v2Zones().map((z,i)=>`<button onclick="v2ChooseZone(${i})">${z.label}</button>`).join('')}</div></details><button class="v2-wide" onclick="v2ChooseZone(-1)">Location unknown</button>`}
-function v2ChooseZone(i){const f=captureV2,z=v2Zones()[i],target=f.stage==='assist-location'?f.event.assist:f.event;target.zone=z?.id||null;target.locationLabel=z?.label||'Location unknown';target.point=z?{x:(z.x+z.w/2)/360,y:(z.y+z.h/2)/560}:null;
- if(f.stage==='assist-location')return finishV2();if(f.event.action==='Goal'&&!f.event.opp)f.stage='assist-question';else if(f.event.action==='Shot'&&f.event.opp&&f.event.outcome==='Saved'){f.stage='keeper';f.quality=0}else return finishV2();drawV2Capture()}
+// User Test 2: the picker always shows the acting team attacking upwards.
+// Legacy replay coordinates still place opposition attacks in the southern half.
+let ttPitchFlipped=false;
+function ttFlipPitch(){ttPitchFlipped=!ttPitchFlipped;drawV2Capture()}
+function ttPitchZoneDisplay(z,opposition){
+ const rotate=Boolean(opposition)!==ttPitchFlipped;
+ return rotate?{...z,x:360-z.x-z.w,y:560-z.y-z.h}:z;
+}
+function v2PitchHTML(){
+ const opposition=!!captureV2?.event?.opp;
+ const zones=v2Zones(),display=zones.map(z=>ttPitchZoneDisplay(z,opposition));
+ const top=ttPitchFlipped?'OWN GOAL (FLIPPED)':'OPPOSITION GOAL';
+ return `<p class="v2-pitch-label">${opposition?'OPPOSITION ATTACK':'OUR ATTACK'} ↑ <span>Both teams attack upwards</span></p><button type="button" class="v2-wide" onclick="ttFlipPitch()" aria-pressed="${ttPitchFlipped}">↻ Flip pitch ${ttPitchFlipped?'(on)':'(off)'}</button><div class="v2-pitch">${entryPitchSVG()}<div style="position:absolute;inset:0;pointer-events:none;transform:rotate(${ttPitchFlipped?180:0}deg)"></div>${display.map((z,i)=>`<button aria-label="${esc(zones[i].label)}" onclick="v2ChooseZone(${i})" style="left:${z.x/3.6}%;top:${z.y/5.6}%;width:${z.w/3.6}%;height:${z.h/5.6}%">${zones[i].text}</button>`).join('')}</div><p class="v2-pitch-label">${ttPitchFlipped?'Visual orientation flipped':'Attacking direction ↑'} <span>6 = six-yard · 18 = penalty area</span></p><details class="v2-zone-list"><summary>Choose a named zone instead</summary><div class="v2-choices">${zones.map((z,i)=>`<button onclick="v2ChooseZone(${i})">${esc(z.label)}</button>`).join('')}</div></details><button class="v2-wide" onclick="v2ChooseZone(-1)">Location unknown</button>`;
+}
+function v2ChooseZone(i){
+ const f=captureV2,z=v2Zones()[i],target=f.stage==='assist-location'?f.event.assist:f.event;
+ target.zone=z?.id||null;target.locationLabel=z?.label||'Location unknown';
+ target.point=z?{x:(z.x+z.w/2)/360,y:(z.y+z.h/2)/560}:null;
+ if(f.stage==='assist-location')return finishV2();
+ if(f.event.action==='Goal'&&!f.event.opp)f.stage='assist-question';
+ else if(f.event.action==='Shot'&&f.event.opp&&f.event.outcome==='Saved'){f.stage='keeper';f.quality=0}
+ else return finishV2();
+ drawV2Capture();
+}
 function finishV2(){const f=captureV2;if(!f||f.match!==match()||match().ended)return cancelV2();match().events.push(f.event);captureV2=null;save();closeModal();render();showActionFeedback(v2Description(f.event),f.event.player+(f.event.save?' · '+f.event.save.qualityLabel+' by '+f.event.save.player:''))}
 function v2ScoreHTML(m){const s=score(m),goals=m.events.filter(e=>e.action==='Goal'),own=goals.filter(e=>!e.opp),opponents=goals.filter(e=>e.opp);return `<div class="score v2-score"><div class="eyebrow">Match ${mi+1} of ${day().matches.length}</div><div class="v2-scoreline"><strong>${esc(day().team)}</strong><b>${s[0]}–${s[1]}</b><strong>${esc(m.opponent)}</strong></div><div class="v2-goal-details"><div><h3>Goals</h3>${own.map(e=>`<p><time>${eventTimeLabel(e)}</time> ${esc(e.player)}</p>`).join('')||'<p>—</p>'}<h3>Assists</h3>${own.filter(e=>e.assist).map(e=>`<p><time>${eventTimeLabel(e)}</time> ${esc(e.assist.player)}</p>`).join('')||'<p>—</p>'}</div><div><h3>Goals</h3>${opponents.map(e=>`<p>${eventTimeLabel(e)}</p>`).join('')||'<p>—</p>'}</div></div>${matchClockHTML(m)}${clockControlsHTML(m)}</div>`}
 function v2SummaryHTML(m){const events=v2Expanded(m),categories=['Goal','Assist','Shot','Save','Tackle','Block','Clearance','Pass','Skill','Teamwork','Team Values'];return `<div class="v2-column-labels"><b>${esc(day().team)}</b><b>${esc(m.opponent)}</b></div>`+categories.filter(c=>events.some(e=>e.category===c)).map(c=>`<section class="v2-action-summary"><h3>${esc(({Goal:'Goals',Assist:'Assists',Shot:'Shots',Save:'Saves',Pass:'Passes'})[c]||c)}</h3><div>${[false,true].map(opp=>{const list=events.filter(e=>e.category===c&&!!e.opp===opp);if(opp&&c==='Goal')return `<div>${list.map(e=>`<p>${eventTimeLabel(e)}</p>`).join('')||'—'}</div>`;const names=[...new Set(list.map(e=>opp?'Opposition':e.player))];return `<div>${names.map(n=>{const rows=list.filter(e=>(opp?'Opposition':e.player)===n),labels=[...new Set(rows.map(v2Description))];return `<p><b>${esc(n)}${rows.length>1?' ('+rows.length+')':''}</b>${labels.map(l=>`<small>${esc(l)}${rows.filter(e=>v2Description(e)===l).length>1?' ×'+rows.filter(e=>v2Description(e)===l).length:''}</small>`).join('')}</p>`}).join('')||'—'}</div>`}).join('')}</div></section>`).join('')||'<p class="hint">No actions recorded yet.</p>'}
