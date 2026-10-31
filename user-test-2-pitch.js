@@ -57,3 +57,6 @@ function ttAgePitchSVG(showAttack=true){
 }
 const ttBeforePitchSVG=entryPitchSVG;
 entryPitchSVG=function(showAttack=true){return day()?.ageGroup?ttAgePitchSVG(showAttack):ttBeforePitchSVG(showAttack)};
+
+// Refresh the setup screen if the page was opened directly on it.
+if(view==='setup')render();
