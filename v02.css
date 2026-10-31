@@ -38,3 +38,12 @@
 .tt-quality-four button.selected .tt-quality-icon{color:#d6ee83}
 .tt-quality-icon svg{width:13px;height:13px;flex:none}
 @media(min-width:420px){.tt-quality-icon svg{width:16px;height:16px}}
+
+.v2-quality .tt-quality-four .tt-quality-level{background:#fff;color:#173d34;border:1px solid #dce2d9;border-radius:12px;min-height:66px;gap:7px}
+.v2-quality .tt-quality-four .tt-quality-level.selected{background:#f2f3f3;border:2px solid #64748b;color:#173d34}
+.v2-quality .tt-quality-level .tt-quality-icon{display:block;width:25px;height:25px;flex:none}
+.v2-quality .tt-quality-level-0 .tt-quality-icon{color:#526174}
+.v2-quality .tt-quality-level-1 .tt-quality-icon{color:#16754b}
+.v2-quality .tt-quality-level-2 .tt-quality-icon{color:#245bb1}
+.v2-quality .tt-quality-level-3 .tt-quality-icon{color:#99721b}
+.v2-quality .tt-quality-help{margin:10px 0 0;color:#68736c;font-size:12px;line-height:1.45}
