@@ -27,7 +27,7 @@ function drawV2Capture(){
  if(f.stage==='player'){title=a==='Goal'?'Who scored?':a==='Shot'?'Who took the shot?':'Choose quality, then player';body=v2QualityHTML(a)+v2PlayersHTML(a==='Goal'||a==='Shot');if(f.known){title=(V2_SPECIAL.includes(a)?'Choose contribution for ':'Choose quality for ')+f.known;body=v2QualityHTML(a)+`<div class="v2-players"><h3>Selected player</h3><button class="primary" data-player="${esc(f.known)}" onclick="v2ChoosePlayer(this.dataset.player,${!!f.event.opp})">Record for ${esc(f.known)}</button></div>`}}
  if(f.stage==='player'&&f.known&&a==='Shot'){title='Shot by '+f.known;body=v2QualityHTML('Shot')+'<section class="v2-players"><h3>Shot outcome</h3>'+v2Choices(['Saved','Off target','Blocked'],'v2KnownShotOutcome')+'</section>'}
  if(f.stage==='outcome'){title='What happened to the shot?';body=v2Choices(['Saved','Off target','Blocked'],'v2Outcome')}
- if(f.stage==='location'||f.stage==='assist-location'){title=f.stage==='location'?'Where was the shot taken?':'Where was the assist played?';body=v2PitchHTML()}
+ if(f.stage==='location'||f.stage==='assist-location'){title=f.stage==='location'?'Where was the shot taken?':'Where was the assist played?';body=ttSetPlayHTML()+v2PitchHTML()}
  if(f.stage==='assist-question'){title='Was there an assist?';body='<div class="v2-choices"><button onclick="captureV2.stage=\'assist-player\';drawV2Capture()">Yes, add assist</button><button onclick="finishV2()">No assist</button></div>'}
  if(f.stage==='assist-player'){title='Who made the assist?';body=v2PlayersHTML(false,true)}
  if(f.stage==='keeper'){title='Who made the save?';body=v2QualityHTML('Save')+v2PlayersHTML()}
@@ -58,6 +58,17 @@ function ttPitchZoneDisplay(z,opposition){
  const rotate=Boolean(opposition)!==ttIsPitchFlipped();
  return rotate?{...z,x:360-z.x-z.w,y:560-z.y-z.h}:z;
 }
+function ttSetPlaySelect(type){
+ if(!captureV2||!['Goal','Shot'].includes(captureV2.event.action))return;
+ captureV2.event.restartType=type==='Open Play'?null:type;
+ drawV2Capture();
+}
+function ttSetPlayHTML(){
+ const f=captureV2;
+ if(!f||f.stage!=='location'||!['Goal','Shot'].includes(f.event.action))return '';
+ const selected=f.event.restartType||'Open Play';
+ return '<div class="tt-set-play"><p class="hint">How did the chance start? (optional)</p><div class="v2-choices">'+['Open Play','Free Kick','Corner','Penalty'].map(type=>'<button type="button" class="'+(type===selected?'active':'')+'" onclick="ttSetPlaySelect(\''+type+'\')">'+type+'</button>').join('')+'</div></div>';
+}
 function v2PitchHTML(){
  const opposition=!!captureV2?.event?.opp,ttPitchFlipped=ttIsPitchFlipped();
  const zones=v2Zones(),display=zones.map(z=>ttPitchZoneDisplay(z,opposition));
@@ -73,7 +84,7 @@ function v2ChooseZone(i){
  else return finishV2();
  drawV2Capture();
 }
-function finishV2(){const f=captureV2;if(!f||f.match!==match()||match().ended)return cancelV2();match().events.push(f.event);captureV2=null;save();closeModal();render();showActionFeedback(v2Description(f.event),f.event.player+(f.event.save?' · '+f.event.save.qualityLabel+' by '+f.event.save.player:''))}
+function finishV2(){const f=captureV2;if(!f||f.match!==match()||match().ended)return cancelV2();if(f.event.restartType&&!f.event.setPiece){const e=f.event;e.setPiece={id:e.id,type:e.restartType,opp:!!e.opp,taker:e.opp?'':e.player,at:e.at,time:captureFields(e),point:e.point||null,locationLabel:e.locationLabel||'Location unknown',status:'Completed'};}match().events.push(f.event);captureV2=null;save();closeModal();render();showActionFeedback(v2Description(f.event),f.event.player+(f.event.save?' · '+f.event.save.qualityLabel+' by '+f.event.save.player:''))}
 function v2ScoreHTML(m){const s=score(m),goals=m.events.filter(e=>e.action==='Goal'),own=goals.filter(e=>!e.opp),opponents=goals.filter(e=>e.opp);return `<div class="score v2-score"><div class="eyebrow">Match ${mi+1} of ${day().matches.length}</div><div class="v2-scoreline"><strong>${esc(day().team)}</strong><b>${s[0]}–${s[1]}</b><strong>${esc(m.opponent)}</strong></div><div class="v2-goal-details"><div><h3>Goals</h3>${own.map(e=>`<p><time>${eventTimeLabel(e)}</time> ${esc(e.player)}</p>`).join('')||'<p>—</p>'}<h3>Assists</h3>${own.filter(e=>e.assist).map(e=>`<p><time>${eventTimeLabel(e)}</time> ${esc(e.assist.player)}</p>`).join('')||'<p>—</p>'}</div><div><h3>Goals</h3>${opponents.map(e=>`<p>${eventTimeLabel(e)}</p>`).join('')||'<p>—</p>'}</div></div>${matchClockHTML(m)}${clockControlsHTML(m)}</div>`}
 function v2SummaryHTML(m){const events=v2Expanded(m),categories=['Goal','Assist','Shot','Save','Tackle','Block','Clearance','Pass','Skill','Teamwork','Team Values'];return `<div class="v2-column-labels"><b>${esc(day().team)}</b><b>${esc(m.opponent)}</b></div>`+categories.filter(c=>events.some(e=>e.category===c)).map(c=>`<section class="v2-action-summary"><h3>${esc(({Goal:'Goals',Assist:'Assists',Shot:'Shots',Save:'Saves',Pass:'Passes'})[c]||c)}</h3><div>${[false,true].map(opp=>{const list=events.filter(e=>e.category===c&&!!e.opp===opp);if(opp&&c==='Goal')return `<div>${list.map(e=>`<p>${eventTimeLabel(e)}</p>`).join('')||'—'}</div>`;const names=[...new Set(list.map(e=>opp?'Opposition':e.player))];return `<div>${names.map(n=>{const rows=list.filter(e=>(opp?'Opposition':e.player)===n),labels=[...new Set(rows.map(v2Description))];return `<p><b>${esc(n)}${rows.length>1?' ('+rows.length+')':''}</b>${labels.map(l=>`<small>${esc(l)}${rows.filter(e=>v2Description(e)===l).length>1?' ×'+rows.filter(e=>v2Description(e)===l).length:''}</small>`).join('')}</p>`}).join('')||'—'}</div>`}).join('')}</div></section>`).join('')||'<p class="hint">No actions recorded yet.</p>'}
 function v2TimelineHTML(m){return [...m.events].sort((a,b)=>b.at-a.at).map(e=>`<div class="v2-timeline-row ${undoMode?'v2-removable':''}" ${undoMode?`role="button" tabindex="0" data-id="${esc(e.id)}" onclick="removeUndoEvent(this.dataset.id)" onkeydown="if(event.key==='Enter'){removeUndoEvent(this.dataset.id)}" aria-label="Remove ${esc(v2Description(e))}"`:''}><div>${!e.opp?v2TimelineText(e):e.save?`<b>${esc(e.save.player)}</b><small>${esc(e.save.qualityLabel)}</small>`:''}</div><div class="v2-time"><time>${eventTimeLabel(e)}</time>${v2Icon(gameEventIcon(e))}</div><div>${e.opp?v2TimelineText(e):''}</div></div>`).join('')||'<p class="hint">The story starts here.</p>'}
