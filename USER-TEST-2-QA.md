@@ -29,3 +29,13 @@ Reference: FAW Small-Sided Football Regulations 2025/26, https://faw.cymru/small
 - Extend pitch renderer to video canvas after verifying age-specific SVG rendering.
 - Add per-team remembered age preference without retaining unwanted personal data.
 - Phase 1 set-piece shortcuts and formation-based Coach Mode selection.
+
+## Phase 1 event and Coach Mode checks
+11. Goal/Shot capture defaults to Open Play without an extra tap.
+12. Select Free Kick, Corner and Penalty during Goal/Shot entry; confirm each remains a single parent event with its existing linked assist/save.
+13. Confirm standalone Corner/Free Kick/Penalty capture remains available.
+14. Confirm the set-piece report does not double-count integrated Goal/Shot events.
+15. In Coach Mode, scorer selection shows the current on-pitch formation, including goalkeeper, and excludes substitutes from active choices.
+16. Toggle the Coach Mode scorer selector to list view and back.
+17. Record a substitution; confirm Coach Mode reflects the new on-pitch player.
+18. Validate all JavaScript syntax, then test on iPhone Safari and desktop before merging.
