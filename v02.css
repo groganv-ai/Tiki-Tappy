@@ -32,3 +32,9 @@
 .v2-quality .tt-quality-four{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .v2-quality .tt-quality-four button{min-width:0;padding:10px 3px;font-size:12px;line-height:1.2}
 @media(max-width:380px){.v2-quality .tt-quality-four button{font-size:11px}}
+
+.v2-quality .tt-quality-four button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:64px}
+.tt-quality-icon{display:flex;align-items:center;justify-content:center;gap:1px;white-space:nowrap;color:#bb8b26}
+.tt-quality-four button.selected .tt-quality-icon{color:#d6ee83}
+.tt-quality-icon svg{width:13px;height:13px;flex:none}
+@media(min-width:420px){.tt-quality-icon svg{width:16px;height:16px}}
