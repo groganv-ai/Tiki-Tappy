@@ -16,10 +16,20 @@ function beginCoachGoal(opposition=false){
   eventModal();
 }
 function chooseGoalScorer(name){if(!pending||pending.stage!=='scorer'||!match().lineup.includes(name))return;pending.player=name;pending.stage='shot';eventModal()}
+let coachScorerList=false;
+function toggleCoachScorerList(){coachScorerList=!coachScorerList;eventModal()}
+function coachScorerChoices(){
+ const m=match(),state=typeof teamState==='function'?teamState(m):null;
+ const on=state?.onPitch||m.lineup,roles=state?.roles||{},bench=m.lineup.filter(n=>!on.includes(n));
+ const list='<div class="squad">'+on.map(name=>'<button data-name="'+esc(name)+'" onclick="chooseGoalScorer(this.dataset.name)">'+esc(name)+'</button>').join('')+'</div>';
+ if(coachScorerList||!state)return list;
+ const groups=[['AT','Attackers'],['MD','Midfielders'],['DF','Defenders'],['GK','Goalkeeper']];
+ return '<div class="team-pitch coach-scorer-pitch" aria-label="Select scorer by formation">'+groups.map(([role,title])=>'<section><h3>'+title+'</h3><div>'+on.filter(n=>roles[n]===role).map(n=>'<button data-name="'+esc(n)+'" onclick="chooseGoalScorer(this.dataset.name)">'+esc(n)+'</button>').join('')+'</div></section>').join('')+'</div>'+ (bench.length?'<p class="hint">Substitutes: '+bench.map(esc).join(', ')+'</p>':'');
+}
 const eventModalBeforeCoach=eventModal;
 eventModal=function(){
   if(pending?.stage!=='scorer')return eventModalBeforeCoach();
-  $('#modal').innerHTML=`<div class="modal"><div class="sheet"><button class="close" aria-label="Cancel goal" onclick="closeModal()">×</button><div class="eyebrow">${eventTimeLabel(pending)} · Goal</div><h2 style="margin-top:12px">Who scored?</h2><div class="squad">${match().lineup.map(name=>`<button data-name="${esc(name)}" onclick="chooseGoalScorer(this.dataset.name)">${esc(name)}</button>`).join('')}</div><p class="hint">Next: shot location, then an optional assist. Time was captured when you tapped Our goal.</p></div></div>`;
+  $('#modal').innerHTML=`<div class="modal"><div class="sheet"><button class="close" aria-label="Cancel goal" onclick="closeModal()">×</button><div class="eyebrow">${eventTimeLabel(pending)} · Goal</div><h2 style="margin-top:12px">Who scored?</h2>${coachScorerChoices()}<button type="button" onclick="toggleCoachScorerList()">${coachScorerList?'Show formation':'Show player list'}</button><p class="hint">Next: shot location, then an optional assist. Time was captured when you tapped Our goal.</p></div></div>`;
 };
 function coachScreen(m){
   const d=day(),s=score(m),status=m.ended?'Full time':m.halfTime?'Half time':m.running?'● Match in progress':clockHasStarted(m)?'Clock paused':'Ready when you are';
