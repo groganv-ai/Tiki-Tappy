@@ -14,3 +14,28 @@
 .team-player-picker .tt-formation-pitch .tt-formation-name{display:block;width:100%;color:#fff;text-align:center;font-size:12px;font-weight:650;line-height:1.15;overflow-wrap:anywhere}
 .team-player-picker .tt-formation-pitch .tt-formation-player:focus-visible .tt-formation-shirt,.team-player-picker .tt-formation-pitch .tt-formation-player:active .tt-formation-shirt{background:#f7d456;border-color:#173d60;outline:3px solid #173d60}
 @media(max-width:400px){.team-player-picker .tt-formation-pitch{padding:20px 5px}.team-player-picker .tt-formation-pitch .tt-formation-shirt{width:43px;height:43px}.team-player-picker .tt-formation-pitch .tt-formation-name{font-size:11px}.team-player-picker .tt-formation-pitch .tt-formation-line{min-height:98px}}
+
+/* Matchday picker: keep formation, opposition and quality together on a phone. */
+@media(max-width:600px){
+ .v2-capture:has(.tt-formation-pitch){padding:12px 14px!important}
+ .v2-capture:has(.tt-formation-pitch)>.eyebrow{font-size:10px;margin-bottom:3px}
+ .v2-capture:has(.tt-formation-pitch)>h2{font-size:19px;margin:2px 40px 8px 0;line-height:1.15}
+ .v2-capture .team-player-picker>h3{font-size:12px;margin:0 0 5px}
+ .v2-capture .team-player-picker .tt-opposition-first{min-height:39px!important;margin:3px 0 7px!important;padding:7px!important}
+ .v2-capture .team-player-picker .tt-formation-pitch{padding:10px 5px!important;margin:0 0 7px!important;border-radius:12px}
+ .v2-capture .team-player-picker .tt-formation-pitch:before{inset:9px 12px}
+ .v2-capture .team-player-picker .tt-formation-pitch .tt-formation-line{min-height:76px;padding:0}
+ .v2-capture .team-player-picker .tt-formation-pitch .tt-formation-player{min-height:68px;gap:3px}
+ .v2-capture .team-player-picker .tt-formation-pitch .tt-formation-shirt{width:39px;height:39px}
+ .v2-capture .team-player-picker .tt-formation-pitch .tt-formation-shirt svg{width:23px;height:23px}
+ .v2-capture .team-player-picker .tt-formation-pitch .tt-formation-name{font-size:10.5px}
+ .v2-capture .team-player-picker .team-action-bench{padding-top:6px;margin-top:4px}
+ .v2-capture .team-player-picker .team-action-bench h4{margin:0 0 3px;font-size:11px}
+ .v2-capture .team-player-picker .team-action-bench .hint{font-size:11px;margin:0}
+ .v2-capture .team-player-picker .tt-picker-toggle{min-height:30px;padding:4px 8px;font-size:11px;margin-top:5px}
+ .v2-capture:has(.tt-formation-pitch) .v2-quality{padding:8px!important;margin:7px 0 0!important}
+ .v2-capture:has(.tt-formation-pitch) .v2-quality h3{margin:0 0 6px;font-size:12px}
+ .v2-capture:has(.tt-formation-pitch) .tt-quality-four .tt-quality-level{min-height:53px;padding:5px 2px!important;gap:3px;font-size:11px}
+ .v2-capture:has(.tt-formation-pitch) .tt-quality-level .tt-quality-icon{width:17px;height:17px;padding:4px}
+ .v2-capture:has(.tt-formation-pitch) .tt-quality-help{font-size:10px;margin:5px 0 0}
+}
