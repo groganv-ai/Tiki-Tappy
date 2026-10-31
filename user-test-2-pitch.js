@@ -15,17 +15,20 @@ renderSetup=function(){
   if(players)players.insertAdjacentHTML('afterend',ttAgeField(ttCurrentAge()));
  }
 };
+let ttPendingAge=null;
 const ttBeforeCreateDay=createDay;
 createDay=function(e){
  const age=Number(new FormData(e.target).get('ageGroup'));
+ ttPendingAge=TT_AGE_GROUPS.includes(age)?age:null;
  ttBeforeCreateDay(e);
- if(freePendingDay&&TT_AGE_GROUPS.includes(age))freePendingDay.ageGroup=age;
+ if(freePendingDay&&ttPendingAge)freePendingDay.ageGroup=ttPendingAge;
 };
 const ttBeforeConfirmDay=confirmFreeDay;
 confirmFreeDay=function(){
- const selectedAge=freePendingDay?.ageGroup;
+ const selectedAge=freePendingDay?.ageGroup??ttPendingAge;
  ttBeforeConfirmDay();
  if(day()&&TT_AGE_GROUPS.includes(Number(selectedAge))){day().ageGroup=Number(selectedAge);save()}
+ ttPendingAge=null;
 };
 function ttPitchDimensions(){
  const t=ttPitchTemplate(ttCurrentAge());
