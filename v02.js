@@ -68,7 +68,7 @@ function ttSetPlayHTML(){
  if(!f||f.stage!=='location'||!['Goal','Shot'].includes(f.event.action))return '';
  const selected=f.event.restartType||'Open Play';
  const choices=[['Open Play','⚽'],['Free Kick','↗'],['Corner','⚑'],['Penalty','◎']];
- return '<div class="tt-set-play"><p class="hint">Chance type (optional)</p><div class="tt-set-play-row" role="group" aria-label="Chance type">'+choices.map(([type,icon])=>'<button type="button" class="tt-set-play-option '+(type===selected?'active':'')+'" aria-pressed="'+(type===selected)+'" onclick="ttSetPlaySelect(\\''+type+'\\')"><span aria-hidden="true">'+icon+'</span><span>'+type+'</span></button>').join('')+'</div></div>';
+ return '<div class="tt-set-play"><p class="hint">Chance type (optional)</p><div class="tt-set-play-row" role="group" aria-label="Chance type">'+choices.map(([type,icon])=>`<button type="button" class="tt-set-play-option ${type===selected?'active':''}" aria-pressed="${type===selected}" onclick="ttSetPlaySelect('${type}')"><span aria-hidden="true">${icon}</span><span>${type}</span></button>`).join('')+'</div></div>';
 }
 function v2PitchHTML(){
  const opposition=!!captureV2?.event?.opp,ttPitchFlipped=ttIsPitchFlipped();
