@@ -15,3 +15,8 @@
 .v2-capture .tt-set-play-option span:first-child{font-size:17px;line-height:1.1}
 .v2-capture .tt-set-play-option.active{background:#d6ee83;border-color:#aac761}
 .v2-capture .tt-set-play-option:focus-visible{outline:3px solid #215e49;outline-offset:2px}
+
+.tt-pitch-header{display:flex;align-items:center;justify-content:space-between;margin:8px 0}
+.tt-rotate-btn{width:auto!important;padding:7px 12px!important;font-size:13px!important}
+.v2-pitch.tt-orient-landscape{aspect-ratio:560/360;height:auto;width:100%}
+.v2-pitch.tt-orient-portrait{aspect-ratio:360/560;height:auto;width:100%}
