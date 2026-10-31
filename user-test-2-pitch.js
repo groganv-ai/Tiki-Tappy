@@ -89,7 +89,7 @@ entryPitchSVG=function(showAttack=true){return day()?.ageGroup?ttAgePitchSVG(sho
 
 // All action flows share the same on-pitch formation selector, with a list fallback.
 let ttUsePlayerList=false;
-function ttTogglePlayerList(){ttUsePlayerList=!ttUsePlayerList;render()}
+function ttTogglePlayerList(){ttUsePlayerList=!ttUsePlayerList;if(captureV2)drawV2Capture();else if(typeof spValid==='function'&&spValid())spDrawFlow();else render()}
 const ttExistingTeamChoices=teamChoiceSections;
 teamChoiceSections=function(handler,exclude='',m=match()){
  const formation=teamState(m);
