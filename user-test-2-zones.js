@@ -1,0 +1,85 @@
+// Shared age-responsive, non-overlapping pitch location model.
+// Coordinates remain 360x560 and are stored independently of UI rotation.
+function ttLocationGeometry(){
+ const t=ttPitchDimensions(),full=t.format==='11v11',four=t.format==='4v4';
+ const x=18,w=324,top=18,bottom=542;
+ const length=t.lengthYards||100,width=t.widthYards||64;
+ const penalty=full?{depth:18,width:44}:four?null:t.format==='5v5'?{depth:7,width:12}:t.format==='7v7'?{depth:10,width:15}:{depth:12,width:28};
+ const six=full?{depth:6,width:20}:null;
+ const areaDepth=penalty?Math.min(125,524*penalty.depth/length):0;
+ const areaWidth=penalty?Math.min(285,324*penalty.width/width):0;
+ const sixDepth=six?524*six.depth/length:0,sixWidth=six?324*six.width/width:0;
+ return {t,full,four,x,w,top,bottom,areaDepth,areaWidth,sixDepth,sixWidth};
+}
+function ttLocationZones(){
+ const g=ttLocationGeometry(),zones=[],add=(x,y,w,h,label,kind)=>{
+  if(w<2||h<2)return;
+  zones.push({x,y,w,h,label,text:label.replace(/^(Attacking|Defensive) /,'').replace('outside 18-yard,','Outside 18').replace('18-yard box,','18-yard').replace('midfield,','Midfield').replace('wide midfield,','Wide midfield').replace('wing,','Wing').replace('six-yard box','6-yard'),kind,id:'tt-zone-'+zones.length});
+ };
+ const L=['left','centre','right'],sides=[false,true],wing=18+324*.18,wingWidth=324*.18;
+ for(const south of sides){
+  const side=south?'Defensive':'Attacking',Y=(y,h)=>south?560-y-h:y;
+  const boxY=18,boxH=g.areaDepth,boxX=180-g.areaWidth/2;
+  const sixX=180-g.sixWidth/2,sixH=g.sixDepth;
+  const outerEnd=boxH?18+boxH:18;
+  const outsideEnd=18+(280-18)*.69;
+  const wideEnd=18+(280-18)*.69;
+  if(g.areaWidth){
+   add(18,Y(18,boxH),boxX-18,boxH,side+' wing, left','wing');
+   add(boxX+g.areaWidth,Y(18,boxH),342-boxX-g.areaWidth,boxH,side+' wing, right','wing');
+   for(let i=0;i<3;i++){
+    const sx=boxX+i*g.areaWidth/3,ex=sx+g.areaWidth/3;
+    if(g.sixWidth&&sixH){
+     // Split 18-yard columns around the single central six-yard rectangle.
+     const a=Math.max(sx,sixX),b=Math.min(ex,sixX+g.sixWidth);
+     if(a>sx)add(sx,Y(18,sixH),a-sx,sixH,side+' 18-yard box, '+L[i],'box');
+     if(ex>b)add(b,Y(18,sixH),ex-b,sixH,side+' 18-yard box, '+L[i],'box');
+     add(sx,Y(18+sixH,boxH-sixH),g.areaWidth/3,boxH-sixH,side+' 18-yard box, '+L[i],'box');
+    }else add(sx,Y(18,boxH),g.areaWidth/3,boxH,side+' goal area, '+L[i],'box');
+   }
+   if(sixH)add(sixX,Y(18,sixH),g.sixWidth,sixH,side+' six-yard box','six');
+  }
+  const outsideStart=outerEnd,outsideHeight=Math.max(0,outsideEnd-outsideStart);
+  if(outsideHeight){
+   add(18,Y(outsideStart,outsideHeight),wingWidth,outsideHeight,side+' wing, left','wing');
+   add(342-wingWidth,Y(outsideStart,outsideHeight),wingWidth,outsideHeight,side+' wing, right','wing');
+   const midX=18+wingWidth,midW=324-2*wingWidth;
+   for(let i=0;i<3;i++)add(midX+i*midW/3,Y(outsideStart,outsideHeight),midW/3,outsideHeight,side+' outside 18-yard, '+L[i],'outside');
+  }
+  const midfieldStart=Math.max(outsideEnd,outerEnd),midfieldHeight=280-midfieldStart;
+  if(midfieldHeight>0){
+   add(18,Y(midfieldStart,midfieldHeight),wingWidth,midfieldHeight,side+' wide midfield, left','wide');
+   add(342-wingWidth,Y(midfieldStart,midfieldHeight),wingWidth,midfieldHeight,side+' wide midfield, right','wide');
+   const midX=18+wingWidth,midW=324-2*wingWidth;
+   for(let i=0;i<3;i++)add(midX+i*midW/3,Y(midfieldStart,midfieldHeight),midW/3,midfieldHeight,side+' midfield, '+L[i],'midfield');
+  }
+  // Corner hit areas are added last, so they remain easy to select.
+  for(const right of [false,true])add(right?318:18,Y(18,24),24,24,side+' '+(right?'right':'left')+' corner','corner');
+ }
+ return zones;
+}
+const TT_ZONE_COLOURS={six:'#b7ed40',box:'#27854d',outside:'#11623f',midfield:'#19894b',wide:'#49aa66',wing:'#05857d',corner:'#6a9035'};
+function ttZoneSVG(zones,showLabels=false){
+ const rects=zones.map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+TT_ZONE_COLOURS[z.kind]+'" fill-opacity=".58"/>').join('');
+ const labels=showLabels?zones.filter(z=>z.w>=37&&z.h>=27&&z.kind!=='corner').map(z=>{
+  const x=z.x+z.w/2,y=z.y+z.h/2;
+  const name=z.kind==='six'?'6-yard':z.kind==='box'?'18-yard':z.kind==='outside'?'Outside 18':z.kind==='midfield'?'Midfield':z.kind==='wide'?'Wide MF':'Wing';
+  const side=/left$/.test(z.label)?'L':/right$/.test(z.label)?'R':/centre$/.test(z.label)?'C':'';
+  return '<text x="'+x+'" y="'+y+'" fill="'+(z.kind==='six'?'#163a2b':'#fff')+'" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="11">'+name+(side?' '+side:'')+'</text>';
+ }).join(''):'';
+ const g=ttLocationGeometry(),full=g.full;
+ const lines=['<rect x="18" y="18" width="324" height="524"/>','<path d="M18 280H342"/>','<circle cx="180" cy="280" r="34"/>'];
+ if(g.areaWidth){
+  const bx=180-g.areaWidth/2,d=g.areaDepth;
+  lines.push('<path d="M'+bx+' 18V'+(18+d)+'H'+(bx+g.areaWidth)+'V18 M'+bx+' 542V'+(542-d)+'H'+(bx+g.areaWidth)+'V542"/>');
+ }
+ if(g.sixWidth){
+  const sx=180-g.sixWidth/2,d=g.sixDepth;
+  lines.push('<path d="M'+sx+' 18V'+(18+d)+'H'+(sx+g.sixWidth)+'V18 M'+sx+' 542V'+(542-d)+'H'+(sx+g.sixWidth)+'V542"/>');
+ }
+ const goal='<path d="M149 18V7H211V18 M149 542V553H211V542" stroke="#e5f1df" stroke-width="3" fill="none"/>';
+ const separators=zones.filter(z=>z.kind!=='corner').map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="none" stroke="#e4f2e1" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="3 5"/>').join('');
+ return '<svg viewBox="0 0 360 560" aria-hidden="true"><rect width="360" height="560" fill="#326749"/>'+rects+separators+'<g fill="none" stroke="#e5f1df" stroke-width="2.5">'+lines.join('')+'</g>'+goal+'<circle cx="180" cy="280" r="2.5" fill="#e5f1df"/>'+labels+'</svg>';
+}
+v2Zones=ttLocationZones;
+entryPitchSVG=function(){return ttZoneSVG(ttLocationZones(),true)};
