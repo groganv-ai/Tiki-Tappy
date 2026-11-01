@@ -55,9 +55,11 @@ function ttLocationZones(){
    // with side fragments where the six-yard rectangle cuts across them.
    for(let i=0;i<3;i++){
     const x=bx+i*bw/3,w=bw/3,overlapL=Math.max(x,sx),overlapR=Math.min(x+w,sx+sw);
-    if(overlapL>x)cell(x,18,overlapL-x,sh,'18-yard box, '+lanes[i],'box');
-    if(overlapR<x+w)cell(overlapR,18,x+w-overlapR,sh,'18-yard box, '+lanes[i],'box');
     if(overlapR<=overlapL)cell(x,18,w,sh,'18-yard box, '+lanes[i],'box');
+    else{
+     if(overlapL>x)cell(x,18,overlapL-x,sh,'18-yard box, '+lanes[i],'box');
+     if(overlapR<x+w)cell(overlapR,18,x+w-overlapR,sh,'18-yard box, '+lanes[i],'box');
+    }
     cell(x,18+sh,w,bh-sh,'18-yard box, '+lanes[i],'box');
    }
    cell(sx,18,sw,sh,'six-yard box','six');
@@ -103,13 +105,13 @@ function ttZoneSVG(zones,showLabels=false,opposition=false){
  const g=ttLocationGeometry(),full=g.full,small=ttCurrentAge()<9;
  const lines=['<rect x="18" y="18" width="324" height="524"/>','<path d="M18 280H342"/>','<circle cx="180" cy="280" r="34"/>'];
  if(small){lines.push('<path d="M126 18V95H234V18 M126 542V465H234V542"/>')}
- if(g.areaWidth&&!small){
-  const bx=180-g.areaWidth/2,d=g.areaDepth;
-  lines.push('<path d="M'+bx+' 18V'+(18+d)+'H'+(bx+g.areaWidth)+'V18 M'+bx+' 542V'+(542-d)+'H'+(bx+g.areaWidth)+'V542"/>');
+ if(!small){
+  const bx=ttCurrentAge()>=11?74:88,d=ttCurrentAge()>=11?116:92,bw=ttCurrentAge()>=11?212:184;
+  lines.push('<path d="M'+bx+' 18V'+(18+d)+'H'+(bx+bw)+'V18 M'+bx+' 542V'+(542-d)+'H'+(bx+bw)+'V542"/>');
  }
- if(g.sixWidth&&!small){
-  const sx=180-g.sixWidth/2,d=g.sixDepth;
-  lines.push('<path d="M'+sx+' 18V'+(18+d)+'H'+(sx+g.sixWidth)+'V18 M'+sx+' 542V'+(542-d)+'H'+(sx+g.sixWidth)+'V542"/>');
+ if(ttCurrentAge()>=11){
+  const sx=128,d=43,sw=104;
+  lines.push('<path d="M'+sx+' 18V'+(18+d)+'H'+(sx+sw)+'V18 M'+sx+' 542V'+(542-d)+'H'+(sx+sw)+'V542"/>');
  }
  const goal='<path d="M149 18V7H211V18 M149 542V553H211V542" stroke="#e5f1df" stroke-width="3" fill="none"/>';
  const separators=zones.filter(z=>z.kind!=='corner').map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="none" stroke="#e4f2e1" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="3 5"/>').join('');
@@ -135,8 +137,8 @@ drawMatchPitch=function(ctx,area,half=null,opposition=false,showLabels=false){
  ctx.strokeRect(18,18,324,524);ctx.beginPath();ctx.moveTo(18,280);ctx.lineTo(342,280);ctx.stroke();
  ctx.beginPath();ctx.arc(180,280,34,0,Math.PI*2);ctx.stroke();
  if(ttCurrentAge()<9){ctx.beginPath();ctx.moveTo(126,18);ctx.lineTo(126,95);ctx.lineTo(234,95);ctx.lineTo(234,18);ctx.moveTo(126,542);ctx.lineTo(126,465);ctx.lineTo(234,465);ctx.lineTo(234,542);ctx.stroke()}
- if(g.areaWidth&&ttCurrentAge()>=9){const x=180-g.areaWidth/2,d=g.areaDepth;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+g.areaWidth,y+(south?-d:d));ctx.lineTo(x+g.areaWidth,y);ctx.stroke()}}
- if(g.sixWidth&&ttCurrentAge()>=9){const x=180-g.sixWidth/2,d=g.sixDepth;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+g.sixWidth,y+(south?-d:d));ctx.lineTo(x+g.sixWidth,y);ctx.stroke()}}
+ if(ttCurrentAge()>=9){const x=ttCurrentAge()>=11?74:88,d=ttCurrentAge()>=11?116:92,w=ttCurrentAge()>=11?212:184;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+w,y+(south?-d:d));ctx.lineTo(x+w,y);ctx.stroke()}}
+ if(ttCurrentAge()>=11){const x=128,d=43,w=104;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+w,y+(south?-d:d));ctx.lineTo(x+w,y);ctx.stroke()}}
  ctx.beginPath();ctx.moveTo(149,18);ctx.lineTo(149,7);ctx.lineTo(211,7);ctx.lineTo(211,18);ctx.moveTo(149,542);ctx.lineTo(149,553);ctx.lineTo(211,553);ctx.lineTo(211,542);ctx.stroke();
  if(showLabels){
  ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 10px sans-serif';
