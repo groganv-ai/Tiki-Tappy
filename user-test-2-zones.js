@@ -33,32 +33,29 @@ function ttLocationZones(){
    }
    cell(126,18,108,77,'goal area','six');
   }else if(age<=10){
-   // U9–U10: U6's nine base areas, with the central goal area
-   // split into three. Total: eleven selection areas per half.
-   for(const [y,h,kind,title] of [[18,77,'box','goal'],[95,80,'outside','outside'],[175,105,'midfield','midfield']]){
-    for(let i=0;i<3;i++){
-     if(y===18&&i===1)continue;
-     cell(18+i*108,y,108,h,title+', '+lanes[i],kind);
-    }
-   }
-   for(let i=0;i<3;i++)cell(126+i*36,18,36,77,'goal area, '+lanes[i],'box');
+   // 11 distinct areas per half: 2 wings, 3 goal, 3 outside, 3 midfield.
+   // The goal-area edges exactly follow the solid physical markings.
+   cell(18,18,70,92,'wing, left','wing');
+   cell(272,18,70,92,'wing, right','wing');
+   for(let i=0;i<3;i++)cell(88+i*184/3,18,184/3,92,'goal area, '+lanes[i],'box');
+   for(let i=0;i<3;i++)cell(18+i*108,110,108,65,'outside, '+lanes[i],'outside');
+   for(let i=0;i<3;i++)cell(18+i*108,175,108,105,'midfield, '+lanes[i],'midfield');
   }else{
-   // U11–U17: connected wings, three 18-yard areas and one 6-yard.
+   // U11–U17: two continuous wings; 3 18-yard areas, one 6-yard,
+   // 3 outside and 3 midfield zones in each half.
    const bx=74,bw=212,bh=116,sx=128,sw=104,sh=43;
-   // Each wing is one continuous selectable zone from goal line
-   // through the outside band; midfield wide lanes are separate.
    cell(18,18,56,183,'wing, left','wing');
    cell(286,18,56,183,'wing, right','wing');
-   // One single six-yard area and exactly three 18-yard areas.
+   // Three 18-yard columns cover the whole penalty box. The single
+   // 6-yard zone is overlaid last, and takes precedence for hit testing.
+   for(let i=0;i<3;i++)
+    cell(bx+i*bw/3,18,bw/3,bh,'18 yard, '+lanes[i],'box');
    cell(sx,18,sw,sh,'6 yard','six');
    for(let i=0;i<3;i++)
-    cell(bx+i*bw/3,18+sh,bw/3,bh-sh,'18 yard, '+lanes[i],'box');
-   for(let i=0;i<3;i++)
     cell(bx+i*bw/3,134,bw/3,67,'outside, '+lanes[i],'outside');
-   cell(18,201,56,79,'wide midfield, left','wide');
-   cell(286,201,56,79,'wide midfield, right','wide');
+   // Three midfield columns span the entire width, without duplicate labels.
    for(let i=0;i<3;i++)
-    cell(bx+i*bw/3,201,bw/3,79,'midfield, '+lanes[i],'midfield');
+    cell(18+i*108,201,108,79,'midfield, '+lanes[i],'midfield');
   }
   // Corners replace the underlying zones in these small areas.
   for(const right of [false,true]){
@@ -86,7 +83,15 @@ function ttGraduatedZoneColour(z,opposition=false){
  return 'rgb('+rgb.join(',')+')';
 }
 function ttZoneSVG(zones,showLabels=false,opposition=false){
- const rects=zones.map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+ttGraduatedZoneColour(z,opposition)+'" fill-opacity=".95"/>').join('');
+ const rects=zones.map(z=>{
+  const fill=ttGraduatedZoneColour(z,opposition);
+  if(z.kind==='corner'){
+   const cx=z.x<180?18:342,cy=z.y<280?18:542;
+   const dx=cx===18?1:-1,dy=cy===18?1:-1,r=24;
+   return '<path d="M'+cx+' '+cy+' L'+(cx+dx*r)+' '+cy+' A'+r+' '+r+' 0 0 '+(dx===dy?1:0)+' '+cx+' '+(cy+dy*r)+' Z" fill="'+fill+'" fill-opacity=".95"/>';
+  }
+  return '<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+fill+'" fill-opacity=".95"/>';
+ }).join('');
  const labels=showLabels?zones.filter(z=>z.w>=37&&z.h>=27&&z.kind!=='corner').map(z=>{
   const x=z.x+z.w/2,y=z.y+z.h/2;
   const name=z.kind==='six'?(ttCurrentAge()<9?'Goal':'6 yard'):z.kind==='box'?(ttCurrentAge()<11?'Goal':'18 yard'):z.kind==='outside'?'Outside':z.kind==='midfield'||z.kind==='wide'?'Midfield':'Wing';
@@ -105,7 +110,7 @@ function ttZoneSVG(zones,showLabels=false,opposition=false){
   lines.push('<path d="M'+sx+' 18V'+(18+d)+'H'+(sx+sw)+'V18 M'+sx+' 542V'+(542-d)+'H'+(sx+sw)+'V542"/>');
  }
  const goal='<path d="M149 18V7H211V18 M149 542V553H211V542" stroke="#e5f1df" stroke-width="3" fill="none"/>';
- const separators=zones.filter(z=>z.kind!=='corner').map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="none" stroke="#e4f2e1" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="3 5"/>').join('');
+ const separators=zones.filter(z=>z.kind!=='corner'&&z.kind!=='six'&&z.kind!=='box').map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="none" stroke="#e4f2e1" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="3 5"/>').join('');
  return '<svg viewBox="0 0 360 560" aria-hidden="true"><rect width="360" height="560" fill="'+(opposition?'#713c3f':'#326749')+'"/>'+rects+separators+'<g fill="none" stroke="#e5f1df" stroke-width="2.5">'+lines.join('')+'</g>'+goal+'<circle cx="180" cy="280" r="2.5" fill="#e5f1df"/>'+labels+'</svg>';
 }
 v2Zones=ttLocationZones;
@@ -120,10 +125,18 @@ drawMatchPitch=function(ctx,area,half=null,opposition=false,showLabels=false){
  ctx.save();if(cropped){ctx.beginPath();ctx.rect(rect.x,visibleY,rect.width,viewH*scale);ctx.clip()}
  ctx.translate(rect.x,rect.y);ctx.scale(scale,scale);
  ctx.fillStyle=opposition?'#713c3f':'#326749';ctx.fillRect(0,0,360,560);
- for(const z of zones){ctx.fillStyle=ttGraduatedZoneColour(z,opposition);ctx.globalAlpha=.95;ctx.fillRect(z.x,z.y,z.w,z.h)}
+ for(const z of zones){
+  ctx.fillStyle=ttGraduatedZoneColour(z,opposition);ctx.globalAlpha=.95;
+  if(z.kind==='corner'){
+   const cx=z.x<180?18:342,cy=z.y<280?18:542;
+   ctx.beginPath();ctx.moveTo(cx,cy);
+   ctx.arc(cx,cy,24,cy<280?(cx<180?0:Math.PI/2):(cx<180?-Math.PI/2:Math.PI),cy<280?(cx<180?Math.PI/2:Math.PI):(cx<180?0:Math.PI*1.5),false);
+   ctx.closePath();ctx.fill();
+  }else ctx.fillRect(z.x,z.y,z.w,z.h);
+ }
  ctx.globalAlpha=1;
  ctx.lineWidth=1.3;ctx.strokeStyle='rgba(229,241,223,.7)';ctx.setLineDash([3,5]);
- for(const z of zones.filter(z=>z.kind!=='corner')){ctx.strokeRect(z.x,z.y,z.w,z.h)}
+ for(const z of zones.filter(z=>z.kind!=='corner'&&z.kind!=='six'&&z.kind!=='box')){ctx.strokeRect(z.x,z.y,z.w,z.h)}
  ctx.setLineDash([]);ctx.strokeStyle='#e5f1df';ctx.lineWidth=2.4;
  ctx.strokeRect(18,18,324,524);ctx.beginPath();ctx.moveTo(18,280);ctx.lineTo(342,280);ctx.stroke();
  ctx.beginPath();ctx.arc(180,280,34,0,Math.PI*2);ctx.stroke();
@@ -136,7 +149,7 @@ drawMatchPitch=function(ctx,area,half=null,opposition=false,showLabels=false){
  for(const z of zones){
   if(z.w<40||z.h<30||z.kind==='corner')continue;
   ctx.fillStyle=z.kind==='six'?'#173b2a':'#fff';
-  const title=({six:ttCurrentAge()<9?'Goal':'6-yard',box:'18-yard',outside:'Outside 18',midfield:'Midfield',wide:'Wide MF',wing:'Wing'})[z.kind];
+  const title=({six:ttCurrentAge()<9?'Goal':'6 yard',box:ttCurrentAge()<11?'Goal':'18 yard',outside:'Outside',midfield:'Midfield',wide:'Midfield',wing:'Wing'})[z.kind];
   const side=/left$/.test(z.label)?' L':/right$/.test(z.label)?' R':/centre$/.test(z.label)?' C':'';
   ctx.fillText(title+side,z.x+z.w/2,z.y+z.h/2,Math.max(20,z.w-4));
  }
