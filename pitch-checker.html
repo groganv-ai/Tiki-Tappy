@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TikiTapper · Pitch Screen Checker</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f5ed;color:#193e35;font:15px system-ui,sans-serif}header{background:#133f36;color:white;padding:18px 20px}header strong{font-size:23px}main{max-width:860px;margin:0 auto;padding:18px}p{line-height:1.5}select,button{font:inherit;padding:11px;border:1px solid #ccd9ce;border-radius:9px;background:white;color:#193e35}label{font-weight:700}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0}.controls select{min-width:130px}.status{font-size:13px;color:#50685a}.screen{max-width:460px;margin:auto;border-radius:15px;overflow:hidden;background:white;border:1px solid #dce2d5}iframe{display:block;width:100%;height:850px;border:0}.notice{font-size:13px;color:#526459}
+</style></head><body><header><strong>TikiTapper</strong> · Pitch Screen Checker</header><main>
+<p>Review the <b>actual current game pitch-selection renderer</b>, without creating a match. Our Team only. Tap any zone to inspect its name; selections do not save match events.</p>
+<div class="controls"><label for="age">Age group</label><select id="age"></select><button id="previous">Previous</button><button id="next">Next</button></div>
+<p id="status" class="status" role="status">Loading game renderer…</p><div class="screen"><iframe id="game" title="Actual TikiTapper pitch selection" src="index.html" loading="eager"></iframe></div>
+<p class="notice">Developer review tool · uses the live branch's existing index.html, pitch SVG, zone buttons and CSS. This page does not change matchday data or publish edits.</p>
+</main><script>
+const select=document.getElementById('age'),frame=document.getElementById('game'),status=document.getElementById('status');
+for(let n=6;n<=17;n++){let o=document.createElement('option');o.value=n;o.textContent='U'+n;select.append(o)}select.value='14';
+let ready=false;
+function show(){
+ if(!ready)return;
+ try{
+  const w=frame.contentWindow,age=Number(select.value);
+  // Evaluate inside the real game's global lexical environment; no match setup or persistence.
+  w.eval('day=function(){return {ageGroup:'+age+'}}; match=function(){return {pitchRotation:0}}; captureV2={event:{opp:false},stage:"location"}; v2ChooseZone=function(i){const z=v2Zones()[i];document.getElementById("checker-selection").textContent=z?(z.label+" · "+z.text):"Location unknown"};');
+  const html=w.eval('v2PitchHTML()');
+  const doc=frame.contentDocument;
+  doc.body.innerHTML='<main style="margin:0 auto;max-width:460px;padding:12px 16px 24px"><div id="checker-pitch"></div><p id="checker-selection" role="status" style="font-weight:700;margin:14px 0"></p></main>';
+  doc.getElementById('checker-pitch').innerHTML=html;
+  // Hide actions that are not needed for visual review; keep the genuine pitch and buttons.
+  const irrelevant=doc.querySelector('.v2-zone-list');if(irrelevant)irrelevant.remove();
+  const unknown=doc.querySelector('.v2-wide');if(unknown)unknown.remove();
+  status.textContent='U'+age+' · Actual game pitch renderer · Tap a zone to check its label';
+ }catch(err){status.textContent='Unable to render game pitch: '+err.message}
+}
+frame.addEventListener('load',()=>{ready=true;show()});
+select.addEventListener('change',show);
+document.getElementById('previous').onclick=()=>{select.value=Math.max(6,Number(select.value)-1);show()};
+document.getElementById('next').onclick=()=>{select.value=Math.min(17,Number(select.value)+1);show()};
+</script></body></html>
