@@ -59,8 +59,9 @@ function ttLocationZones(){
  return zones;
 }
 const TT_ZONE_COLOURS={six:'#b7ed40',box:'#27854d',outside:'#11623f',midfield:'#19894b',wide:'#49aa66',wing:'#05857d',corner:'#6a9035'};
-function ttZoneSVG(zones,showLabels=false){
- const rects=zones.map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+TT_ZONE_COLOURS[z.kind]+'" fill-opacity=".58"/>').join('');
+const TT_OPP_ZONE_COLOURS={six:'#e5a0a0',box:'#b94e56',outside:'#8c343f',midfield:'#a43e48',wide:'#c5656c',wing:'#a34b61',corner:'#e09b84'};
+function ttZoneSVG(zones,showLabels=false,opposition=false){
+ const rects=zones.map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+(opposition?TT_OPP_ZONE_COLOURS[z.kind]:TT_ZONE_COLOURS[z.kind])+'" fill-opacity=".58"/>').join('');
  const labels=showLabels?zones.filter(z=>z.w>=37&&z.h>=27&&z.kind!=='corner').map(z=>{
   const x=z.x+z.w/2,y=z.y+z.h/2;
   const name=z.kind==='six'?'6-yard':z.kind==='box'?'18-yard':z.kind==='outside'?'Outside 18':z.kind==='midfield'?'Midfield':z.kind==='wide'?'Wide MF':'Wing';
@@ -79,21 +80,21 @@ function ttZoneSVG(zones,showLabels=false){
  }
  const goal='<path d="M149 18V7H211V18 M149 542V553H211V542" stroke="#e5f1df" stroke-width="3" fill="none"/>';
  const separators=zones.filter(z=>z.kind!=='corner').map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="none" stroke="#e4f2e1" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="3 5"/>').join('');
- return '<svg viewBox="0 0 360 560" aria-hidden="true"><rect width="360" height="560" fill="#326749"/>'+rects+separators+'<g fill="none" stroke="#e5f1df" stroke-width="2.5">'+lines.join('')+'</g>'+goal+'<circle cx="180" cy="280" r="2.5" fill="#e5f1df"/>'+labels+'</svg>';
+ return '<svg viewBox="0 0 360 560" aria-hidden="true"><rect width="360" height="560" fill="'+(opposition?'#713c3f':'#326749')+'"/>'+rects+separators+'<g fill="none" stroke="#e5f1df" stroke-width="2.5">'+lines.join('')+'</g>'+goal+'<circle cx="180" cy="280" r="2.5" fill="#e5f1df"/>'+labels+'</svg>';
 }
 v2Zones=ttLocationZones;
-entryPitchSVG=function(){return ttZoneSVG(ttLocationZones(),true)};
+entryPitchSVG=function(){return ttZoneSVG(ttLocationZones(),true,!!captureV2?.event?.opp)};
 
 // The video/highlight canvas uses the same zones and labels as the selector.
-drawMatchPitch=function(ctx,area,half=null){
+drawMatchPitch=function(ctx,area,half=null,opposition=false){
  const cropped=half==='north'||half==='south',viewH=cropped?280:560,viewY=half==='south'?280:0;
  const scale=Math.min(area.width/360,area.height/viewH),visibleY=area.y+(area.height-viewH*scale)/2;
  const rect={x:area.x+(area.width-360*scale)/2,y:visibleY-viewY*scale,width:360*scale,height:560*scale};
  const g=ttLocationGeometry(),zones=ttLocationZones();
  ctx.save();if(cropped){ctx.beginPath();ctx.rect(rect.x,visibleY,rect.width,viewH*scale);ctx.clip()}
  ctx.translate(rect.x,rect.y);ctx.scale(scale,scale);
- ctx.fillStyle='#326749';ctx.fillRect(0,0,360,560);
- for(const z of zones){ctx.fillStyle=TT_ZONE_COLOURS[z.kind];ctx.globalAlpha=.78;ctx.fillRect(z.x,z.y,z.w,z.h)}
+ ctx.fillStyle=opposition?'#713c3f':'#326749';ctx.fillRect(0,0,360,560);
+ for(const z of zones){ctx.fillStyle=(opposition?TT_OPP_ZONE_COLOURS:TT_ZONE_COLOURS)[z.kind];ctx.globalAlpha=.78;ctx.fillRect(z.x,z.y,z.w,z.h)}
  ctx.globalAlpha=1;
  ctx.lineWidth=1.3;ctx.strokeStyle='rgba(229,241,223,.7)';ctx.setLineDash([3,5]);
  for(const z of zones.filter(z=>z.kind!=='corner')){ctx.strokeRect(z.x,z.y,z.w,z.h)}
@@ -130,7 +131,7 @@ if(typeof makeMatchReportPages==='function'){
    ctx.fillStyle='#d6ee83';ctx.font='bold 34px sans-serif';ctx.fillText('TikiTapper',45,68);
    ctx.fillStyle='#173e33';ctx.font='bold 42px sans-serif';ctx.fillText('Match location map',45,185);
    ctx.font='26px sans-serif';ctx.fillText(String(m.opponent||'Match'),45,232);
-   const pitch=drawMatchPitch(ctx,{x:225,y:280,width:630,height:1400});
+   const pitch=drawMatchPitch(ctx,{x:225,y:280,width:630,height:1400},null,false);
    for(const e of located){
     const px=pitch.x+e.point.x*pitch.width,py=pitch.y+e.point.y*pitch.height;
     ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);
