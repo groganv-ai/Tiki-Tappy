@@ -12,74 +12,68 @@ function ttLocationGeometry(){
  return {t,full,four,x,w,top,bottom,areaDepth,areaWidth,sixDepth,sixWidth};
 }
 function ttLocationZones(){
- const g=ttLocationGeometry(),small=ttCurrentAge()<9,zones=[],add=(x,y,w,h,label,kind)=>{
-  if(w<2||h<2)return;
-  zones.push({x,y,w,h,label,text:label.replace(/^(Attacking|Defensive) /,'').replace('outside 18-yard,','Outside 18').replace('18-yard box,','18-yard').replace('midfield,','Midfield').replace('wide midfield,','Wide midfield').replace('wing,','Wing').replace('six-yard box','6-yard'),kind,id:'tt-zone-'+zones.length});
+ const age=ttCurrentAge(),zones=[];
+ const add=(x,y,w,h,label,kind)=>{
+  if(w<=0||h<=0)return;
+  zones.push({x,y,w,h,label,text:label,kind,id:'tt-zone-'+zones.length});
  };
- if(small){
-  // U6–U8: compact three-lane pitch with two attacking bands per half,
-  // a single central goal area, and no adult penalty-box subdivisions.
-  for(const south of [false,true]){
-   const side=south?'Defensive':'Attacking',Y=(y,h)=>south?560-y-h:y;
-   for(const [start,end,kind,label] of [[18,95,'box','Goal area'],[95,175,'outside','Attacking third'],[175,280,'midfield','Midfield']]){
-    const y=Y(start,end-start),h=end-start;
+ const lanes=['left','centre','right'];
+ // All geometry uses the same 360 × 560 pitch coordinate system.
+ for(const south of [false,true]){
+  const side=south?'Defensive':'Attacking';
+  const Y=(y,h)=>south?560-y-h:y;
+  const cell=(x,y,w,h,label,kind)=>add(x,Y(y,h),w,h,side+' '+label,kind);
+  if(age<9){
+   // Simplified U6–U8 sketch: three lanes and three horizontal bands per half.
+   for(const [y,h,kind,title] of [[18,77,'box','goal third'],[95,80,'outside','outer third'],[175,105,'midfield','midfield']]){
     for(let i=0;i<3;i++){
-     const lane=['left','centre','right'][i];
-     if(start===18&&i===1)continue;
-     add(18+i*108,y,108,h,side+' '+label.toLowerCase()+', '+lane,kind);
+     if(y===18&&i===1)continue;
+     cell(18+i*108,y,108,h,title+', '+lanes[i],kind);
     }
    }
-   // One tappable goal area, overlaid on the central lane near the goal.
-   add(126,Y(18,77),108,77,side+' goal area','six');
-   for(const right of [false,true])add(right?318:18,Y(18,24),24,24,side+' '+(right?'right':'left')+' corner','corner');
-  }
-  return zones;
- }
- const L=['left','centre','right'],sides=[false,true],wing=18+324*.18,wingWidth=324*.18;
- // U12–U17 share the U12 selection grid; actual pitch markings remain age-specific.
- const shared=ttCurrentAge()>=12;
- const zoneDepth=shared?Math.min(125,524*12/64):g.areaDepth;
- const zoneWidth=shared?Math.min(285,324*28/44):g.areaWidth;
- const zoneSixDepth=shared?0:g.sixDepth;
- const zoneSixWidth=shared?0:g.sixWidth;
- for(const south of sides){
-  const side=south?'Defensive':'Attacking',Y=(y,h)=>south?560-y-h:y;
-  const boxY=18,boxH=zoneDepth,boxX=180-zoneWidth/2;
-  const sixX=180-zoneSixWidth/2,sixH=zoneSixDepth;
-  const outerEnd=boxH?18+boxH:18;
-  const outsideEnd=18+(280-18)*.69;
-  const wideEnd=18+(280-18)*.69;
-  if(zoneWidth){
-   add(18,Y(18,boxH),boxX-18,boxH,side+' wing, left','wing');
-   add(boxX+zoneWidth,Y(18,boxH),342-boxX-zoneWidth,boxH,side+' wing, right','wing');
-   for(let i=0;i<3;i++){
-    const sx=boxX+i*zoneWidth/3,ex=sx+zoneWidth/3;
-    if(g.sixWidth&&sixH){
-     // Split 18-yard columns around the single central six-yard rectangle.
-     const a=Math.max(sx,sixX),b=Math.min(ex,sixX+zoneSixWidth);
-     if(a>sx)add(sx,Y(18,sixH),a-sx,sixH,side+' 18-yard box, '+L[i],'box');
-     if(ex>b)add(b,Y(18,sixH),ex-b,sixH,side+' 18-yard box, '+L[i],'box');
-     add(sx,Y(18+sixH,boxH-sixH),zoneWidth/3,boxH-sixH,side+' 18-yard box, '+L[i],'box');
-    }else add(sx,Y(18,boxH),zoneWidth/3,boxH,side+' goal area, '+L[i],'box');
+   cell(126,18,108,77,'goal area','six');
+  }else if(age<=10){
+   // U9–U10: distinct intermediate grid, without an adult six-yard box.
+   // Three central attacking channels, separate wings and midfield.
+   const bx=88,bw=184,bh=92;
+   cell(18,18,70,bh,'wing, left','wing');
+   cell(272,18,70,bh,'wing, right','wing');
+   for(let i=0;i<3;i++)cell(bx+i*bw/3,18,bw/3,bh,'goal area, '+lanes[i],'box');
+   for(const [y,h,kind,title] of [[110,72,'outside','outside goal area'],[182,98,'midfield','midfield']]){
+    cell(18,y,70,h,kind==='midfield'?'wide midfield, left':'wing, left',kind==='midfield'?'wide':'wing');
+    cell(272,y,70,h,kind==='midfield'?'wide midfield, right':'wing, right',kind==='midfield'?'wide':'wing');
+    for(let i=0;i<3;i++)cell(88+i*184/3,y,184/3,h,title+', '+lanes[i],kind);
    }
-   if(sixH)add(sixX,Y(18,sixH),zoneSixWidth,sixH,side+' six-yard box','six');
+  }else{
+   // U11–U17: identical multi-zone selection grid. Real pitch markings
+   // remain age-specific; this is the selectable geometry, not the lines.
+   const bx=74,bw=212,bh=116,sx=128,sw=104,sh=43;
+   cell(18,18,56,bh,'wing, left','wing');
+   cell(286,18,56,bh,'wing, right','wing');
+   // The entire six-yard box is ONE exclusive selection target.
+   // Partition the remainder of the 18-yard area into three columns,
+   // with side fragments where the six-yard rectangle cuts across them.
+   for(let i=0;i<3;i++){
+    const x=bx+i*bw/3,w=bw/3,overlapL=Math.max(x,sx),overlapR=Math.min(x+w,sx+sw);
+    if(overlapL>x)cell(x,18,overlapL-x,sh,'18-yard box, '+lanes[i],'box');
+    if(overlapR<x+w)cell(overlapR,18,x+w-overlapR,sh,'18-yard box, '+lanes[i],'box');
+    if(overlapR<=overlapL)cell(x,18,w,sh,'18-yard box, '+lanes[i],'box');
+    cell(x,18+sh,w,bh-sh,'18-yard box, '+lanes[i],'box');
+   }
+   cell(sx,18,sw,sh,'six-yard box','six');
+   for(const [y,h,kind,title] of [[134,67,'outside','outside 18-yard'],[201,79,'midfield','midfield']]){
+    cell(18,y,56,h,kind==='midfield'?'wide midfield, left':'wing, left',kind==='midfield'?'wide':'wing');
+    cell(286,y,56,h,kind==='midfield'?'wide midfield, right':'wing, right',kind==='midfield'?'wide':'wing');
+    for(let i=0;i<3;i++)cell(74+i*212/3,y,212/3,h,title+', '+lanes[i],kind);
+   }
   }
-  const outsideStart=outerEnd,outsideHeight=Math.max(0,outsideEnd-outsideStart);
-  if(outsideHeight){
-   add(18,Y(outsideStart,outsideHeight),wingWidth,outsideHeight,side+' wing, left','wing');
-   add(342-wingWidth,Y(outsideStart,outsideHeight),wingWidth,outsideHeight,side+' wing, right','wing');
-   const midX=18+wingWidth,midW=324-2*wingWidth;
-   for(let i=0;i<3;i++)add(midX+i*midW/3,Y(outsideStart,outsideHeight),midW/3,outsideHeight,side+' outside 18-yard, '+L[i],'outside');
+  // Corners replace the underlying zones in these small areas.
+  for(const right of [false,true]){
+   const x=right?318:18;
+   // Remove overlapping corner portions by shrinking the corner tap target
+   // to the pitch edge and making it the topmost hit region.
+   cell(x,18,24,24,(right?'right':'left')+' corner','corner');
   }
-  const midfieldStart=Math.max(outsideEnd,outerEnd),midfieldHeight=280-midfieldStart;
-  if(midfieldHeight>0){
-   add(18,Y(midfieldStart,midfieldHeight),wingWidth,midfieldHeight,side+' wide midfield, left','wide');
-   add(342-wingWidth,Y(midfieldStart,midfieldHeight),wingWidth,midfieldHeight,side+' wide midfield, right','wide');
-   const midX=18+wingWidth,midW=324-2*wingWidth;
-   for(let i=0;i<3;i++)add(midX+i*midW/3,Y(midfieldStart,midfieldHeight),midW/3,midfieldHeight,side+' midfield, '+L[i],'midfield');
-  }
-  // Corner hit areas are added last, so they remain easy to select.
-  for(const right of [false,true])add(right?318:18,Y(18,24),24,24,side+' '+(right?'right':'left')+' corner','corner');
  }
  return zones;
 }
