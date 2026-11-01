@@ -74,7 +74,7 @@ function ttGraduatedZoneColour(z,opposition=false){
  return 'rgb('+rgb.join(',')+')';
 }
 function ttZoneSVG(zones,showLabels=false,opposition=false){
- const rects=zones.map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+(opposition?TT_OPP_ZONE_COLOURS[z.kind]:TT_ZONE_COLOURS[z.kind])+'" fill-opacity=".58"/>').join('');
+ const rects=zones.map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+ttGraduatedZoneColour(z,opposition)+'" fill-opacity=".95"/>').join('');
  const labels=showLabels?zones.filter(z=>z.w>=37&&z.h>=27&&z.kind!=='corner').map(z=>{
   const x=z.x+z.w/2,y=z.y+z.h/2;
   const name=z.kind==='six'?'6-yard':z.kind==='box'?'18-yard':z.kind==='outside'?'Outside 18':z.kind==='midfield'?'Midfield':z.kind==='wide'?'Wide MF':'Wing';
