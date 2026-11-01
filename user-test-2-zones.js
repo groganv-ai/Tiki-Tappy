@@ -36,27 +36,33 @@ function ttLocationZones(){
   return zones;
  }
  const L=['left','centre','right'],sides=[false,true],wing=18+324*.18,wingWidth=324*.18;
+ // U12–U17 share the U12 selection grid; actual pitch markings remain age-specific.
+ const shared=ttCurrentAge()>=12;
+ const zoneDepth=shared?Math.min(125,524*12/64):g.areaDepth;
+ const zoneWidth=shared?Math.min(285,324*28/44):g.areaWidth;
+ const zoneSixDepth=shared?0:g.sixDepth;
+ const zoneSixWidth=shared?0:g.sixWidth;
  for(const south of sides){
   const side=south?'Defensive':'Attacking',Y=(y,h)=>south?560-y-h:y;
-  const boxY=18,boxH=g.areaDepth,boxX=180-g.areaWidth/2;
-  const sixX=180-g.sixWidth/2,sixH=g.sixDepth;
+  const boxY=18,boxH=zoneDepth,boxX=180-zoneWidth/2;
+  const sixX=180-zoneSixWidth/2,sixH=zoneSixDepth;
   const outerEnd=boxH?18+boxH:18;
   const outsideEnd=18+(280-18)*.69;
   const wideEnd=18+(280-18)*.69;
-  if(g.areaWidth){
+  if(zoneWidth){
    add(18,Y(18,boxH),boxX-18,boxH,side+' wing, left','wing');
-   add(boxX+g.areaWidth,Y(18,boxH),342-boxX-g.areaWidth,boxH,side+' wing, right','wing');
+   add(boxX+zoneWidth,Y(18,boxH),342-boxX-zoneWidth,boxH,side+' wing, right','wing');
    for(let i=0;i<3;i++){
-    const sx=boxX+i*g.areaWidth/3,ex=sx+g.areaWidth/3;
+    const sx=boxX+i*zoneWidth/3,ex=sx+zoneWidth/3;
     if(g.sixWidth&&sixH){
      // Split 18-yard columns around the single central six-yard rectangle.
-     const a=Math.max(sx,sixX),b=Math.min(ex,sixX+g.sixWidth);
+     const a=Math.max(sx,sixX),b=Math.min(ex,sixX+zoneSixWidth);
      if(a>sx)add(sx,Y(18,sixH),a-sx,sixH,side+' 18-yard box, '+L[i],'box');
      if(ex>b)add(b,Y(18,sixH),ex-b,sixH,side+' 18-yard box, '+L[i],'box');
-     add(sx,Y(18+sixH,boxH-sixH),g.areaWidth/3,boxH-sixH,side+' 18-yard box, '+L[i],'box');
-    }else add(sx,Y(18,boxH),g.areaWidth/3,boxH,side+' goal area, '+L[i],'box');
+     add(sx,Y(18+sixH,boxH-sixH),zoneWidth/3,boxH-sixH,side+' 18-yard box, '+L[i],'box');
+    }else add(sx,Y(18,boxH),zoneWidth/3,boxH,side+' goal area, '+L[i],'box');
    }
-   if(sixH)add(sixX,Y(18,sixH),g.sixWidth,sixH,side+' six-yard box','six');
+   if(sixH)add(sixX,Y(18,sixH),zoneSixWidth,sixH,side+' six-yard box','six');
   }
   const outsideStart=outerEnd,outsideHeight=Math.max(0,outsideEnd-outsideStart);
   if(outsideHeight){
