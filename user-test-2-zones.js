@@ -113,3 +113,36 @@ drawMatchPitch=function(ctx,area,half=null){
  }
  ctx.restore();return rect;
 };
+
+// Add a labelled location map to exported match reports when location data exists.
+if(typeof makeMatchReportPages==='function'){
+ const ttReportPagesBeforeZones=makeMatchReportPages;
+ makeMatchReportPages=async function(snapshot=reportSnapshot()){
+  const pages=await ttReportPagesBeforeZones(snapshot);
+  const matches=snapshot.day?.matches||[snapshot.match];
+  for(const m of matches){
+   const located=(m.events||[]).filter(e=>e.point&&Number.isFinite(e.point.x)&&Number.isFinite(e.point.y));
+   if(!located.length)continue;
+   const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+   const ctx=canvas.getContext('2d');
+   ctx.fillStyle='#f7f7f0';ctx.fillRect(0,0,1080,1920);
+   ctx.fillStyle='#153e33';ctx.fillRect(0,0,1080,112);
+   ctx.fillStyle='#d6ee83';ctx.font='bold 34px sans-serif';ctx.fillText('TikiTapper',45,68);
+   ctx.fillStyle='#173e33';ctx.font='bold 42px sans-serif';ctx.fillText('Match location map',45,185);
+   ctx.font='26px sans-serif';ctx.fillText(String(m.opponent||'Match'),45,232);
+   const pitch=drawMatchPitch(ctx,{x:225,y:280,width:630,height:1400});
+   for(const e of located){
+    const px=pitch.x+e.point.x*pitch.width,py=pitch.y+e.point.y*pitch.height;
+    ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);
+    ctx.fillStyle=e.opp?'#f07171':'#f9d15b';ctx.fill();
+    ctx.lineWidth=3;ctx.strokeStyle='#173e33';ctx.stroke();
+   }
+   ctx.fillStyle='#173e33';ctx.font='22px sans-serif';
+   ctx.fillText('● Our actions     ● Opposition actions',45,1770);
+   ctx.fillText('Locations show recorded zones, not exact ball positions.',45,1810);
+   ctx.fillText('© 2026 Vincent Grogan. All rights reserved.',45,1885);
+   pages.push(canvas);
+  }
+  return pages;
+ };
+}
