@@ -60,6 +60,19 @@ function ttLocationZones(){
 }
 const TT_ZONE_COLOURS={six:'#b7ed40',box:'#27854d',outside:'#11623f',midfield:'#19894b',wide:'#49aa66',wing:'#05857d',corner:'#6a9035'};
 const TT_OPP_ZONE_COLOURS={six:'#e5a0a0',box:'#b94e56',outside:'#8c343f',midfield:'#a43e48',wide:'#c5656c',wing:'#a34b61',corner:'#e09b84'};
+
+// Graduated by distance to the nearest goal: darkest at halfway, lighter near goals.
+// Keep a subtle horizontal variation so adjacent zones remain distinguishable.
+function ttGraduatedZoneColour(z,opposition=false){
+ const centre=z.y+z.h/2;
+ const proximity=Math.min(1,Math.abs(centre-280)/262);
+ const start=opposition?[93,36,43]:[13,72,48];
+ const end=opposition?[225,124,124]:[135,205,126];
+ const lateral=Math.abs(z.x+z.w/2-180)/180;
+ const mix=Math.min(1,Math.max(0,.07+proximity*.83+lateral*.06));
+ const rgb=start.map((n,i)=>Math.round(n+(end[i]-n)*mix));
+ return 'rgb('+rgb.join(',')+')';
+}
 function ttZoneSVG(zones,showLabels=false,opposition=false){
  const rects=zones.map(z=>'<rect x="'+z.x+'" y="'+z.y+'" width="'+z.w+'" height="'+z.h+'" fill="'+(opposition?TT_OPP_ZONE_COLOURS[z.kind]:TT_ZONE_COLOURS[z.kind])+'" fill-opacity=".58"/>').join('');
  const labels=showLabels?zones.filter(z=>z.w>=37&&z.h>=27&&z.kind!=='corner').map(z=>{
@@ -86,7 +99,7 @@ v2Zones=ttLocationZones;
 entryPitchSVG=function(){return ttZoneSVG(ttLocationZones(),true,!!captureV2?.event?.opp)};
 
 // The video/highlight canvas uses the same zones and labels as the selector.
-drawMatchPitch=function(ctx,area,half=null,opposition=false){
+drawMatchPitch=function(ctx,area,half=null,opposition=false,showLabels=false){
  const cropped=half==='north'||half==='south',viewH=cropped?280:560,viewY=half==='south'?280:0;
  const scale=Math.min(area.width/360,area.height/viewH),visibleY=area.y+(area.height-viewH*scale)/2;
  const rect={x:area.x+(area.width-360*scale)/2,y:visibleY-viewY*scale,width:360*scale,height:560*scale};
@@ -94,7 +107,7 @@ drawMatchPitch=function(ctx,area,half=null,opposition=false){
  ctx.save();if(cropped){ctx.beginPath();ctx.rect(rect.x,visibleY,rect.width,viewH*scale);ctx.clip()}
  ctx.translate(rect.x,rect.y);ctx.scale(scale,scale);
  ctx.fillStyle=opposition?'#713c3f':'#326749';ctx.fillRect(0,0,360,560);
- for(const z of zones){ctx.fillStyle=(opposition?TT_OPP_ZONE_COLOURS:TT_ZONE_COLOURS)[z.kind];ctx.globalAlpha=.78;ctx.fillRect(z.x,z.y,z.w,z.h)}
+ for(const z of zones){ctx.fillStyle=ttGraduatedZoneColour(z,opposition);ctx.globalAlpha=.95;ctx.fillRect(z.x,z.y,z.w,z.h)}
  ctx.globalAlpha=1;
  ctx.lineWidth=1.3;ctx.strokeStyle='rgba(229,241,223,.7)';ctx.setLineDash([3,5]);
  for(const z of zones.filter(z=>z.kind!=='corner')){ctx.strokeRect(z.x,z.y,z.w,z.h)}
@@ -104,6 +117,7 @@ drawMatchPitch=function(ctx,area,half=null,opposition=false){
  if(g.areaWidth){const x=180-g.areaWidth/2,d=g.areaDepth;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+g.areaWidth,y+(south?-d:d));ctx.lineTo(x+g.areaWidth,y);ctx.stroke()}}
  if(g.sixWidth){const x=180-g.sixWidth/2,d=g.sixDepth;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+g.sixWidth,y+(south?-d:d));ctx.lineTo(x+g.sixWidth,y);ctx.stroke()}}
  ctx.beginPath();ctx.moveTo(149,18);ctx.lineTo(149,7);ctx.lineTo(211,7);ctx.lineTo(211,18);ctx.moveTo(149,542);ctx.lineTo(149,553);ctx.lineTo(211,553);ctx.lineTo(211,542);ctx.stroke();
+ if(showLabels){
  ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 10px sans-serif';
  for(const z of zones){
   if(z.w<40||z.h<30||z.kind==='corner')continue;
@@ -111,6 +125,7 @@ drawMatchPitch=function(ctx,area,half=null,opposition=false){
   const title=({six:'6-yard',box:'18-yard',outside:'Outside 18',midfield:'Midfield',wide:'Wide MF',wing:'Wing'})[z.kind];
   const side=/left$/.test(z.label)?' L':/right$/.test(z.label)?' R':/centre$/.test(z.label)?' C':'';
   ctx.fillText(title+side,z.x+z.w/2,z.y+z.h/2,Math.max(20,z.w-4));
+ }
  }
  ctx.restore();return rect;
 };
@@ -131,7 +146,7 @@ if(typeof makeMatchReportPages==='function'){
    ctx.fillStyle='#d6ee83';ctx.font='bold 34px sans-serif';ctx.fillText('TikiTapper',45,68);
    ctx.fillStyle='#173e33';ctx.font='bold 42px sans-serif';ctx.fillText('Match location map',45,185);
    ctx.font='26px sans-serif';ctx.fillText(String(m.opponent||'Match'),45,232);
-   const pitch=drawMatchPitch(ctx,{x:225,y:280,width:630,height:1400},null,false);
+   const pitch=drawMatchPitch(ctx,{x:225,y:280,width:630,height:1400},null,false,true);
    for(const e of located){
     const px=pitch.x+e.point.x*pitch.width,py=pitch.y+e.point.y*pitch.height;
     ctx.beginPath();ctx.arc(px,py,12,0,Math.PI*2);
