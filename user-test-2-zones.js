@@ -25,6 +25,7 @@ function ttLocationZones(){
     const y=Y(start,end-start),h=end-start;
     for(let i=0;i<3;i++){
      const lane=['left','centre','right'][i];
+     if(start===18&&i===1)continue;
      add(18+i*108,y,108,h,side+' '+label.toLowerCase()+', '+lane,kind);
     }
    }
