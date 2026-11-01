@@ -83,3 +83,33 @@ function ttZoneSVG(zones,showLabels=false){
 }
 v2Zones=ttLocationZones;
 entryPitchSVG=function(){return ttZoneSVG(ttLocationZones(),true)};
+
+// The video/highlight canvas uses the same zones and labels as the selector.
+drawMatchPitch=function(ctx,area,half=null){
+ const cropped=half==='north'||half==='south',viewH=cropped?280:560,viewY=half==='south'?280:0;
+ const scale=Math.min(area.width/360,area.height/viewH),visibleY=area.y+(area.height-viewH*scale)/2;
+ const rect={x:area.x+(area.width-360*scale)/2,y:visibleY-viewY*scale,width:360*scale,height:560*scale};
+ const g=ttLocationGeometry(),zones=ttLocationZones();
+ ctx.save();if(cropped){ctx.beginPath();ctx.rect(rect.x,visibleY,rect.width,viewH*scale);ctx.clip()}
+ ctx.translate(rect.x,rect.y);ctx.scale(scale,scale);
+ ctx.fillStyle='#326749';ctx.fillRect(0,0,360,560);
+ for(const z of zones){ctx.fillStyle=TT_ZONE_COLOURS[z.kind];ctx.globalAlpha=.78;ctx.fillRect(z.x,z.y,z.w,z.h)}
+ ctx.globalAlpha=1;
+ ctx.lineWidth=1.3;ctx.strokeStyle='rgba(229,241,223,.7)';ctx.setLineDash([3,5]);
+ for(const z of zones.filter(z=>z.kind!=='corner')){ctx.strokeRect(z.x,z.y,z.w,z.h)}
+ ctx.setLineDash([]);ctx.strokeStyle='#e5f1df';ctx.lineWidth=2.4;
+ ctx.strokeRect(18,18,324,524);ctx.beginPath();ctx.moveTo(18,280);ctx.lineTo(342,280);ctx.stroke();
+ ctx.beginPath();ctx.arc(180,280,34,0,Math.PI*2);ctx.stroke();
+ if(g.areaWidth){const x=180-g.areaWidth/2,d=g.areaDepth;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+g.areaWidth,y+(south?-d:d));ctx.lineTo(x+g.areaWidth,y);ctx.stroke()}}
+ if(g.sixWidth){const x=180-g.sixWidth/2,d=g.sixDepth;for(const south of [false,true]){const y=south?542:18;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+(south?-d:d));ctx.lineTo(x+g.sixWidth,y+(south?-d:d));ctx.lineTo(x+g.sixWidth,y);ctx.stroke()}}
+ ctx.beginPath();ctx.moveTo(149,18);ctx.lineTo(149,7);ctx.lineTo(211,7);ctx.lineTo(211,18);ctx.moveTo(149,542);ctx.lineTo(149,553);ctx.lineTo(211,553);ctx.lineTo(211,542);ctx.stroke();
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 10px sans-serif';
+ for(const z of zones){
+  if(z.w<40||z.h<30||z.kind==='corner')continue;
+  ctx.fillStyle=z.kind==='six'?'#173b2a':'#fff';
+  const title=({six:'6-yard',box:'18-yard',outside:'Outside 18',midfield:'Midfield',wide:'Wide MF',wing:'Wing'})[z.kind];
+  const side=/left$/.test(z.label)?' L':/right$/.test(z.label)?' R':/centre$/.test(z.label)?' C':'';
+  ctx.fillText(title+side,z.x+z.w/2,z.y+z.h/2,Math.max(20,z.w-4));
+ }
+ ctx.restore();return rect;
+};
