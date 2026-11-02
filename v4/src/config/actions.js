@@ -5,7 +5,7 @@ export const ACTIONS=Object.freeze({
  shot:{label:'Shot',location:true,outcome:true,labels:['Good Shot','Great Effort','Fantastic Effort']},
  pass:{label:'Pass',labels:['Great Pass','Amazing Pass','Incredible Pass']},
  tackle:{label:'Tackle',labels:['Great Tackle','Big Tackle','Crunching Tackle']},
- block:{label:'Block',labels:['Big Clearance','Crucial Intercept','Crucial Intercept']},
+ block:{label:'Block',labels:['Important Block','Brilliant Block','Outstanding Block']},
  clearance:{label:'Clearance',labels:['Important Clearance','Great Clearance','Outstanding Clearance']},
  save:{label:'Save',labels:['Good Save','Great Save','Incredible Save']},
  skill:{label:'Skill',labels:['Great Skill','Brilliant Dribble','Amazing First Touch']},
@@ -15,4 +15,5 @@ export const ACTIONS=Object.freeze({
  substitution:{label:'Substitution',special:true}
 });
 export const REPORT_CATEGORIES=Object.freeze(['goal','assist','shot','save','tackle','block','clearance','pass','skill','teamwork','team-values','set-piece']);
+export const DEFAULT_QUALITY=1; // Good: first positive level; Basic remains an explicit Coach quick-entry option.
 export function qualityFor(action,level){if(!ACTIONS[action])throw Error('Unknown action: '+action);if(!QUALITY_LEVELS.includes(level))throw Error('Invalid quality');return {level,label:level==='basic'?'Basic':ACTIONS[action].labels?.[level-1]||'Good'};}
