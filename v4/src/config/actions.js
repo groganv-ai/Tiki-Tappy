@@ -11,9 +11,12 @@ export const ACTIONS=Object.freeze({
  skill:{label:'Skill',labels:['Great Skill','Brilliant Dribble','Amazing First Touch']},
  teamwork:{label:'Teamwork',labels:['Great Teamwork','Brilliant Support','Great Sportsmanship']},
  'team-values':{label:'Team Values',labels:['Great Sportsmanship','Fantastic Improvement','Showed fair play']},
- 'set-piece':{label:'Set piece',special:true},
+ 'set-piece':{label:'Set piece',special:true,labels:['Set piece','Set piece','Set piece']},
  substitution:{label:'Substitution',special:true}
 });
 export const REPORT_CATEGORIES=Object.freeze(['goal','assist','shot','save','tackle','block','clearance','pass','skill','teamwork','team-values','set-piece']);
 export const DEFAULT_QUALITY=1; // Good: first positive level; Basic remains an explicit Coach quick-entry option.
 export function qualityFor(action,level){if(!ACTIONS[action])throw Error('Unknown action: '+action);if(!QUALITY_LEVELS.includes(level))throw Error('Invalid quality');return {level,label:level==='basic'?'Basic':ACTIONS[action].labels?.[level-1]||'Good'};}
+
+export const SET_PIECE_TYPES=Object.freeze(['corner','free-kick','goal-kick']);
+export function validateSetPiece(type){if(!SET_PIECE_TYPES.includes(type))throw Error('Invalid set piece type');return type;}
