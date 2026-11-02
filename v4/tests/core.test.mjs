@@ -11,3 +11,9 @@ test('clock elapsed across pause and resume',()=>{let c={elapsedMs:0,startedAt:n
 test('coach and player start identical capture state',()=>{const m=newMatch();assert.deepEqual(startCapture(m,'shot',2,'p1'),startCapture(m,'shot',2,'p1'));assert.equal(captureStage(startCapture(m,'shot',2,'p1')),'outcome')});
 test('goal requires a location',()=>{const m=newMatch();assert.throws(()=>makeEvent({match:m,action:'goal',playerId:'p1'}))});
 test('action registry includes shared quick actions',()=>{for(const a of ['goal','shot','pass','tackle','block','skill'])assert.ok(ACTIONS[a])});
+
+test('default quality is Good tier',()=>{assert.equal(startCapture(newMatch(),'pass').quality,1)});
+test('opposition saved shot links goalkeeper',()=>{const e=makeEvent({match:newMatch(),action:'shot',team:'opposition',outcome:'saved',location:{x:.5,y:.2},savePlayerId:'p1'});assert.equal(e.savePlayerId,'p1')});
+test('formation and bench eligibility',async()=>{const {addPlayer,substitute,isEligible,goalkeeper}=await import('../src/core/team-state.js');let m=addPlayer(newMatch(),'Bench');const bench=m.players.at(-1).id;assert.equal(isEligible(m,bench),false);m=substitute(m,'p2',bench);assert.equal(isEligible(m,'p2'),false);assert.equal(isEligible(m,bench),true);assert.equal(goalkeeper(m).id,'p1')});
+test('linked assist requires location',()=>assert.throws(()=>makeEvent({match:newMatch(),action:'goal',playerId:'p1',location:{x:.5,y:.2},assistPlayerId:'p2'})));
+test('both input modes use same capture stage',()=>{const m=newMatch();const a=startCapture(m,'goal',2,'p2');assert.equal(captureStage(a),'location')});
