@@ -1,0 +1,13 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {ACTIONS,qualityFor,REPORT_CATEGORIES} from '../src/config/actions.js';
+import {newMatch,score,toggleClock,elapsed} from '../src/core/match-engine.js';
+import {makeEvent,commitEvent,undoEvent} from '../src/core/event-store.js';
+import {startCapture,captureStage} from '../src/capture/flow.js';
+test('all twelve reporting categories',()=>assert.equal(REPORT_CATEGORIES.length,12));
+test('four distinct quality values',()=>{const q=['basic',1,2,3].map(v=>qualityFor('tackle',v));assert.deepEqual(q.map(x=>x.level),['basic',1,2,3]);assert.equal(new Set(q.map(x=>x.label)).size,4)});
+test('goal and assist are linked without double-counting score',()=>{let m=newMatch();const e=makeEvent({match:m,action:'goal',playerId:'p1',quality:1,location:{x:.5,y:.1},assistPlayerId:'p2'});m=commitEvent(m,e);assert.deepEqual(score(m.events),[1,0]);assert.equal(m.events[0].assistPlayerId,'p2');assert.deepEqual(score(undoEvent(m).events),[0,0])});
+test('shot outcome is required',()=>{const m=newMatch();assert.throws(()=>makeEvent({match:m,action:'shot',playerId:'p1',location:{x:.5,y:.1}}))});
+test('clock elapsed across pause and resume',()=>{let c={elapsedMs:0,startedAt:null,running:false,period:1};c=toggleClock(c,1000);assert.equal(elapsed(c,61000),60000);c=toggleClock(c,61000);assert.equal(elapsed(c,99000),60000)});
+test('coach and player start identical capture state',()=>{const m=newMatch();assert.deepEqual(startCapture(m,'shot',2,'p1'),startCapture(m,'shot',2,'p1'));assert.equal(captureStage(startCapture(m,'shot',2,'p1')),'outcome')});
+test('goal requires a location',()=>{const m=newMatch();assert.throws(()=>makeEvent({match:m,action:'goal',playerId:'p1'}))});
+test('action registry includes shared quick actions',()=>{for(const a of ['goal','shot','pass','tackle','block','skill'])assert.ok(ACTIONS[a])});
