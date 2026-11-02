@@ -162,3 +162,24 @@ paintReplay=function(ctx,model,seconds){
  ctx.fillText(note,45,628,630);ctx.restore();
 };
 // Keep the existing set-piece flow and pitch untouched.
+
+// Preserve set-piece capture and its atomic linked outcomes; expose the approved fourth type.
+SP_TYPES.splice(0,SP_TYPES.length,'Corner','Free kick','Goal kick','Penalty');
+const ttOldSpLocation=spApplyAssumedLocation;
+spApplyAssumedLocation=function(){
+ if(spFlow?.draft?.type==='Goal kick'){
+  spFlow.draft.locationLabel=spFlow.draft.opp?'Opposition goal kick':'Our goal kick';
+  spFlow.draft.point={x:.5,y:spFlow.draft.opp?.03:.97};
+  return;
+ }
+ ttOldSpLocation();
+};
+// Make the saved-shot option explicit without changing its stored outcome.
+const ttOldCaptureDraw=drawV2Capture;
+drawV2Capture=function(){
+ ttOldCaptureDraw();
+ if(captureV2&&(['outcome','player'].includes(captureV2.stage))&&captureV2.event.action==='Shot'){
+  const sheet=document.querySelector('#modal .v2-capture');
+  if(sheet)for(const span of sheet.querySelectorAll('button span'))if(span.textContent==='Saved')span.textContent='On Target (Saved)';
+ }
+};
