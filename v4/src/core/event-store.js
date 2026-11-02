@@ -1,5 +1,5 @@
-import {ACTIONS,qualityFor} from '../config/actions.js';
-export function makeEvent({match,action,playerId=null,team='ours',quality=1,outcome=null,location=null,assistPlayerId=null,assistLocation=null,savePlayerId=null,now=Date.now()}){
+import {ACTIONS,qualityFor,validateSetPiece} from '../config/actions.js';
+export function makeEvent({match,action,playerId=null,team='ours',quality=1,outcome=null,location=null,assistPlayerId=null,assistLocation=null,savePlayerId=null,setPieceType=null,now=Date.now()}){
  if(!ACTIONS[action])throw Error('Unsupported action');
  if(!['ours','opposition'].includes(team))throw Error('Invalid team');
  if(team==='ours'&&!playerId&&!ACTIONS[action].special)throw Error('Player required');
@@ -11,8 +11,9 @@ export function makeEvent({match,action,playerId=null,team='ours',quality=1,outc
  if(assistPlayerId&&!assistLocation)throw Error('Assist location required');
  if(assistLocation&&(!Number.isFinite(assistLocation.x)||!Number.isFinite(assistLocation.y)||assistLocation.x<0||assistLocation.x>1||assistLocation.y<0||assistLocation.y>1))throw Error('Invalid assist location');
  if(savePlayerId&&(action!=='shot'||team!=='opposition'||outcome!=='saved'||!match.players.some(p=>p.id===savePlayerId)))throw Error('Invalid linked save');
+ if(setPieceType){validateSetPiece(setPieceType);if(!['goal','shot','set-piece'].includes(action))throw Error('Set piece cannot be linked to this action');}if(action==='set-piece'&&!setPieceType)throw Error('Set piece type required');
  const q=qualityFor(action,quality);
- return {id:crypto.randomUUID(),matchId:match.id,type:action,team,playerId,quality:q,outcome,location,assistPlayerId,assistLocation,savePlayerId,matchTime:{period:match.clock.period,elapsedMs:match.clock.elapsedMs+(match.clock.running?Math.max(0,now-match.clock.startedAt):0)},createdAt:new Date(now).toISOString()};
+ return {id:crypto.randomUUID(),matchId:match.id,type:action,team,playerId,quality:q,outcome,location,assistPlayerId,assistLocation,savePlayerId,setPieceType,matchTime:{period:match.clock.period,elapsedMs:match.clock.elapsedMs+(match.clock.running?Math.max(0,now-match.clock.startedAt):0)},createdAt:new Date(now).toISOString()};
 }
 export function commitEvent(match,event){if(event.matchId!==match.id||match.events.some(e=>e.id===event.id))throw Error('Invalid event');return {...match,events:[...match.events,event]};}
 export function undoEvent(match){const last=match.events.at(-1);if(!last)return match;let next={...match,events:match.events.slice(0,-1)};if(last.type==='substitution'){const off=match.players.find(p=>p.id===last.offPlayerId),on=match.players.find(p=>p.id===last.onPlayerId);if(off&&on){next.players=match.players.map(p=>p.id===off.id?{...p,onPitch:true,role:on.role}:p.id===on.id?{...p,onPitch:false}:p)}}return next;}
