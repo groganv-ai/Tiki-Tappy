@@ -6,3 +6,11 @@ export function goalkeeper(match){return lineup(match).find(p=>p.role==='GK')||n
 export function addPlayer(match,name,role='MD'){const trimmed=name.trim();if(!trimmed)throw Error('Player name required');if(match.players.some(p=>p.name.toLowerCase()===trimmed.toLowerCase()))throw Error('Player already exists');return {...match,players:[...match.players,{id:crypto.randomUUID(),name:trimmed,role,onPitch:false}]};}
 export function assignFormation(match,formation){const slots=FORMATIONS[formation];if(!slots)throw Error('Unknown formation');const ids=match.players.slice(0,slots.length).map(p=>p.id);return {...match,formation,players:match.players.map(p=>{const index=ids.indexOf(p.id);return {...p,onPitch:index>=0,role:index>=0?slots[index]:p.role}})}}
 export function substitute(match,offId,onId){if(offId===onId||!isEligible(match,offId)||isEligible(match,onId)||!match.players.some(p=>p.id===onId))throw Error('Invalid substitution');const role=match.players.find(p=>p.id===offId).role;return {...match,players:match.players.map(p=>p.id===offId?{...p,onPitch:false}:p.id===onId?{...p,onPitch:true,role}:p)}}
+
+export function recordSubstitution(match,offId,onId,now=Date.now()){
+ if(!match.clock.running||match.clock.finished)throw Error('Substitutions require a running match');
+ const next=substitute(match,offId,onId);
+ const off=match.players.find(p=>p.id===offId),on=match.players.find(p=>p.id===onId);
+ const event={id:crypto.randomUUID(),matchId:match.id,type:'substitution',team:'ours',playerId:onId,offPlayerId:offId,onPlayerId:onId,quality:{level:'basic',label:'Basic'},matchTime:{period:match.clock.period,elapsedMs:match.clock.elapsedMs+Math.max(0,now-match.clock.startedAt)},createdAt:new Date(now).toISOString()};
+ return {...next,events:[...match.events,event]};
+}
