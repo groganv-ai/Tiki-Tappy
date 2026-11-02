@@ -183,3 +183,12 @@ drawV2Capture=function(){
   if(sheet)for(const span of sheet.querySelectorAll('button span'))if(span.textContent==='Saved')span.textContent='On Target (Saved)';
  }
 };
+
+// New four-level labels use zero-based ranks; legacy events keep their previous interpretation.
+const ttOldHighlightRank=highlightQualityRank;
+highlightQualityRank=function(e,category=v2Category(e)){
+ const labels=TT_ACTION_NAMES[category],label=String(e?.qualityLabel||'').toLowerCase();
+ const index=labels?.findIndex(v=>v.toLowerCase()===label)??-1;
+ if(index>=0)return index;
+ return ttOldHighlightRank(e,category);
+};
