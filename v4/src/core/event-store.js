@@ -15,4 +15,4 @@ export function makeEvent({match,action,playerId=null,team='ours',quality=1,outc
  return {id:crypto.randomUUID(),matchId:match.id,type:action,team,playerId,quality:q,outcome,location,assistPlayerId,assistLocation,savePlayerId,matchTime:{period:match.clock.period,elapsedMs:match.clock.elapsedMs+(match.clock.running?Math.max(0,now-match.clock.startedAt):0)},createdAt:new Date(now).toISOString()};
 }
 export function commitEvent(match,event){if(event.matchId!==match.id||match.events.some(e=>e.id===event.id))throw Error('Invalid event');return {...match,events:[...match.events,event]};}
-export function undoEvent(match){return {...match,events:match.events.slice(0,-1)};}
+export function undoEvent(match){const last=match.events.at(-1);if(!last)return match;let next={...match,events:match.events.slice(0,-1)};if(last.type==='substitution'){const off=match.players.find(p=>p.id===last.offPlayerId),on=match.players.find(p=>p.id===last.onPlayerId);if(off&&on){next.players=match.players.map(p=>p.id===off.id?{...p,onPitch:true,role:on.role}:p.id===on.id?{...p,onPitch:false}:p)}}return next;}
