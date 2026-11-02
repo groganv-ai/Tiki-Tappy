@@ -23,18 +23,30 @@ eventModal=function(){
 };
 
 let coachDetailsOpen=false,coachClockOpen=false,coachDrag=null;
-function coachAction(name,q){
- if(name==='Defence')return beginV2('Defence');
- if(name==='Special')return beginV2('Special');
+// Route Coach controls through the same V2 flows as the existing Player UI.
+function coachPrepareFlow(){
+ if(typeof spCloseFlow==='function'&&typeof spFlow!=='undefined'&&spFlow)spCloseFlow();
+ if(typeof captureV2!=='undefined')captureV2=null;
+ if(typeof pending!=='undefined')pending=null;
+ const modal=document.querySelector('#modal');if(modal)modal.innerHTML='';
+}
+function coachAction(name,q=0){
+ const m=match();
+ if(!m||m.ended)return toast('This match has ended.');
+ if(!clockHasStarted(m))return toast('Start the match clock first.');
+ coachPrepareFlow();
  if(name==='Set Piece')return spStartSetPiece();
  if(name==='Substitute')return openSubstitution();
- if(name==='Goal')return beginV2('Goal');
- beginV2(name);
- if(captureV2){captureV2.quality=q===0?0:q-1;drawV2Capture();}
+ const action=({'Def Con':'Defence','Defence':'Defence','Special':'Special'})[name]||name;
+ beginV2(action);
+ if(captureV2&&['Shot','Pass','Tackle'].includes(action)){
+   captureV2.quality=Math.max(0,Math.min(2,q===0?0:q-1));
+   drawV2Capture();
+ }
 }
-function coachSpecial(){return beginV2('Special')}
-function coachGoalChoice(){return beginV2('Goal')}
-function coachExtra(name){return coachAction(({ 'Def Con':'Defence','Set Piece':'Set Piece','Substitute':'Substitute'})[name]||name,0)}
+function coachSpecial(){return coachAction('Special')}
+function coachGoalChoice(){return coachAction('Goal')}
+function coachExtra(name){return coachAction(name)}
 function coachSliderStart(e,name){
  if(e.button!==undefined&&e.button!==0)return;
  const row=e.currentTarget.closest('.v3-action');if(!row)return;
