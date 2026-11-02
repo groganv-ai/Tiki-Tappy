@@ -9,7 +9,7 @@ renderSetup=function(){
   setupBeforeTiming();let html=$('#app').innerHTML;
   html=html.replace('<h2>Create a new matchday</h2>',`<h2>Create a new matchday</h2>${timingField('durationMinutes','twoHalves',30)}`);
   if(day())day().matches.forEach((m,i)=>{
-    const locked=clockHasStarted(m)||m.events.length>0;
+    const locked=false;
     const field=`<div class="match-length-edit">${timingField('length'+i,'halves'+i,durationFor(m),usesHalves(m),locked,`Match ${i+1} length`)}</div>`;
     html=html.replace(new RegExp(`(<input name="time${i}"[^>]*>)`),'$1'+field);
   });$('#app').innerHTML=html;
@@ -23,6 +23,24 @@ createDay=function(e){
 const updateBeforeTiming=updateDay;
 updateDay=function(e){
   const f=new FormData(e.target);updateBeforeTiming(e);
-  day().matches.forEach((m,i)=>{const n=Number(f.get('length'+i));if(!clockHasStarted(m)&&!m.events.length&&n>=2&&n<=180){m.durationMinutes=n;m.twoHalves=f.get('halves'+i)!==null}});save();render();
+  day().matches.forEach((m,i)=>{const n=Number(f.get('length'+i));if(n>=2&&n<=180){m.durationMinutes=n;m.twoHalves=f.get('halves'+i)!==null}});save();render();
 };
 render();
+
+// Timing edits change configuration only: never reset the running clock or recorded actions.
+const ttBeforeUpdateTiming=updateDay;
+updateDay=function(e){
+ const d=day(),snapshots=d?.matches.map(m=>({
+  m,elapsed:m.elapsed,started:m.started,running:m.running,period:m.period,
+  firstHalfElapsed:m.firstHalfElapsed,halfTime:m.halfTime,clockStarted:m.clockStarted,
+  ended:m.ended,events:m.events
+ }))||[];
+ ttBeforeUpdateTiming(e);
+ for(const state of snapshots){
+  const m=state.m;
+  Object.assign(m,{elapsed:state.elapsed,started:state.started,running:state.running,
+   period:state.period,firstHalfElapsed:state.firstHalfElapsed,halfTime:state.halfTime,
+   clockStarted:state.clockStarted,ended:state.ended,events:state.events});
+ }
+ save();render();
+};
