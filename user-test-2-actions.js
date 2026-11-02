@@ -204,8 +204,7 @@ spAfterShotLocation=function(){
 const ttOriginalSetPieceDraw=spDrawFlow;
 spDrawFlow=function(){
  if(spFlow?.stage==='tt-blocker'){
-  const names=match().lineup;
-  document.getElementById('modal').innerHTML='<div class="modal"><div class="sheet"><button class="close" onclick="spCloseFlow()">×</button><h2>Who blocked the shot?</h2><div class="choices">'+names.map(n=>'<button data-name="'+esc(n)+'" onclick="ttSetPieceBlocker(this.dataset.name)">'+esc(n)+'</button>').join('')+'</div></div></div>';
+  document.getElementById('modal').innerHTML='<div class="modal"><div class="sheet"><button class="close" onclick="spCloseFlow()">×</button><h2>Who blocked the shot?</h2>'+teamChoiceSections('ttSetPieceBlocker')+'</div></div>';
   return;
  }
  ttOriginalSetPieceDraw();
