@@ -23,3 +23,10 @@ Add complete shared capture stages, canonical pitch input, lineup and match cloc
 - **Not yet browser-tested or CI-tested.** These are source changes only; no claim of passing tests.
 - The goal-assist and shot-save links are stored within their parent event, rather than creating separate event rows; reporting must expand these links later.
 - Full match clock, set-piece flows, automatic keeper selection from formation, and match/report parity are not complete.
+
+## Milestone 2B
+- Formation selector, on-pitch and bench players, substitution controls, and GK-only selection for opposition saved shots are now wired to the prototype UI.
+- The `v4/package.json` Node ESM configuration and `.github/workflows/v4-unit-tests.yml` provide a dedicated test command and CI workflow.
+- Run locally from `v4/`: `npm test`, then `python3 -m http.server 8000` and open `http://localhost:8000/`.
+- The v4 branch is not the deployed GitHub Pages source. A GitHub branch link shows code, not a running preview. No mobile browser verification or successful CI run is confirmed yet.
+- Remaining: production-equivalent formation layout, substitution events in the timeline, set pieces, precise action-quality wording, complete reporting and browser regression testing.
