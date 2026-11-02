@@ -1,0 +1,24 @@
+import {ACTIONS} from './config/actions.js';
+import {load,persist} from './core/storage.js';
+import {newMatch,toggleClock,elapsed,score,formatClock} from './core/match-engine.js';
+import {makeEvent,commitEvent,undoEvent} from './core/event-store.js';
+let state=load()||{schemaVersion:4,match:newMatch()};
+const app=document.querySelector('#app');
+let draft=null,clockTicker=null;
+function save(){persist(state)}
+function setMatch(match){state={...state,match};save();render()}
+function btn(label,handler,cls=''){const b=document.createElement('button');b.textContent=label;b.className=cls;b.addEventListener('click',handler);return b}
+function el(tag,cls='',text=''){const e=document.createElement(tag);e.className=cls;e.textContent=text;return e}
+function row(parent){const r=el('div','row');parent.append(r);return r}
+function render(){
+ app.replaceChildren();const m=state.match;const title=el('h1','','Match centre');app.append(title);
+ const scoreCard=el('section','card');const sc=el('div','score');const [a,b]=score(m.events);sc.append(el('span','',m.team),el('strong','',a+' – '+b),el('span','',m.opponent));scoreCard.append(sc);const clock=el('h2','',formatClock(elapsed(m.clock)));clock.id='match-clock';scoreCard.append(clock);const cr=row(scoreCard);cr.append(btn(m.clock.running?'Pause':'Start / Resume',()=>setMatch({...m,clock:toggleClock(m.clock)}),'primary'));app.append(scoreCard);
+ const card=el('section','card');card.append(el('h2','','Record a moment'));const modes=row(card);for(const mode of ['coach','player'])modes.append(btn(mode==='coach'?'Coach Mode':'Player Mode',()=>setMatch({...m,mode}),m.mode===mode?'active':''));
+ if(m.mode==='coach'){card.append(btn('⚽ GOAL',()=>begin('goal','basic'),'primary'));for(const action of ['shot','pass','tackle']){const line=el('div','action');for(const [level,label] of [['basic',ACTIONS[action].label],[1,'★'],[2,'★★'],[3,'★★★']])line.append(btn(label,()=>begin(action,level)));card.append(line)}const extras=row(card);for(const [action,label] of [['block','Def Con'],['skill','Special'],['set-piece','Set Piece'],['substitution','Substitute']])extras.append(btn(label,()=>begin(action,'basic')))}
+ else {for(const p of m.players){const section=el('section','card');section.append(el('h3','',p.name));const actions=row(section);for(const action of ['goal','shot','pass','tackle'])actions.append(btn(ACTIONS[action].label,()=>begin(action,1,p.id)));card.append(section)}}
+ app.append(card);const actions=el('section','card');actions.append(el('h2','','Recorded events'));const ur=row(actions);ur.append(btn('Undo last',()=>setMatch(undoEvent(state.match)),m.events.length?'':'muted'));const list=el('ul');for(const e of [...m.events].reverse()){const name=m.players.find(p=>p.id===e.playerId)?.name||'Opposition';list.append(el('li','',formatClock(e.matchTime.elapsedMs)+' · '+name+' · '+ACTIONS[e.type].label+' · '+e.quality.label))}actions.append(list);app.append(actions);
+}
+function begin(action,quality,playerId=null){const m=state.match;if(!m.clock.running){alert('Start the match clock first.');return}if(['set-piece','substitution'].includes(action)){alert('This action will be connected in the next milestone.');return}draft={action,quality,playerId,team:'ours',outcome:null,location:null};showDraft()}
+function showDraft(){const old=document.querySelector('dialog');old?.remove();const d=document.createElement('dialog');const m=state.match;d.append(el('h2','','Record '+ACTIONS[draft.action].label));if(!draft.playerId){d.append(el('p','','Choose a player'));const players=el('div','grid');for(const p of m.players)players.append(btn(p.name,()=>{draft.playerId=p.id;showDraft()}));d.append(players)}else if(draft.action==='shot'&&!draft.outcome){d.append(el('p','','Shot outcome'));for(const o of ['saved','off','blocked'])d.append(btn(o,()=>{draft.outcome=o;showDraft()}))}else if(ACTIONS[draft.action].location&&!draft.location){d.append(el('p','','Choose an approximate pitch location (attacking upwards)'));const pitch=el('div','grid');for(const [label,x,y] of [['Defensive',.5,.85],['Midfield',.5,.5],['Attacking',.5,.15]])pitch.append(btn(label,()=>{draft.location={x,y};showDraft()}));d.append(pitch)}else{d.append(el('p','','Confirm '+ACTIONS[draft.action].label+' · '+(draft.quality==='basic'?'Basic':ACTIONS[draft.action].labels[draft.quality-1])));d.append(btn('Save event',()=>{try{const event=makeEvent({match:state.match,...draft});d.close();d.remove();draft=null;setMatch(commitEvent(state.match,event))}catch(e){alert(e.message)}} ,'primary'))}d.append(btn('Cancel',()=>{draft=null;d.close();d.remove()}));document.body.append(d);d.showModal()}
+function tick(){const clock=document.querySelector('#match-clock');if(clock)clock.textContent=formatClock(elapsed(state.match.clock))}
+render();clockTicker=setInterval(tick,250);
