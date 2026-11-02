@@ -30,7 +30,7 @@ function coachAction(name,q){
  if(name==='Substitute')return openSubstitution();
  if(name==='Goal')return beginV2('Goal');
  beginV2(name);
- if(captureV2){captureV2.quality=q;drawV2Capture();}
+ if(captureV2){captureV2.quality=q===0?0:q-1;drawV2Capture();}
 }
 function coachSpecial(){return beginV2('Special')}
 function coachGoalChoice(){return beginV2('Goal')}
