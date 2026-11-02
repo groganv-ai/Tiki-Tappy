@@ -22,6 +22,17 @@ eventModal=function(){
   $('#modal').innerHTML=`<div class="modal"><div class="sheet"><button class="close" aria-label="Cancel goal" onclick="closeModal()">×</button><div class="eyebrow">${eventTimeLabel(pending)} · Goal</div><h2 style="margin-top:12px">Who scored?</h2><div class="squad">${match().lineup.map(name=>`<button data-name="${esc(name)}" onclick="chooseGoalScorer(this.dataset.name)">${esc(name)}</button>`).join('')}</div><p class="hint">Next: shot location, then an optional assist. Time was captured when you tapped Our goal.</p></div></div>`;
 };
 
+// Agreed November action labels, applied to both modes via shared V2 definitions.
+Object.assign(V2_QUALITY,{
+ Goal:['Great Goal','Amazing Goal','Worldie Goal'],
+ Shot:['Good Shot','Great Effort','Fantastic Effort'],
+ Pass:['Great Pass','Amazing Pass','Incredible Pass'],
+ Tackle:['Great Tackle','Big Tackle','Crunching Tackle'],
+ Skill:['Great Skill','Brilliant Dribble','Amazing First Touch'],
+ Teamwork:['Great Teamwork','Brilliant Support','Great Sportsmanship'],
+ 'Team Values':['Great Sportsmanship','Fantastic Improvement','Showed fair play'],
+ Block:['Big Clearance','Crucial Intercept','Crucial Intercept']
+});
 let coachDetailsOpen=false,coachClockOpen=false,coachDrag=null;
 // Route Coach controls through the same V2 flows as the existing Player UI.
 function coachPrepareFlow(){
@@ -61,7 +72,7 @@ function coachSliderMove(e){
  coachDrag.q=x<0?0:Math.min(3,Math.floor(x/rect.width*3)+1);
  row.querySelectorAll('.v3-zone').forEach((z,i)=>z.classList.toggle('chosen',!coachDrag.cancel&&i+1===coachDrag.q));
  const tip=row.querySelector('.v3-tip');tip.hidden=coachDrag.cancel||coachDrag.q===0;
- if(!tip.hidden){tip.textContent=['Good','Great','Amazing'][coachDrag.q-1]+' '+name;tip.style.left=Math.min(rect.width-45,Math.max(45,x))+'px';}
+ if(!tip.hidden){tip.textContent=(V2_QUALITY[name]||[])[coachDrag.q-1]||name;tip.style.left=Math.min(rect.width-45,Math.max(45,x))+'px';}
 }
 function coachSliderEnd(e){
  if(!coachDrag||coachDrag.id!==e.pointerId)return;
