@@ -53,3 +53,29 @@ function replayPitchPoint(zone,point,rect){
   if(!Number.isInteger(zone)||zone<1||zone>12)return null;
   return {x:rect.x+((zone-1)%3+.5)*rect.width/3,y:rect.y+(3-Math.floor((zone-1)/3)+.5)*rect.height/4};
 }
+
+
+// User Test 2: additive pitch-coordinate helpers. Legacy replay coordinates remain
+// unchanged until entry and replay consumers have been migrated together.
+const TT_PITCH_TEMPLATES=Object.freeze({
+  u7:{format:'4v4',lengthYards:28,widthYards:20,markings:'small-sided'},
+  u9:{format:'5v5',lengthYards:35,widthYards:25,markings:'small-sided'},
+  u11:{format:'7v7',lengthYards:44,widthYards:40,markings:'junior-7v7'},
+  u12:{format:'9v9',lengthYards:64,widthYards:44,markings:'junior-9v9'},
+  u13:{format:'9v9',lengthYards:76,widthYards:44,markings:'junior-9v9'},
+  u17:{format:'11v11',lengthYards:100,widthYards:64,markings:'full'}
+});
+function ttPitchTemplate(age){
+  const n=Number(String(age??'').replace(/[^0-9]/g,''));
+  if(!Number.isFinite(n)||n<6||n>17)return TT_PITCH_TEMPLATES.u17;
+  return TT_PITCH_TEMPLATES[n<=7?'u7':n<=9?'u9':n<=11?'u11':n===12?'u12':n===13?'u13':'u17'];
+}
+function ttClamp01(n){return Math.min(1,Math.max(0,Number(n)))}
+function ttNormalizeEntryPoint(point,{flipped=false}={}){
+  if(!point||!Number.isFinite(point.x)||!Number.isFinite(point.y))return null;
+  // Canonical coordinates: the acting team attacks towards y=0.
+  return {x:ttClamp01(flipped?1-point.x:point.x),y:ttClamp01(flipped?1-point.y:point.y)};
+}
+function ttDisplayEntryPoint(point,{flipped=false}={}){
+  return ttNormalizeEntryPoint(point,{flipped});
+}

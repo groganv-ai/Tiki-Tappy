@@ -1,5 +1,7 @@
 // v0.2: richer events extend the v1 record; original IDs and timestamps survive.
 const V2_QUALITY={Goal:['Great goal','Amazing goal','Worldie goal'],Shot:['Good effort','Great strike','Incredible strike'],Pass:['Great pass','Brilliant pass','World-class pass'],Tackle:['Strong tackle','Brilliant tackle','Outstanding tackle'],Block:['Important block','Brilliant block','Outstanding block'],Clearance:['Important clearance','Great clearance','Outstanding clearance'],Save:['Good save','Great save','Incredible save'],Skill:['Close control','Beat a player','Trick or turn'],Teamwork:['Supporting run','Combination play','Helping a teammate'],'Team Values':['Encouraged someone','Applied coaching','Showed fair play']};
+// Phase 2 quality labels are available before any action modal opens.
+for(const action of Object.keys(V2_QUALITY))V2_QUALITY[action]=['Good','Great','Amazing','Worldie'].map(level=>level+' '+(action==='Team Values'?'contribution':action.toLowerCase()));
 const V2_SPECIAL=['Skill','Teamwork','Team Values'],V2_GRID=['Goal','Shot','Defence','Pass','Special'];
 let captureV2=null,keyActionsOpen=false,keyActionsView='summary';
 function v2Category(e){if(e.category)return e.category;const a=e.action.replace(/^(Great|Good|Amazing|Worldie)\s+/i,'');return ({goal:'Goal',shot:'Shot',pass:'Pass',tackle:'Tackle',block:'Block',clearance:'Clearance',save:'Save',skill:'Skill',teamwork:'Teamwork','team work':'Teamwork',sportsmanship:'Team Values','team values':'Team Values',assist:'Assist'})[a.toLowerCase()]||a}
@@ -27,7 +29,7 @@ function drawV2Capture(){
  if(f.stage==='player'){title=a==='Goal'?'Who scored?':a==='Shot'?'Who took the shot?':'Choose quality, then player';body=v2QualityHTML(a)+v2PlayersHTML(a==='Goal'||a==='Shot');if(f.known){title=(V2_SPECIAL.includes(a)?'Choose contribution for ':'Choose quality for ')+f.known;body=v2QualityHTML(a)+`<div class="v2-players"><h3>Selected player</h3><button class="primary" data-player="${esc(f.known)}" onclick="v2ChoosePlayer(this.dataset.player,${!!f.event.opp})">Record for ${esc(f.known)}</button></div>`}}
  if(f.stage==='player'&&f.known&&a==='Shot'){title='Shot by '+f.known;body=v2QualityHTML('Shot')+'<section class="v2-players"><h3>Shot outcome</h3>'+v2Choices(['Saved','Off target','Blocked'],'v2KnownShotOutcome')+'</section>'}
  if(f.stage==='outcome'){title='What happened to the shot?';body=v2Choices(['Saved','Off target','Blocked'],'v2Outcome')}
- if(f.stage==='location'||f.stage==='assist-location'){title=f.stage==='location'?'Where was the shot taken?':'Where was the assist played?';body=v2PitchHTML()}
+ if(f.stage==='location'||f.stage==='assist-location'){title=f.stage==='location'?'Where was the shot taken?':'Where was the assist played?';body=ttSetPlayHTML()+v2PitchHTML()}
  if(f.stage==='assist-question'){title='Was there an assist?';body='<div class="v2-choices"><button onclick="captureV2.stage=\'assist-player\';drawV2Capture()">Yes, add assist</button><button onclick="finishV2()">No assist</button></div>'}
  if(f.stage==='assist-player'){title='Who made the assist?';body=v2PlayersHTML(false,true)}
  if(f.stage==='keeper'){title='Who made the save?';body=v2QualityHTML('Save')+v2PlayersHTML()}
@@ -50,10 +52,60 @@ function v2Zones(){const zones=[],add=(x,y,w,h,label,text)=>zones.push({x,y,w,h,
  ['left','centre','right'].forEach((s,i)=>add(117+i*42,y(72,84),42,84,`${team} penalty area, ${s} channel`,['18L','18C','18R'][i]));
  add(18,y(18,138),42,138,`${team} left wing`,'LW');add(300,y(18,138),42,138,`${team} right wing`,'RW');
  ['left','centre','right'].forEach((s,i)=>add(18+i*108,y(156,124),108,124,`${team} midfield, ${s}`,['Left','Centre','Right'][i]));}return zones}
-function v2PitchHTML(){return `<p class="v2-pitch-label">OPPOSITION GOAL <span>↑ OUR ATTACK</span></p><div class="v2-pitch">${entryPitchSVG()}${v2Zones().map((z,i)=>`<button aria-label="${z.label}" onclick="v2ChooseZone(${i})" style="left:${z.x/3.6}%;top:${z.y/5.6}%;width:${z.w/3.6}%;height:${z.h/5.6}%">${z.text}</button>`).join('')}</div><p class="v2-pitch-label">OUR GOAL <span>6 = six-yard · 18 = penalty area</span></p><details class="v2-zone-list"><summary>Choose a named zone instead</summary><div class="v2-choices">${v2Zones().map((z,i)=>`<button onclick="v2ChooseZone(${i})">${z.label}</button>`).join('')}</div></details><button class="v2-wide" onclick="v2ChooseZone(-1)">Location unknown</button>`}
-function v2ChooseZone(i){const f=captureV2,z=v2Zones()[i],target=f.stage==='assist-location'?f.event.assist:f.event;target.zone=z?.id||null;target.locationLabel=z?.label||'Location unknown';target.point=z?{x:(z.x+z.w/2)/360,y:(z.y+z.h/2)/560}:null;
- if(f.stage==='assist-location')return finishV2();if(f.event.action==='Goal'&&!f.event.opp)f.stage='assist-question';else if(f.event.action==='Shot'&&f.event.opp&&f.event.outcome==='Saved'){f.stage='keeper';f.quality=0}else return finishV2();drawV2Capture()}
-function finishV2(){const f=captureV2;if(!f||f.match!==match()||match().ended)return cancelV2();match().events.push(f.event);captureV2=null;save();closeModal();render();showActionFeedback(v2Description(f.event),f.event.player+(f.event.save?' · '+f.event.save.qualityLabel+' by '+f.event.save.player:''))}
+// User Test 2: the picker always shows the acting team attacking upwards.
+// Legacy replay coordinates still place opposition attacks in the southern half.
+function ttIsPitchFlipped(){return !!match()?.pitchFlipped}
+function ttFlipPitch(){const m=match();if(!m)return;m.pitchFlipped=!m.pitchFlipped;save();drawV2Capture()}
+function ttPitchZoneDisplay(z,opposition){
+ // The pitch SVG is drawn in its natural coordinates; only the user-selected
+ // 90-degree orientation is applied later to both markings and hit areas.
+ return z;
+}
+function ttSetPlaySelect(type){
+ if(!captureV2||!['Goal','Shot'].includes(captureV2.event.action))return;
+ captureV2.event.restartType=type==='Open Play'?null:type;
+ drawV2Capture();
+}
+function ttSetPlayHTML(){
+ const f=captureV2;
+ if(!f||f.stage!=='location'||!['Goal','Shot'].includes(f.event.action))return '';
+ const selected=f.event.restartType||'Open Play';
+ const choices=[['Open Play','Goal'],['Free Kick','Free kick'],['Corner','Corner'],['Penalty','Penalty']];
+ return '<div class="tt-set-play"><p class="hint">Chance type (optional)</p><div class="tt-set-play-row" role="group" aria-label="Chance type">'+choices.map(([type,icon])=>`<button type="button" class="tt-set-play-option ${type===selected?'active':''}" aria-pressed="${type===selected}" onclick="ttSetPlaySelect('${type}')"><span aria-hidden="true">${actionIconSVG(icon)}</span><span>${type}</span></button>`).join('')+'</div></div>';
+}
+function ttRotatePitch(){
+ const m=match();if(!m)return;
+ m.pitchRotation=((Number(m.pitchRotation)||0)+90)%360;
+ save();drawV2Capture();
+}
+function v2PitchHTML(){
+ const opposition=!!captureV2?.event?.opp,rotation=Number(match()?.pitchRotation)||0;
+ const landscape=rotation%180!==0;
+ const direction=['↑','→','↓','←'][rotation/90]||'↑';
+ const zones=v2Zones(),display=zones.map(z=>ttPitchZoneDisplay(z,opposition));
+ const rotateZone=z=>{
+  if(rotation===90)return {x:560-z.y-z.h,y:z.x,w:z.h,h:z.w};
+  if(rotation===180)return {x:360-z.x-z.w,y:560-z.y-z.h,w:z.w,h:z.h};
+  if(rotation===270)return {x:z.y,y:360-z.x-z.w,w:z.h,h:z.w};
+  return z;
+ };
+ const canvasWidth=landscape?560:360,canvasHeight=landscape?360:560;
+ const pitchSvg=entryPitchSVG().replace('<svg ','<svg style="width:100%;height:100%" ').replace(/fill="#326749"/g,opposition?'fill="#8d4646"':'fill="#326749"').replace(/stroke="#d6ee83"/g,opposition?'stroke="#ffd6a3"':'stroke="#d6ee83"');
+ const angle=rotation;
+ const svgStyle=landscape?'position:absolute;width:64.2857%;height:155.5556%;left:17.8571%;top:-27.7778%;transform:rotate('+angle+'deg);pointer-events:none':'position:absolute;inset:0;width:100%;height:100%;transform:rotate('+angle+'deg);pointer-events:none';
+ return `<div class="tt-pitch-header"><span>${opposition?'OPPOSITION':'OUR'} ATTACK ${direction}</span><button type="button" class="tt-rotate-btn" onclick="ttRotatePitch()" aria-label="Rotate pitch 90 degrees clockwise" title="Rotate pitch 90 degrees clockwise"><span aria-hidden="true">⟳</span> Rotate</button></div><div class="v2-pitch tt-orient-${landscape?'landscape':'portrait'} ${opposition?'tt-opposition-pitch':''}"><div style="${svgStyle}">${pitchSvg}</div>${display.map((z,i)=>{const q=rotateZone(z);return `<button aria-label="${esc(zones[i].label)}" onclick="v2ChooseZone(${i})" style="left:${q.x/canvasWidth*100}%;top:${q.y/canvasHeight*100}%;width:${q.w/canvasWidth*100}%;height:${q.h/canvasHeight*100}%">${zones[i].text}</button>`}).join('')}</div><p class="v2-pitch-label">Tap the area where the action happened <span>Direction ${direction} · ${landscape?'Landscape':'Portrait'}</span></p><details class="v2-zone-list"><summary>Choose a named zone instead</summary><div class="v2-choices">${zones.map((z,i)=>`<button onclick="v2ChooseZone(${i})">${esc(z.label)}</button>`).join('')}</div></details><button class="v2-wide" onclick="v2ChooseZone(-1)">Location unknown</button>`;
+}
+function v2ChooseZone(i){
+ const f=captureV2,z=v2Zones()[i],target=f.stage==='assist-location'?f.event.assist:f.event;
+ target.zone=z?.id||null;target.locationLabel=z?.label||'Location unknown';
+ target.point=z?{x:(z.x+z.w/2)/360,y:(z.y+z.h/2)/560}:null;
+ if(f.stage==='assist-location')return finishV2();
+ if(f.event.action==='Goal'&&!f.event.opp)f.stage='assist-question';
+ else if(f.event.action==='Shot'&&f.event.opp&&f.event.outcome==='Saved'){f.stage='keeper';f.quality=0}
+ else return finishV2();
+ drawV2Capture();
+}
+function finishV2(){const f=captureV2;if(!f||f.match!==match()||match().ended)return cancelV2();if(f.event.restartType&&!f.event.setPiece){const e=f.event;e.setPiece={id:e.id,type:e.restartType,opp:!!e.opp,taker:e.opp?'':e.player,at:e.at,time:captureFields(e),point:e.point||null,locationLabel:e.locationLabel||'Location unknown',status:'Completed'};}match().events.push(f.event);captureV2=null;save();closeModal();render();showActionFeedback(v2Description(f.event),f.event.player+(f.event.save?' · '+f.event.save.qualityLabel+' by '+f.event.save.player:''))}
 function v2ScoreHTML(m){const s=score(m),goals=m.events.filter(e=>e.action==='Goal'),own=goals.filter(e=>!e.opp),opponents=goals.filter(e=>e.opp);return `<div class="score v2-score"><div class="eyebrow">Match ${mi+1} of ${day().matches.length}</div><div class="v2-scoreline"><strong>${esc(day().team)}</strong><b>${s[0]}–${s[1]}</b><strong>${esc(m.opponent)}</strong></div><div class="v2-goal-details"><div><h3>Goals</h3>${own.map(e=>`<p><time>${eventTimeLabel(e)}</time> ${esc(e.player)}</p>`).join('')||'<p>—</p>'}<h3>Assists</h3>${own.filter(e=>e.assist).map(e=>`<p><time>${eventTimeLabel(e)}</time> ${esc(e.assist.player)}</p>`).join('')||'<p>—</p>'}</div><div><h3>Goals</h3>${opponents.map(e=>`<p>${eventTimeLabel(e)}</p>`).join('')||'<p>—</p>'}</div></div>${matchClockHTML(m)}${clockControlsHTML(m)}</div>`}
 function v2SummaryHTML(m){const events=v2Expanded(m),categories=['Goal','Assist','Shot','Save','Tackle','Block','Clearance','Pass','Skill','Teamwork','Team Values'];return `<div class="v2-column-labels"><b>${esc(day().team)}</b><b>${esc(m.opponent)}</b></div>`+categories.filter(c=>events.some(e=>e.category===c)).map(c=>`<section class="v2-action-summary"><h3>${esc(({Goal:'Goals',Assist:'Assists',Shot:'Shots',Save:'Saves',Pass:'Passes'})[c]||c)}</h3><div>${[false,true].map(opp=>{const list=events.filter(e=>e.category===c&&!!e.opp===opp);if(opp&&c==='Goal')return `<div>${list.map(e=>`<p>${eventTimeLabel(e)}</p>`).join('')||'—'}</div>`;const names=[...new Set(list.map(e=>opp?'Opposition':e.player))];return `<div>${names.map(n=>{const rows=list.filter(e=>(opp?'Opposition':e.player)===n),labels=[...new Set(rows.map(v2Description))];return `<p><b>${esc(n)}${rows.length>1?' ('+rows.length+')':''}</b>${labels.map(l=>`<small>${esc(l)}${rows.filter(e=>v2Description(e)===l).length>1?' ×'+rows.filter(e=>v2Description(e)===l).length:''}</small>`).join('')}</p>`}).join('')||'—'}</div>`}).join('')}</div></section>`).join('')||'<p class="hint">No actions recorded yet.</p>'}
 function v2TimelineHTML(m){return [...m.events].sort((a,b)=>b.at-a.at).map(e=>`<div class="v2-timeline-row ${undoMode?'v2-removable':''}" ${undoMode?`role="button" tabindex="0" data-id="${esc(e.id)}" onclick="removeUndoEvent(this.dataset.id)" onkeydown="if(event.key==='Enter'){removeUndoEvent(this.dataset.id)}" aria-label="Remove ${esc(v2Description(e))}"`:''}><div>${!e.opp?v2TimelineText(e):e.save?`<b>${esc(e.save.player)}</b><small>${esc(e.save.qualityLabel)}</small>`:''}</div><div class="v2-time"><time>${eventTimeLabel(e)}</time>${v2Icon(gameEventIcon(e))}</div><div>${e.opp?v2TimelineText(e):''}</div></div>`).join('')||'<p class="hint">The story starts here.</p>'}
