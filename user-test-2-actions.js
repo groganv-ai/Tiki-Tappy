@@ -192,3 +192,47 @@ highlightQualityRank=function(e,category=v2Category(e)){
  if(index>=0)return index;
  return ttOldHighlightRank(e,category);
 };
+
+// A blocked opposition set-piece shot must nominate our defender before saving.
+const ttOriginalSetPieceAfterShot=spAfterShotLocation;
+spAfterShotLocation=function(){
+ if(spFlow?.draft?.opp&&spFlow.outcome?.kind==='Shot'&&spFlow.outcome.result==='Blocked'){
+  spFlow.stage='tt-blocker';return spDrawFlow();
+ }
+ return ttOriginalSetPieceAfterShot();
+};
+const ttOriginalSetPieceDraw=spDrawFlow;
+spDrawFlow=function(){
+ if(spFlow?.stage==='tt-blocker'){
+  const names=match().lineup;
+  document.getElementById('modal').innerHTML='<div class="modal"><div class="sheet"><button class="close" onclick="spCloseFlow()">×</button><h2>Who blocked the shot?</h2><div class="choices">'+names.map(n=>'<button data-name="'+esc(n)+'" onclick="ttSetPieceBlocker(this.dataset.name)">'+esc(n)+'</button>').join('')+'</div></div></div>';
+  return;
+ }
+ ttOriginalSetPieceDraw();
+};
+function ttSetPieceBlocker(name){
+ if(!spFlow||spFlow.stage!=='tt-blocker'||!match().lineup.includes(name))return;
+ spFlow.outcome.block={player:name,qualityLabel:'Block',locationLabel:'Our defensive area'};
+ spFinishOutcome();
+}
+const ttOriginalSetPieceFinish=spFinishOutcome;
+spFinishOutcome=function(){
+ const block=spFlow?.outcome?.block;
+ if(!block)return ttOriginalSetPieceFinish();
+ const id=spFlow.recordId;
+ ttOriginalSetPieceFinish();
+ const e=match().events.find(x=>x.id===id);
+ if(e){e.block=block;save();render();}
+};
+// Icons for every new subtype use the shared SVG/canvas vector system.
+const ttSubtypeIconKeys={
+ 'Big Clearance':'clearance','Crucial Intercept':'tackle',
+ 'Great Skill':'skill','Brilliant Dribble':'skill','Amazing First Touch':'skill',
+ 'Great Teamwork':'teamwork','Brilliant Support':'teamwork',
+ 'Great Sportsmanship':'values','Fantastic Improvement':'values',
+ 'Goal Kick':'setpiece','Goal kick':'setpiece','Free Kick':'freekick'
+};
+const ttPreviousVectorKey=vectorActionKey;
+vectorActionKey=function(action){return ttSubtypeIconKeys[String(action)]||ttPreviousVectorKey(action)};
+const ttPreviousEventIcon=gameEventIcon;
+gameEventIcon=function(e){if(e?.block)return 'Block';if(e?.ttType)return e.ttType;if(e?.ttDefenceType)return e.ttDefenceType;return ttPreviousEventIcon(e)};
