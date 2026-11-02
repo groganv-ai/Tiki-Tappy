@@ -1,12 +1,12 @@
 import {ACTIONS} from '../config/actions.js';
 import {isEligible} from '../core/team-state.js';
-export function startCapture(match,action,quality='basic',playerId=null,team='ours'){
+export function startCapture(match,action,quality=1,playerId=null,team='ours'){
  if(!ACTIONS[action])throw Error('Unknown action');
  if(playerId&&team==='ours'&&!isEligible(match,playerId))throw Error('Player is not on the pitch');
  return {action,quality,playerId,team,outcome:null,location:null,assistPlayerId:null,assistLocation:null,savePlayerId:null,stage:playerId?'details':'player'};
 }
 export function captureStage(draft){
- if(!draft.playerId&&draft.team==='ours')return 'player';
+ if(!draft.playerId&&draft.team==='ours'&&!ACTIONS[draft.action].special)return 'player';
  if(draft.action==='shot'&&!draft.outcome)return 'outcome';
  if(ACTIONS[draft.action].location&&!draft.location)return 'location';
  if(draft.action==='goal'&&draft.team==='ours'&&draft.assistChoice===undefined)return 'assist-choice';
