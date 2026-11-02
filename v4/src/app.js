@@ -1,4 +1,4 @@
-import {ACTIONS} from './config/actions.js';
+import {ACTIONS,SET_PIECE_TYPES} from './config/actions.js';
 import {load,persist} from './core/storage.js';
 import {newMatch,toggleClock,elapsed,score,formatClock,clockStatus,halfTime,secondHalf,fullTime} from './core/match-engine.js';
 import {makeEvent,commitEvent,undoEvent} from './core/event-store.js';
@@ -20,9 +20,9 @@ function render(){
  const card=el('section','card');card.append(el('h2','','Record a moment'));const modes=row(card);for(const mode of ['coach','player'])modes.append(btn(mode==='coach'?'Coach Mode':'Player Mode',()=>setMatch({...m,mode}),m.mode===mode?'active':''));
  if(m.mode==='coach'){card.append(btn('⚽ GOAL',()=>begin('goal','basic'),'primary'));for(const action of ['shot','pass','tackle']){const line=el('div','action');for(const [level,label] of [['basic',ACTIONS[action].label],[1,'★'],[2,'★★'],[3,'★★★']])line.append(btn(label,()=>begin(action,level)));card.append(line)}const extras=row(card);for(const [action,label] of [['block','Def Con'],['skill','Special'],['set-piece','Set Piece'],['substitution','Substitute']])extras.append(btn(label,()=>begin(action,'basic')))}
  else {for(const p of selectPlayers(m)){const section=el('section','card');section.append(el('h3','',p.name));const actions=row(section);for(const action of ['goal','shot','pass','tackle'])actions.append(btn(ACTIONS[action].label,()=>begin(action,1,p.id)));card.append(section)}}
- app.append(card);const actions=el('section','card');actions.append(el('h2','','Recorded events'));const ur=row(actions);ur.append(btn('Undo last',()=>setMatch(undoEvent(state.match)),m.events.length?'':'muted'));const list=el('ul');for(const e of [...m.events].reverse()){const name=e.type==='substitution'?((m.players.find(p=>p.id===e.offPlayerId)?.name||'Player')+' → '+(m.players.find(p=>p.id===e.onPlayerId)?.name||'Player')):(m.players.find(p=>p.id===e.playerId)?.name||'Opposition');const extras=[e.outcome,e.assistPlayerId?'Assist: '+m.players.find(p=>p.id===e.assistPlayerId)?.name:null,e.savePlayerId?'Save: '+m.players.find(p=>p.id===e.savePlayerId)?.name:null].filter(Boolean).join(' · ');list.append(el('li','',formatClock(e.matchTime.elapsedMs)+' · '+name+' · '+ACTIONS[e.type].label+' · '+e.quality.label+(extras?' · '+extras:'')))}actions.append(list);app.append(actions);
+ app.append(card);const actions=el('section','card');actions.append(el('h2','','Recorded events'));const ur=row(actions);ur.append(btn('Undo last',()=>setMatch(undoEvent(state.match)),m.events.length?'':'muted'));const list=el('ul');for(const e of [...m.events].reverse()){const name=e.type==='substitution'?((m.players.find(p=>p.id===e.offPlayerId)?.name||'Player')+' → '+(m.players.find(p=>p.id===e.onPlayerId)?.name||'Player')):(m.players.find(p=>p.id===e.playerId)?.name||'Opposition');const extras=[e.outcome,e.assistPlayerId?'Assist: '+m.players.find(p=>p.id===e.assistPlayerId)?.name:null,e.savePlayerId?'Save: '+m.players.find(p=>p.id===e.savePlayerId)?.name:null,e.setPieceType?'Set piece: '+e.setPieceType:null].filter(Boolean).join(' · ');list.append(el('li','',formatClock(e.matchTime.elapsedMs)+' · '+name+' · '+ACTIONS[e.type].label+' · '+e.quality.label+(extras?' · '+extras:'')))}actions.append(list);app.append(actions);
 }
-function begin(action,quality,playerId=null,team='ours'){const m=state.match;if(!m.clock.running){alert('Start or resume the match clock first.');return}if(['set-piece','substitution'].includes(action)){alert('This action will be connected in the next milestone.');return}try{draft=startCapture(m,action,quality,playerId,team);showDraft()}catch(e){alert(e.message)}}
+function begin(action,quality,playerId=null,team='ours'){const m=state.match;if(!m.clock.running){alert('Start or resume the match clock first.');return}if(action==='substitution'){alert('Use the substitution controls under Team selection.');return}try{draft=startCapture(m,action,quality,playerId,team);showDraft()}catch(e){alert(e.message)}}
 function showDraft(){
  document.querySelector('dialog')?.remove();const d=document.createElement('dialog');const m=state.match;const stage=captureStage(draft);
  d.append(el('h2','','Record '+ACTIONS[draft.action].label));
@@ -31,7 +31,9 @@ function showDraft(){
    const header=row(d);header.append(btn('Formation',()=>{playerView='formation';showDraft()},playerView==='formation'?'active':''),btn('List',()=>{playerView='list';showDraft()},playerView==='list'?'active':''));
    const players=el('div',playerView==='formation'?'formation-grid':'grid');
    for(const p of (playerView==='formation'?[...selectPlayers(m)].sort((a,b)=>['AT','MD','DF','GK'].indexOf(a.role)-['AT','MD','DF','GK'].indexOf(b.role)):selectPlayers(m))){const b=btn((playerView==='formation'?p.role+' · ':'')+p.name,()=>{draft=choosePlayer(draft,m,p.id);showDraft()});players.append(b)}d.append(players);
-   if(['goal','shot'].includes(draft.action))pick('Opposition',()=>{draft.team='opposition';draft.playerId=null});
+   if(['goal','shot','set-piece'].includes(draft.action))pick('Opposition',()=>{draft.team='opposition';draft.playerId=null});
+ }else if(stage==='set-piece-choice'){d.append(el('p','','Did this come from a set piece?'));pick('No · open play',()=>draft.setPieceChoice=false);pick('Yes · set piece',()=>draft.setPieceChoice=true);
+ }else if(stage==='set-piece-type'){d.append(el('p','','Choose set piece'));for(const t of SET_PIECE_TYPES)pick(t.replaceAll('-',' '),()=>draft.setPieceType=t);
  }else if(stage==='outcome'){
    d.append(el('p','','Shot outcome'));for(const [o,label] of [['saved','On target · saved'],['off','Off target'],['blocked','Blocked']])pick(label,()=>draft.outcome=o);
  }else if(stage==='location'||stage==='assist-location'){
