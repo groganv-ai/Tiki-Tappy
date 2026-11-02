@@ -24,25 +24,17 @@ eventModal=function(){
 
 let coachDetailsOpen=false,coachClockOpen=false,coachDrag=null;
 function coachAction(name,q){
- const m=match();if(m.ended)return toast('Match finished.');
- if(!m.running&&!m.elapsed)return toast('Start the match clock first.');
- if(!m.lineup.length)return lineupModal();
- pending={id:crypto.randomUUID(),action:(q?['Good','Great','Amazing'][q-1]+' ':'')+name,at:elapsed(m),opp:false,player:'',zone:null};
- eventModal();
+ if(name==='Defence')return beginV2('Defence');
+ if(name==='Special')return beginV2('Special');
+ if(name==='Set Piece')return spStartSetPiece();
+ if(name==='Substitute')return openSubstitution();
+ if(name==='Goal')return beginV2('Goal');
+ beginV2(name);
+ if(captureV2){captureV2.quality=q;drawV2Capture();}
 }
-function coachSpecial(){
- const options=['Skill','Teamwork','Sportsmanship','Improvement'];
- $('#modal').innerHTML='<div class="modal"><div class="sheet"><button class="close" onclick="closeModal()">×</button><h2>Special action</h2><div class="squad">'+options.map(x=>'<button onclick="closeModal();coachAction(\''+x+'\',0)">'+x+'</button>').join('')+'</div></div></div>';
-}
-function coachGoalChoice(){
- $('#modal').innerHTML='<div class="modal"><div class="sheet"><button class="close" onclick="closeModal()">×</button><h2>Record goal</h2><div class="squad"><button onclick="closeModal();beginCoachGoal(false)">Our goal</button><button onclick="closeModal();beginCoachGoal(true)">Opposition goal</button></div></div></div>';
-}
-function coachExtra(name){
- if(name==='Special')return coachSpecial();
- if(name==='Def Con')return coachAction('Defensive Contribution',0);
- if(name==='Set Piece')return coachAction('Set Piece',0);
- if(name==='Substitute')return typeof substitutionModal==='function'?substitutionModal():toast('Use player mode for substitutions for now.');
-}
+function coachSpecial(){return beginV2('Special')}
+function coachGoalChoice(){return beginV2('Goal')}
+function coachExtra(name){return coachAction(({ 'Def Con':'Defence','Set Piece':'Set Piece','Substitute':'Substitute'})[name]||name,0)}
 function coachSliderStart(e,name){
  if(e.button!==undefined&&e.button!==0)return;
  const row=e.currentTarget.closest('.v3-action');if(!row)return;
@@ -66,10 +58,13 @@ function coachSliderEnd(e){
  if(!cancel)coachAction(name,q);
 }
 function coachScreen(m){
- const d=day(),s=score(m),goals=m.events.filter(e=>e.action==='Goal'),period=m.ended?'Full time':m.halfTime?'Half time':m.running?'● IN PLAY':'PAUSED';
- const detail=goals.map(e=>'<div>'+esc(e.opp?m.opponent:(e.player||d.team))+' · '+(typeof eventTimeLabel==='function'?eventTimeLabel(e):fmt(e.at))+'</div>').join('')||'<div>No goals recorded</div>';
+ const d=day();
  const sliders=['Shot','Pass','Tackle'].map((name,i)=>'<div class="v3-action"><button class="v3-origin" onpointerdown="coachSliderStart(event,\''+name+'\')" onpointermove="coachSliderMove(event)" onpointerup="coachSliderEnd(event)" onpointercancel="coachDrag=null">'+['⚽','➜','⊥'][i]+' '+name+'</button><div class="v3-track" onpointerdown="coachSliderStart(event,\''+name+'\')" onpointermove="coachSliderMove(event)" onpointerup="coachSliderEnd(event)" onpointercancel="coachDrag=null"><span class="v3-zone">★</span><span class="v3-zone">★★</span><span class="v3-zone">★★★</span><span class="v3-tip" hidden></span></div></div>').join('');
- return '<style>.v3-coach{--v3green:#174f3b;--v3lime:#d5ff6c}.v3-coach .v3-card{background:#fff;border-radius:18px;padding:13px;margin:12px 0}.v3-score{display:flex;align-items:center;justify-content:space-between;gap:9px;text-align:center}.v3-score span{flex:1;min-width:0;font-weight:800}.v3-score strong{background:#174f3b;color:#fff;padding:12px;border-radius:12px;font-size:26px;white-space:nowrap}.v3-details{margin-top:10px}.v3-details summary{cursor:pointer;text-align:center;padding:10px;background:#eaf3ef;border-radius:10px}.v3-clock{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.v3-clock strong{font-size:26px;margin:auto}.v3-clock button{padding:12px}.v3-goal{width:100%;padding:18px!important;background:var(--v3lime)!important;color:#153e30!important;font-size:26px!important;font-weight:900!important}.v3-action{display:flex;gap:7px;margin:12px 0;height:60px}.v3-origin{width:29%;min-width:90px;background:var(--v3lime)!important;color:#153e30!important;font-weight:900;touch-action:none}.v3-track{position:relative;flex:1;display:flex;border-radius:13px;overflow:visible;border:2px solid #7cbea2;touch-action:none;user-select:none}.v3-zone{display:flex;align-items:center;justify-content:center;flex:1;background:#d7eee0;color:#d49c00;border-right:1px dashed #5a9b81;font-size:19px}.v3-zone:nth-child(2){background:#b4e4c9}.v3-zone:nth-child(3){background:#83cba5;border:0}.v3-zone.chosen{background:#d5ff6c}.v3-tip{position:absolute;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;background:#174f3b;color:white;padding:5px 8px;border-radius:8px;font-size:12px;z-index:2}.v3-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.v3-quick button{font-size:12px;min-height:64px;padding:6px}.v3-hint{font-size:12px;color:#59796c}.v3-tools{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:400px){.v3-score span{font-size:12px}.v3-origin{min-width:77px;font-size:13px}.v3-quick button{font-size:11px}}</style><div class="v3-coach"><div class="top"><button onclick="view=\'setup\';render()">Edit matchday ↗</button></div>'+tabs()+inputModeBar(m)+'<div class="v3-card"><div class="v3-score"><span>'+esc(d.team)+'</span><strong>'+s[0]+' – '+s[1]+'</strong><span>'+esc(m.opponent)+'</span></div><details class="v3-details" '+(coachDetailsOpen?'open':'')+' ontoggle="coachDetailsOpen=this.open"><summary>Goals & assists ▾</summary>'+detail+'</details></div><div class="v3-card"><div class="v3-clock"><span>'+esc(period)+'</span><strong id="clock">'+clockText(m)+'</strong><button onclick="toggleClock()">'+(m.running?'Ⅱ Pause':clockHasStarted(m)?'▶ Resume':'▶ Start')+'</button><button onclick="coachClockOpen=!coachClockOpen;render()">⌄</button></div>'+(!m.running||coachClockOpen?'<div style="margin-top:10px">'+clockControlsHTML(m)+'</div>':'')+'</div><div class="v3-card"><button class="v3-goal" onclick="coachGoalChoice()" '+(m.ended?'disabled':'')+'>⚽ GOAL</button><p class="v3-hint">Tap for Basic · slide right for quality</p>'+sliders+'<div class="v3-quick">'+['Def Con','Special','Set Piece','Substitute'].map((n,i)=>'<button onclick="coachExtra(\''+n+'\')">'+['🛡','✧','⚑','⇄'][i]+'<br>'+n+'</button>').join('')+'</div></div><div class="v3-card v3-tools"><button onclick="undoLastAction()">↶ Undo</button><button onclick="view=\'report\';render()">Match report ↗</button></div>'+(m.ended?'<div class="card">'+awardControls(m)+'</div>':'')+'</div>';
+
+ return "<style>.v3-coach{--v3green:#174f3b;--v3lime:#d5ff6c}.v3-coach .v3-card{background:#fff;border-radius:18px;padding:13px;margin:12px 0}.v3-score{display:flex;align-items:center;justify-content:space-between;gap:9px;text-align:center}.v3-score span{flex:1;min-width:0;font-weight:800}.v3-score strong{background:#174f3b;color:#fff;padding:12px;border-radius:12px;font-size:26px;white-space:nowrap}.v3-details{margin-top:10px}.v3-details summary{cursor:pointer;text-align:center;padding:10px;background:#eaf3ef;border-radius:10px}.v3-clock{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.v3-clock strong{font-size:26px;margin:auto}.v3-clock button{padding:12px}.v3-goal{width:100%;padding:18px!important;background:var(--v3lime)!important;color:#153e30!important;font-size:26px!important;font-weight:900!important}.v3-action{display:flex;gap:7px;margin:12px 0;height:60px}.v3-origin{width:29%;min-width:90px;background:var(--v3lime)!important;color:#153e30!important;font-weight:900;touch-action:none}.v3-track{position:relative;flex:1;display:flex;border-radius:13px;overflow:visible;border:2px solid #7cbea2;touch-action:none;user-select:none}.v3-zone{display:flex;align-items:center;justify-content:center;flex:1;background:#d7eee0;color:#d49c00;border-right:1px dashed #5a9b81;font-size:19px}.v3-zone:nth-child(2){background:#b4e4c9}.v3-zone:nth-child(3){background:#83cba5;border:0}.v3-zone.chosen{background:#d5ff6c}.v3-tip{position:absolute;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;background:#174f3b;color:white;padding:5px 8px;border-radius:8px;font-size:12px;z-index:2}.v3-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.v3-quick button{font-size:12px;min-height:64px;padding:6px}.v3-hint{font-size:12px;color:#59796c}.v3-tools{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:400px){.v3-score span{font-size:12px}.v3-origin{min-width:77px;font-size:13px}.v3-quick button{font-size:11px}}</style>"+
+ '<div class="v3-coach"><p class="sub v2-match-meta">'+esc(d.date)+' · '+esc(d.location)+'</p>'+tabs()+inputModeBar(m)+
+ '<div class="v2-layout"><div>'+v2ScoreHTML(m)+v2Details(m)+'</div><div><div class="card v2-input"><div class="sectionhead moment-heading"><h2>Record a moment</h2></div><button class="v3-goal" onclick="coachGoalChoice()">⚽ GOAL</button><p class="v3-hint">Tap for Basic · slide right for quality</p>'+sliders+
+ '<div class="v3-quick"><button onclick="coachExtra(\'Def Con\')">🛡<br>Def Con</button><button onclick="coachExtra(\'Special\')">✧<br>Special</button><button onclick="coachExtra(\'Set Piece\')">⚑<br>Set Piece</button><button onclick="coachExtra(\'Substitute\')">⇄<br>Substitute</button></div><div class="v3-tools"><button onclick="undoLastAction()">↶ Undo</button><button onclick="view=\'report\';render()">Match report ↗</button></div></div></div></div></div>';
 }
 const renderBeforeCoach=render;
 render=function(){
