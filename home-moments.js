@@ -14,9 +14,4 @@ function toggleHomeMoments(button){
  const showcase=button.closest('.home-moments'),paused=showcase.classList.toggle('is-paused');
  button.setAttribute('aria-pressed',String(paused));button.textContent=paused?'Play examples':'Pause examples';
 }
-const homeMomentsWelcomeBefore=welcome;
-welcome=function(){
- homeMomentsWelcomeBefore();
- $('#app').innerHTML=$('#app').innerHTML.replace('<div class="clock">00:00</div>',homeMomentsHTML());
-};
-render();
+// The home view calls homeMomentsHTML() directly from free-matchday.js.
