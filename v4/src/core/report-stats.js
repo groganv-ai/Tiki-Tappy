@@ -3,11 +3,11 @@ const CATEGORIES=REPORT_CATEGORIES;
 export function eventCounts(events){
  const totals=Object.fromEntries(CATEGORIES.map(c=>[c,0]));
  for(const e of events){
+  if(e.type==='shot'&&e.team==='opposition'&&e.outcome==='saved'&&e.savePlayerId)totals.save++;
   if(e.team!=='ours')continue;
   if(e.type==='substitution')continue;
   if(e.type in totals)totals[e.type]++;
   if(e.type==='goal'&&e.assistPlayerId)totals.assist++;
-  if(e.type==='shot'&&e.outcome==='saved'&&e.savePlayerId)totals.save++;
   if(e.setPieceType&&e.type!=='set-piece')totals['set-piece']++;
  }
  return totals;
