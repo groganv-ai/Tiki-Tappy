@@ -35,13 +35,31 @@ function freeDayValues(form){
   const f=new FormData(form),text=k=>String(f.get(k)||'').trim();
   return {team:text('teamName'),squad:[...new Set(text('players').split('\n').map(n=>n.trim()).filter(Boolean))],date:text('date'),location:text('location'),opponents:text('opponents').split('\n').map(n=>n.trim()).filter(Boolean),durationMinutes:Number(f.get('durationMinutes'))||30,twoHalves:f.get('twoHalves')!==null};
 }
+function freeDayValidationError(f){
+  if(!f.team||f.team.length>120||f.squad.length<2||f.squad.length>60||f.squad.some(n=>n.length>80)||!f.date||!f.location||!f.opponents.length||f.opponents.length>20||f.opponents.some(x=>!x.split(',')[0].trim()))return 'Enter a team name, 2–60 players, date, venue and at least one opponent.';
+  if(f.durationMinutes<2||f.durationMinutes>180)return 'Choose a match length between 2 and 180 minutes.';
+  return '';
+}
 createDay=function(e){
-  e.preventDefault();const f=freeDayValues(e.target);
-  if(!f.team||f.team.length>120||f.squad.length<2||f.squad.length>60||f.squad.some(n=>n.length>80)||!f.date||!f.location||!f.opponents.length||f.opponents.length>20||f.opponents.some(x=>!x.split(',')[0].trim()))return toast('Enter a team name, 2–60 players, date, venue and at least one opponent.');
-  if(f.durationMinutes<2||f.durationMinutes>180)return toast('Choose a match length between 2 and 180 minutes.');
+  e.preventDefault();const f=freeDayValues(e.target),error=freeDayValidationError(f);
+  if(error)return toast(error);
   leaveFreeDemo();freePendingDay=f;
   if(day()){$('#modal').innerHTML=`<div class="modal"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="replace-title"><h2 id="replace-title">Replace your current matchday?</h2><p>Download or share your current reports first. Continuing permanently deletes this matchday’s team, players, results, actions, photo and saved report progress from this device.</p><div class="links"><button onclick="freePendingDay=null;closeModal()">Cancel</button><button class="primary" onclick="confirmFreeDay()">Delete current & create new</button></div></section></div>`;return}
   confirmFreeDay();
+};
+// Matchday details and timing are updated together, without a late wrapper.
+updateDay=function(e){
+  e.preventDefault();
+  const f=new FormData(e.target),d=day();if(!d)return;
+  d.date=f.get('date');d.location=f.get('location');
+  d.matches.forEach((m,i)=>{
+    m.opponent=f.get('opp'+i);m.time=f.get('time'+i);
+    const n=Number(f.get('length'+i));
+    if(!clockHasStarted(m)&&!m.events.length&&n>=2&&n<=180){
+      m.durationMinutes=n;m.twoHalves=f.get('halves'+i)!==null;
+    }
+  });
+  save();toast('Matchday updated');render();
 };
 function confirmFreeDay(){
   const f=freePendingDay;if(!f)return;freePendingDay=null;
