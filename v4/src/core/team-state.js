@@ -8,9 +8,9 @@ export function assignFormation(match,formation){const slots=FORMATIONS[formatio
 export function substitute(match,offId,onId){if(offId===onId||!isEligible(match,offId)||isEligible(match,onId)||!match.players.some(p=>p.id===onId))throw Error('Invalid substitution');const role=match.players.find(p=>p.id===offId).role;return {...match,players:match.players.map(p=>p.id===offId?{...p,onPitch:false}:p.id===onId?{...p,onPitch:true,role}:p)}}
 
 export function recordSubstitution(match,offId,onId,now=Date.now()){
- if(!match.clock.running||match.clock.finished)throw Error('Substitutions require a running match');
+ if(match.clock.finished||match.clock.halfTime||(!match.clock.running&&match.clock.startedAt===null&&match.clock.elapsedMs===0))throw Error('Substitutions require a started match');
  const next=substitute(match,offId,onId);
  const off=match.players.find(p=>p.id===offId),on=match.players.find(p=>p.id===onId);
- const event={id:crypto.randomUUID(),matchId:match.id,type:'substitution',team:'ours',playerId:onId,offPlayerId:offId,onPlayerId:onId,quality:{level:'basic',label:'Basic'},matchTime:{period:match.clock.period,elapsedMs:match.clock.elapsedMs+Math.max(0,now-match.clock.startedAt)},createdAt:new Date(now).toISOString()};
+ const event={id:crypto.randomUUID(),matchId:match.id,type:'substitution',team:'ours',playerId:onId,offPlayerId:offId,onPlayerId:onId,quality:{level:'basic',label:'Basic'},matchTime:{period:match.clock.period,elapsedMs:match.clock.elapsedMs+(match.clock.running?Math.max(0,now-match.clock.startedAt):0)},createdAt:new Date(now).toISOString()};
  return {...next,events:[...match.events,event]};
 }
