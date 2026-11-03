@@ -1,21 +1,26 @@
 import {ACTIONS,qualityFor,validateSetPiece} from '../config/actions.js';
 export function makeEvent({match,action,playerId=null,team='ours',quality=1,outcome=null,location=null,assistPlayerId=null,assistLocation=null,savePlayerId=null,setPieceType=null,now=Date.now()}){
- if(!ACTIONS[action])throw Error('Unsupported action');
+ if(!ACTIONS[action]||action==='substitution')throw Error('Unsupported action');
+ if(match.clock.finished||match.clock.halfTime)throw Error('Match is not accepting events');
  if(!['ours','opposition'].includes(team))throw Error('Invalid team');
  if(team==='ours'&&!playerId&&!ACTIONS[action].special)throw Error('Player required');
  if(playerId&&!match.players.some(p=>p.id===playerId))throw Error('Unknown player');
+ if(team==='ours'&&playerId&&match.players.find(p=>p.id===playerId)?.onPitch===false)throw Error('Player is not on pitch');
+ if(team==='opposition'&&playerId)throw Error('Opposition events cannot assign our player');
  if(action==='shot'&&!['saved','off','blocked'].includes(outcome))throw Error('Shot outcome required');
  if(ACTIONS[action].location&&!location)throw Error('Pitch location required');
  if(location&&(!Number.isFinite(location.x)||!Number.isFinite(location.y)||location.x<0||location.x>1||location.y<0||location.y>1))throw Error('Invalid pitch location');
- if(assistPlayerId&&(action!=='goal'||assistPlayerId===playerId||!match.players.some(p=>p.id===assistPlayerId)))throw Error('Invalid assist');
+ if(assistPlayerId&&(team!=='ours'||action!=='goal'||assistPlayerId===playerId||!match.players.some(p=>p.id===assistPlayerId)))throw Error('Invalid assist');
+ if(assistPlayerId&&match.players.find(p=>p.id===assistPlayerId)?.onPitch===false)throw Error('Assister is not on pitch');
  if(assistPlayerId&&!assistLocation)throw Error('Assist location required');
  if(assistLocation&&(!Number.isFinite(assistLocation.x)||!Number.isFinite(assistLocation.y)||assistLocation.x<0||assistLocation.x>1||assistLocation.y<0||assistLocation.y>1))throw Error('Invalid assist location');
+ if(savePlayerId&&match.players.find(p=>p.id===savePlayerId)?.onPitch===false)throw Error('Goalkeeper is not on pitch');
  if(savePlayerId&&(action!=='shot'||team!=='opposition'||outcome!=='saved'||!match.players.some(p=>p.id===savePlayerId)))throw Error('Invalid linked save');
  if(setPieceType){validateSetPiece(setPieceType);if(!['goal','shot','set-piece'].includes(action))throw Error('Set piece cannot be linked to this action');}if(action==='set-piece'&&!setPieceType)throw Error('Set piece type required');
  const q=qualityFor(action,quality);
  return {id:crypto.randomUUID(),matchId:match.id,type:action,team,playerId,quality:q,outcome,location,assistPlayerId,assistLocation,savePlayerId,setPieceType,matchTime:{period:match.clock.period,elapsedMs:match.clock.elapsedMs+(match.clock.running?Math.max(0,now-match.clock.startedAt):0)},createdAt:new Date(now).toISOString()};
 }
-export function commitEvent(match,event){if(event.matchId!==match.id||match.events.some(e=>e.id===event.id))throw Error('Invalid event');return {...match,events:[...match.events,event]};}
+export function commitEvent(match,event){if(match.clock.finished||match.clock.halfTime)throw Error('Match is not accepting events');if(event.matchId!==match.id||match.events.some(e=>e.id===event.id))throw Error('Invalid event');return {...match,events:[...match.events,event]};}
 export function undoEvent(match){const last=match.events.at(-1);if(!last)return match;let next={...match,events:match.events.slice(0,-1)};if(last.type==='substitution'){const off=match.players.find(p=>p.id===last.offPlayerId),on=match.players.find(p=>p.id===last.onPlayerId);if(off&&on){next.players=match.players.map(p=>p.id===off.id?{...p,onPitch:true,role:on.role}:p.id===on.id?{...p,onPitch:false}:p)}}return next;}
 
 export function removeEvent(match,eventId){
