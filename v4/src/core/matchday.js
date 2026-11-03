@@ -20,3 +20,27 @@ export function setMatchdayDetails(day,{team=day.team,venue=day.venue,date=day.d
  if(day.matches.some(m=>m.clock.running))throw Error('Pause all clocks before changing matchday setup');
  return {...day,team:team.trim()||'Our Team',venue,date,matchMinutes,twoHalves,matches:day.matches.map(m=>({...m,team:team.trim()||'Our Team',matchMinutes,twoHalves,venue:m.venue===day.venue?venue:m.venue,date:m.date===day.date?date:m.date}))};
 }
+
+export function addSquadPlayer(day,name,role='MD'){
+ const trimmed=String(name||'').trim();
+ if(!trimmed)throw Error('Player name required');
+ if(day.players.some(p=>p.name.toLowerCase()===trimmed.toLowerCase()))throw Error('Player already exists');
+ if(day.matches.some(m=>m.clock.running))throw Error('Pause the clock before editing squad');
+ const player={id:crypto.randomUUID(),name:trimmed,role,onPitch:false};
+ return {...day,players:[...day.players,player],matches:day.matches.map(m=>({...m,players:[...m.players,{...player}]}))};
+}
+export function renameSquadPlayer(day,id,name){
+ const trimmed=String(name||'').trim();
+ if(!trimmed)throw Error('Player name required');
+ if(!day.players.some(p=>p.id===id))throw Error('Unknown player');
+ if(day.players.some(p=>p.id!==id&&p.name.toLowerCase()===trimmed.toLowerCase()))throw Error('Player already exists');
+ if(day.matches.some(m=>m.clock.running))throw Error('Pause the clock before editing squad');
+ const rename=p=>p.id===id?{...p,name:trimmed}:p;
+ return {...day,players:day.players.map(rename),matches:day.matches.map(m=>({...m,players:m.players.map(rename)}))};
+}
+export function removeSquadPlayer(day,id){
+ if(!day.players.some(p=>p.id===id))throw Error('Unknown player');
+ if(day.matches.some(m=>m.clock.running))throw Error('Pause the clock before editing squad');
+ if(day.matches.some(m=>m.events.some(e=>[e.playerId,e.assistPlayerId,e.savePlayerId,e.offPlayerId,e.onPlayerId].includes(id))))throw Error('Cannot remove a player with recorded events');
+ return {...day,players:day.players.filter(p=>p.id!==id),matches:day.matches.map(m=>({...m,players:m.players.filter(p=>p.id!==id)}))};
+}
