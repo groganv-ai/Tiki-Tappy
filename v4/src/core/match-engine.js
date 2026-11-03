@@ -4,7 +4,9 @@ export function toggleClock(clock,now=Date.now()){if(clock.finished||clock.halfT
 export function score(events){return events.reduce((s,e)=>{if(e.type==='goal')s[e.team==='opposition'?1:0]++;return s},[0,0]);}
 export function formatClock(ms){const seconds=Math.floor(ms/1000);return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');}
 
+export function displayElapsed(match,now=Date.now()){const ms=elapsed(match.clock,now);return match.twoHalves!==false&&match.clock.period===2?ms+Math.floor((match.matchMinutes||30)/2)*60000:ms}
+export function periodLabel(match){return match.twoHalves===false?'Full match':match.clock.period===1?'First half':'Second half'}
 export function clockStatus(clock){return clock.finished?'FULL TIME':clock.halfTime?'HALF TIME':clock.running?'IN PLAY':'PAUSED'}
-export function halfTime(clock,now=Date.now()){if(clock.finished||clock.period!==1)throw Error('Half time unavailable');return {...clock,elapsedMs:elapsed(clock,now),startedAt:null,running:false,halfTime:true}}
+export function halfTime(clock,now=Date.now()){if(clock.running||clock.finished||clock.halfTime||clock.period!==1)throw Error('Half time unavailable');return {...clock,elapsedMs:elapsed(clock,now),startedAt:null,running:false,halfTime:true}}
 export function secondHalf(clock,now=Date.now()){if(!clock.halfTime||clock.period!==1)throw Error('Not at half time');return {...clock,period:2,elapsedMs:0,startedAt:now,running:true,halfTime:false}}
-export function fullTime(clock,now=Date.now()){if(clock.finished)throw Error('Already finished');return {...clock,elapsedMs:elapsed(clock,now),startedAt:null,running:false,halfTime:false,finished:true}}
+export function fullTime(clock,now=Date.now()){if(clock.running||clock.finished||clock.halfTime)throw Error('Already finished');return {...clock,elapsedMs:elapsed(clock,now),startedAt:null,running:false,halfTime:false,finished:true}}
