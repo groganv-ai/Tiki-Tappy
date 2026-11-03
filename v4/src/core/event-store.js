@@ -17,3 +17,17 @@ export function makeEvent({match,action,playerId=null,team='ours',quality=1,outc
 }
 export function commitEvent(match,event){if(event.matchId!==match.id||match.events.some(e=>e.id===event.id))throw Error('Invalid event');return {...match,events:[...match.events,event]};}
 export function undoEvent(match){const last=match.events.at(-1);if(!last)return match;let next={...match,events:match.events.slice(0,-1)};if(last.type==='substitution'){const off=match.players.find(p=>p.id===last.offPlayerId),on=match.players.find(p=>p.id===last.onPlayerId);if(off&&on){next.players=match.players.map(p=>p.id===off.id?{...p,onPitch:true,role:on.role}:p.id===on.id?{...p,onPitch:false}:p)}}return next;}
+
+export function removeEvent(match,eventId){
+ const event=match.events.find(e=>e.id===eventId);
+ if(!event)throw Error('Event not found');
+ if(event.type==='substitution')throw Error('Substitutions must be undone in reverse order');
+ return {...match,events:match.events.filter(e=>e.id!==eventId)};
+}
+export function changeEventQuality(match,eventId,level){
+ const event=match.events.find(e=>e.id===eventId);
+ if(!event)throw Error('Event not found');
+ if(event.type==='substitution')throw Error('Substitution quality cannot be changed');
+ const quality=qualityFor(event.type,level);
+ return {...match,events:match.events.map(e=>e.id===eventId?{...e,quality}:e)};
+}
