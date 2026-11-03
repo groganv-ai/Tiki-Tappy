@@ -15,3 +15,4 @@ function toggleHomeMoments(button){
  button.setAttribute('aria-pressed',String(paused));button.textContent=paused?'Play examples':'Pause examples';
 }
 // The home view calls homeMomentsHTML() directly from free-matchday.js.
+render();
