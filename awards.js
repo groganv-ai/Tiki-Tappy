@@ -12,11 +12,6 @@ function drawPlayerDayModal(){
 function chooseAwardDraft(name){if(awardMatch!==match()||!awardMatch.lineup.includes(name))return;awardDraft=name;drawPlayerDayModal()}
 function savePlayerDay(){if(awardMatch!==match()||!awardMatch.ended||!awardMatch.lineup.includes(awardDraft))return;awardMatch.playerOfDay=awardDraft;save();closeModal();render();showActionFeedback('Player of the Day',awardDraft)}
 function clearPlayerDay(){if(awardMatch!==match())return;delete awardMatch.playerOfDay;save();closeModal();render();toast('Player of the Day removed.')}
-const clockBeforeAward=selectClock;
-selectClock=function(action){
-  clockBeforeAward(action);const m=match();
-  if(action==='restart'&&m&&!clockHasStarted(m)&&!m.events.length){delete m.playerOfDay;save();render()}
-};
 function awardControls(m){return `<div class="award-inline"><div class="eyebrow">★ Player of the Day</div><strong>${m.playerOfDay?esc(m.playerOfDay):'Choose your standout player'}</strong><button onclick="playerDayModal()">${m.playerOfDay?'Change selection':'Choose player'}</button></div>`}
 const renderBeforeAward=render;
 render=function(){renderBeforeAward();if(view!=='live'||!match()?.ended)return;const app=$('#app');app.innerHTML=app.innerHTML.replace('<div class="card" style="margin-top:20px">',`<div class="card award-card" style="margin-top:20px">${awardControls(match())}</div><div class="card" style="margin-top:20px">`)};

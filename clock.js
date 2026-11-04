@@ -4,6 +4,10 @@ function clockHasStarted(m){return !!(m.clockStarted||m.elapsed||m.running||m.en
 function clockButtonLabel(m){return m.ended?'Reopen match':m.halfTime?'Start second half':m.running?'Pause':clockHasStarted(m)?'Resume':'Start'}
 function selectClock(action){
   const m=match();if(!m)return;
+  if(action==='toggle'&&typeof preMatchPending==='function'&&preMatchPending()){
+    clearPreMatchFeedback();return toast('Confirm your team before starting the clock.');
+  }
+  if(action==='toggle'&&!clockHasStarted(m)&&!m.teamStart&&!m.events.length)return toast('Choose and confirm the team before kick-off.');
   let feedback='';
   if(action==='toggle'){
     if(m.running){m.elapsed=elapsed(m);m.running=false;feedback='Clock paused'}
@@ -21,6 +25,12 @@ function selectClock(action){
     else if(action==='restart'){m.elapsed=0;m.running=false;m.started=null;m.clockStarted=false;m.ended=false;m.halfTime=false;m.period=1;m.firstHalfElapsed=0;m.events=[];pending=null;undoMode=false;feedback='Match reset'}
     else return;
   }
+  if(action==='restart'){
+    m.inputMode='player';delete m.playerOfDay;
+    if(typeof teamSyncKeeper==='function')teamSyncKeeper(m);
+    if(day()?.endFlow){delete dayFlow().reviewKey;dayFlow().stage='review'}
+  }
+  if(action==='full'){closeModal();view='live'}
   save();render();showActionFeedback(feedback,action==='restart'?'0′ · all match actions cleared':clockText(m),false,'clock');
 }
 toggleClock=function(){selectClock('toggle')};
@@ -50,8 +60,9 @@ function clockIconSVG(action,m=match()){
   const paths=symbol==='pause'?'<path d="M8 5v14M16 5v14"/>':symbol==='play'?'<path d="m8 5 11 7-11 7z"/>':symbol==='restart'?'<path d="M5 10a8 8 0 1 1 0 6M5 4v6h6"/>':`<path d="M10 2h4M12 2v3M18 5l2 2"/><circle cx="12" cy="14" r="8"/>${symbol==='half'?'<path d="M12 6a8 8 0 0 1 0 16z" fill="currentColor" opacity=".28"/>':'<circle cx="12" cy="14" r="6" fill="currentColor" opacity=".2"/>'}<path d="M12 10v4l3 2"/>`;
   return `<svg class="clock-icon" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths}</svg>`;
 }
+function matchStatus(m){return m.ended?'Full time':m.halfTime?'Half time':m.running?'IN PLAY':clockHasStarted(m)?'Paused':'Ready'}
 function matchClockHTML(m){
-  const status=m.ended?'Full time':m.halfTime?'Half time':m.running?'IN PLAY':clockHasStarted(m)?'Paused':'Ready';
+  const status=matchStatus(m);
   return `<div class="timer-block"><div class="timer-status" role="status">${status}</div><div class="timer-row">${m.running?'<span class="live-clock-dot" aria-hidden="true"></span>':''}<div class="clock" id="clock">${clockText(m)}</div></div></div>`;
 }
 function clockButton(action,label,primary=false){
@@ -68,14 +79,4 @@ window.addEventListener('pointercancel',cancelClockHold);
 window.addEventListener('pointermove',moveClockHold);
 window.addEventListener('blur',cancelClockHold);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelClockHold()});
-const beforeClockRender=render;
-render=function(){
-  if(clockHold&&clockHold.match!==match())cancelClockHold();
-  beforeClockRender();if(view!=='live'||!match())return;
-  const m=match(),paused=!m.running&&clockHasStarted(m);
-  const controls=clockControlsHTML(m);
-  const app=$('#app');app.innerHTML=app.innerHTML.replace(/<div class="controls">[\s\S]*?<\/div>/,controls);
-  const status=m.ended?'Full time':m.halfTime?'Half time':m.running?'● Match in progress':paused?'Clock paused':'Ready when you are';
-  app.innerHTML=app.innerHTML.replace(/(class="score"><div class="eyebrow">)[^<]+/,`$1${status} · Match ${mi+1} of ${day().matches.length}`);
-};
 render();

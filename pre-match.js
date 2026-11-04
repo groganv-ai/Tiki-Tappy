@@ -20,11 +20,6 @@ function preMatchHTML(){
 }
 const preMatchSelectionBefore=openTeamSelection;
 openTeamSelection=function(...args){clearPreMatchFeedback();return preMatchSelectionBefore(...args)};
-const preMatchClockBefore=selectClock;
-selectClock=function(action){
- if(action==='toggle'&&preMatchPending()){clearPreMatchFeedback();return toast('Confirm your team before starting the clock.');}
- return preMatchClockBefore(action);
-};
 const preMatchHoldBefore=startClockHold;
 startClockHold=function(event,button,action){
  if(action==='toggle'&&preMatchPending()){clearPreMatchFeedback();return toast('Confirm your team before starting the clock.');}

@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const source=fs.readFileSync('coach-mode.js','utf8');
-const start=source.indexOf('function beginCoachGoal('),end=source.indexOf('function coachScreen(',start);
+const start=source.indexOf('function beginCoachGoal('),end=source.indexOf('const createBeforeCoach=',start);
 assert(start>=0&&end>start);
 const calls=[],m={ended:false,clockStarted:true,lineup:['Haydo']};
 const ctx={match:()=>m,clockHasStarted:x=>!!x.clockStarted,toast:x=>calls.push(['toast',x]),lineupModal:()=>calls.push(['lineup']),beginV2:(...args)=>calls.push(['capture',...args])};

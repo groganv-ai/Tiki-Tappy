@@ -62,7 +62,6 @@ function continueBenchAction(next,off){
  if(m.events.length>before){const action=m.events.at(-1);showActionFeedback('Substitution + '+v2Description(action),next.name+' on for '+off,false,'clock')}
 }
 const teamRemoveBefore=removeUndoEvent;removeUndoEvent=function(id){const m=match(),e=m.events.find(e=>e.id===id);if(e?.substitution&&m.teamStart){const remaining=m.events.filter(e=>e.id!==id);if(!teamState(m,remaining).valid)return toast('Undo the later linked substitution first.');m.events=remaining;teamSyncKeeper(m);save();render();return showActionFeedback('Substitution undone',e.substitution.off+' back on',false,'clock')}return teamRemoveBefore(id)};
-const teamClockBefore=selectClock;selectClock=function(action){const m=match();if(action==='toggle'&&!clockHasStarted(m)&&!m.teamStart&&!m.events.length)return toast('Choose and confirm the team before kick-off.');teamClockBefore(action);if(action==='restart'){teamSyncKeeper(m);save();render()}};
 const teamDescriptionBefore=v2Description;v2Description=function(e){return e.substitution?'On for '+e.substitution.off+' · '+TEAM_ROLE_NAMES[e.substitution.role]+(e.substitution.captain?' · Captain: '+e.substitution.captain:''):teamDescriptionBefore(e)};
 const teamHighlightBefore=v2AutoHighlights;v2AutoHighlights=function(events,budget,model){return teamHighlightBefore(events.filter(e=>e.action!=='Substitution'),budget,model)};
 REPORT_CATEGORIES.push('Substitution');
