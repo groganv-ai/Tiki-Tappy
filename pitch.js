@@ -67,8 +67,14 @@ function pitchInputPoint(zone,opposition=false){
   return opposition?{x:1-x,y:1-y}:{x,y};
 }
 function pitchInputZone(zone,opposition=false){
-  const point=pitchInputPoint(zone,opposition);
-  return {point,zone:zone?.id||null,locationLabel:zone?.label||'Location unknown'};
+ const point=pitchInputPoint(zone,opposition);
+ // Zone IDs and labels must describe the saved north-up location, not the
+ // visually rotated input view. Older saved event formats remain untouched.
+ let canonical=zone;
+ if(zone&&opposition&&typeof v2Zones==='function'){
+   canonical=v2Zones().find(z=>Math.abs((z.x+z.w/2)/MATCH_PITCH.width-point.x)<1e-8&&Math.abs((z.y+z.h/2)/MATCH_PITCH.height-point.y)<1e-8)||zone;
+ }
+ return {point,zone:canonical?.id||null,locationLabel:canonical?.label||'Location unknown'};
 }
 function pitchInputScale(){return pitchInputRotation%2?MATCH_PITCH.width/MATCH_PITCH.height:1}
 function pitchInputAngle(){return pitchInputRotation*90}
