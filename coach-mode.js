@@ -3,8 +3,10 @@
 function isCoachMode(m){return m.inputMode==='coach'}
 function setInputMode(mode){
   if(mode!=='coach'&&mode!=='player')return;
+  if(typeof v2CancelGridHold==='function')v2CancelGridHold();
   const m=match();if(!m||m.inputMode===mode)return;
-  cancelActionHold();cancelClockHold();undoMode=false;suppressedTap=null;
+  cancelActionHold();
+  cancelClockHold();undoMode=false;suppressedTap=null;
   if(typeof captureV2!=='undefined'&&captureV2)cancelV2();
   match().inputMode=mode;save();render();
 }

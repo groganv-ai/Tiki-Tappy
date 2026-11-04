@@ -1,5 +1,12 @@
 # Part B: Match Centre refactor (v5)
 
+## Sign-off
+
+Signed off by the user on 4 November 2026 for commit `018ee1e`, following
+local-preview testing with no issues reported. Step 4 — Action Recording is
+the next work area. This acceptance does not imply physical mobile verification
+or authorize merging or deploying to main. Part A remains pending mobile tests.
+
 Baseline: `fe3dc2e83c4e8becf461100c3a9aee119827e5f1`.
 
 ## Changes
@@ -62,6 +69,5 @@ highlights. No pitch-coordinate implementation was changed here.
 All work is for `v5` only. No merge, deployment or workflow dispatch is part of
 this task. The Pages push workflow targets `main`; it was left unchanged.
 
-User decision: accept this implementation for v5 browser/mobile acceptance
-testing, or request adjustments. Neither decision authorizes a main merge or
-deployment. Part B final sign-off follows interactive acceptance testing.
+The user has accepted Part B as recorded above. Remaining mobile checks are
+retained as verification limits, not represented as completed tests.

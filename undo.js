@@ -2,11 +2,13 @@
 // A linked goal/assist remains one event and is removed as one operation.
 let undoMode=false,undoContext=null;
 function undoLastAction(){
-  cancelActionHold();const m=match();if(!m?.events.length)return toast('No actions to undo.');
+  if(typeof cancelHeldRecordingActions==='function')cancelHeldRecordingActions();else cancelActionHold();
+  const m=match();if(!m?.events.length)return toast('No actions to undo.');
   removeUndoEvent(m.events[m.events.length-1].id);
 }
 function toggleUndoMode(){
-  cancelActionHold();suppressedTap=null;undoMode=!undoMode;undoContext=match();render();
+  if(typeof cancelHeldRecordingActions==='function')cancelHeldRecordingActions();else cancelActionHold();
+  suppressedTap=null;undoMode=!undoMode;undoContext=match();render();
 }
 function removeUndoEvent(id){
   const m=match(),index=m?.events.findIndex(e=>e.id===id);if(index===undefined||index<0)return;
