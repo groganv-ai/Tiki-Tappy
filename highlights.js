@@ -48,12 +48,12 @@ paintReplay=function(ctx,model,seconds){
   text(state.type==='replay'?'GOAL REPLAY':award?'PLAYER OF THE DAY':end?'THE MATCHDAY STORY':'MATCH COMMENTARY',32,298,13,C.muted,'800');
   if(state.type==='replay'){
     box(24,316,672,512,'#fff',16);
-    const replayHalf=replayHalfForGoal(e),pitch=drawMatchPitch(ctx,{x:80,y:350,width:560,height:420},replayHalf);
+    const replayHalf=replayHalfForGoal(e),pitch=drawMatchPitch(ctx,{x:80,y:350,width:560,height:420},replayHalf,e.point);
     const {x:px,y:py,width:pw,height:ph}=pitch;
     text(replayHalf?(e.opp?'OPPOSITION ATTACK · OUR GOAL':'ATTACKING HALF · OPPOSITION GOAL'):'OPPOSITION GOAL',replayHalf?200:270,340,13,C.muted);if(!replayHalf)text('OUR GOAL',322,788,13,C.muted);
     const shot=replayPitchPoint(e.zone,e.point,pitch),assist=replayPitchPoint(e.assist?.zone,e.assist?.point,pitch);
     const goalPoint=MATCH_PITCH.goals[e.opp?'south':'north'];
-    const goal={x:px+goalPoint.x/MATCH_PITCH.width*pw,y:py+goalPoint.y/MATCH_PITCH.height*ph};
+    const goal=pitch.geometry?{x:px+pw/2,y:py+(e.opp?ph:0)}:{x:px+goalPoint.x/MATCH_PITCH.width*pw,y:py+goalPoint.y/MATCH_PITCH.height*ph};
     function path(a,b,color){line(a.x,a.y,b.x,b.y,color,4);const angle=Math.atan2(b.y-a.y,b.x-a.x);line(b.x,b.y,b.x-13*Math.cos(angle-.5),b.y-13*Math.sin(angle-.5),color,4);line(b.x,b.y,b.x-13*Math.cos(angle+.5),b.y-13*Math.sin(angle+.5),color,4)}
     function player(p,name,color){if(!p)return;circle(p.x,p.y,9,color);text(name,Math.max(px+4,Math.min(p.x-30,px+pw-120)),p.y+27,17,color,'700',125)}
     if(shot){

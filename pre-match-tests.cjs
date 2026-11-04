@@ -1,7 +1,7 @@
 const fs=require('fs'),assert=require('assert');
 const boot=Function('require',fs.readFileSync('free-matchday-tests.cjs','utf8').split('const {c,el,run}=boot();')[0]+';return boot')(require);
 const {c,el,run}=boot();
-run(`createDay({preventDefault(){},target:{teamName:'Test United',players:'Alex\\nTaylor\\nSam',date:'2026-10-20',location:'Test field',opponents:'Visitors,10:00\\nRovers,11:00\\nJuniors,12:00',durationMinutes:'30',twoHalves:'on'}})`);
+run(`createDay({preventDefault(){},target:{pitchAgeGroup:'U10',pitchFormat:'7v7',teamName:'Test United',players:'Alex\\nTaylor\\nSam',date:'2026-10-20',location:'Test field',opponents:'Visitors,10:00\\nRovers,11:00\\nJuniors,12:00',durationMinutes:'30',twoHalves:'on'}})`);
 assert(el('#app').innerHTML.includes('Choose your starting team'));assert(!el('#app').innerHTML.includes('startClockHold(event'));assert.equal(run('teamDraft.scope'),'day');
 run('teamNext();teamAssign("Alex","GK");teamAssign("Taylor","DF");teamDraft.captain="Taylor";saveTeamSelection()');
 assert.equal(run('match().teamReady'),true);assert.equal(run('day().matches[1].teamReady'),false);assert.equal(run('day().matches[2].teamReady'),false);assert(!run('match().running'));assert(el('#app').innerHTML.includes('startClockHold(event'));

@@ -41,14 +41,12 @@ function v2Zones(){const zones=[],add=(x,y,w,h,label,text)=>zones.push({x,y,w,h,
  ['left','centre','right'].forEach((s,i)=>add(117+i*42,y(72,84),42,84,`${team} penalty area, ${s} channel`,['18L','18C','18R'][i]));
  add(18,y(18,138),42,138,`${team} left wing`,'LW');add(300,y(18,138),42,138,`${team} right wing`,'RW');
  ['left','centre','right'].forEach((s,i)=>add(18+i*108,y(156,124),108,124,`${team} midfield, ${s}`,['Left','Centre','Right'][i]));}return zones}
-function v2PitchHTML(){
- const opp=!!(typeof spFlow!=='undefined'&&spFlow&&['origin','shot-location','assist-location'].includes(spFlow.stage)?spFlow.draft.opp:captureV2?.event.opp);
- const angle=pitchInputAngle(),scale=pitchInputScale();
- return `<div class="v2-pitch-label"><span>${opp?'OPPOSITION':'OUR'} ATTACK · INPUT VIEW</span><button type="button" aria-label="Rotate pitch" onclick="rotateInputPitch()">Rotate ${pitchInputDirection()}</button></div><div class="v2-pitch"><div class="v2-pitch-rotated" style="transform:rotate(${angle}deg) scale(${scale})">${entryPitchSVG()}${v2Zones().map((z,i)=>`<button aria-label="${z.label}" onclick="v2ChooseZone(${i})" style="left:${z.x/3.6}%;top:${z.y/5.6}%;width:${z.w/3.6}%;height:${z.h/5.6}%">${z.text}</button>`).join('')}</div></div><p class="v2-pitch-label">Rotation is for input only · replay uses north-up coordinates</p><details class="v2-zone-list"><summary>Choose a named zone instead</summary><div class="v2-choices">${v2Zones().map((z,i)=>`<button onclick="v2ChooseZone(${i})">${z.label}</button>`).join('')}</div></details><button class="v2-wide" onclick="v2ChooseZone(-1)">Location unknown</button>`;
-}
-function v2ChooseZone(i){
- const f=captureV2,z=v2Zones()[i],target=f.stage==='assist-location'?f.event.assist:f.event;
- Object.assign(target,pitchInputZone(z,!!f.event.opp));
+function v2PitchHTML(){return precisePitchHTML()}
+// Legacy zone API is retained for historical records and compatibility tests.
+function v2ChooseZone(i){return v2ChoosePrecisePoint(pitchInputZone(v2Zones()[i],!!captureV2?.event.opp))}
+function v2ChoosePrecisePoint(location){
+ const f=captureV2;if(!f||!recordingContextValid(f.match))return cancelV2();
+ const target=f.stage==='assist-location'?f.event.assist:f.event;Object.assign(target,location);
  if(f.stage==='assist-location')return finishV2();
  if(f.event.action==='Goal'&&!f.event.opp)f.stage='assist-question';
  else if(f.event.action==='Shot'&&f.event.opp&&f.event.outcome==='Saved'){f.stage='keeper';f.quality=0}

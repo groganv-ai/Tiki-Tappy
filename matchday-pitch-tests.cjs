@@ -1,0 +1,24 @@
+const fs=require('fs'),assert=require('assert');
+const boot=Function('require',fs.readFileSync('free-matchday-tests.cjs','utf8').split('const {c,el,run}=boot();')[0]+';return boot')(require);
+const {c,el,run}=boot();run('view="setup";render()');
+assert(el('#app').innerHTML.includes('name="pitchAgeGroup" required'));
+assert(el('#app').innerHTML.includes('name="pitchFormat" required'));
+c.form={teamName:'Test',players:'Alex\nTaylor',date:'2026-11-04',location:'Test field',opponents:'Visitors\nRovers'};
+run('createDay({preventDefault(){},target:form})');assert.equal(run('day()'),undefined);
+c.form={...c.form,pitchAgeGroup:'U13',pitchFormat:'11v11'};
+run('createDay({preventDefault(){},target:form})');assert.equal(run('match().pitchTemplate.id'),'full-size');
+assert.equal(run('day().matches[1].pitchTemplate.version'),2);assert.equal(run('day().pitchAgeGroup'),'U13');
+assert(run('day().matches[0].pitchTemplate!==day().matches[1].pitchTemplate'));
+run('closeModal();match().clockStarted=true;beginV2("Goal",match().lineup[0])');
+assert(el('#modal').innerHTML.includes('pitch-full-size-r0.svg'));assert(!el('#modal').innerHTML.includes('<select'));
+assert(!el('#modal').innerHTML.includes('Choose age group'));assert(el('#modal').innerHTML.includes('Confirm location'));
+run('pitchPick.point={x:.321,y:.123};confirmPrecisePitchPoint();finishV2()');
+assert.equal(run('match().events.at(-1).point.x'),.321);
+const before=run('JSON.stringify(match().pitchTemplate)');c.edit={pitchAgeGroup:'U10',pitchFormat:'7v7',date:'2026-11-04',location:'Test field',opp0:'Visitors',opp1:'Rovers'};
+run('updateDay({preventDefault(){},target:edit})');assert.equal(run('JSON.stringify(match().pitchTemplate)'),before);
+const restored=boot(c.saved);assert.equal(restored.run('match().pitchAgeGroup'),'U13');assert.equal(restored.run('match().events.at(-1).point.x'),.321);
+// An older draft can acquire a pitch setting without rewriting old event points.
+const legacy=boot();legacy.run('demo();freeDemoActive=false;freeRealDraft=null;delete match().pitchTemplate;legacy=JSON.stringify(match().events);save()');
+legacy.c.edit={...c.edit,pitchAgeGroup:'U10',pitchFormat:'7v7',opp2:'Juniors'};
+legacy.run('updateDay({preventDefault(){},target:edit})');assert.equal(legacy.run('JSON.stringify(match().events)'),legacy.c.legacy);assert.equal(legacy.run('match().pitchTemplate.id'),'u10-u11');
+console.log('PASS: age/format required in Matchday setup; independent match snapshots; no pitch dropdowns during action capture; persisted points; locked settings; legacy draft configuration without data rewrites.');

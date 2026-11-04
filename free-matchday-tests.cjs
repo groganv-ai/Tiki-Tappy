@@ -5,7 +5,7 @@ const c={window:{addEventListener(){}},document:{querySelector:el,addEventListen
 const {c,el,run}=boot();
 assert.equal(run('data.teams[0].name'),'');assert.equal(run('data.teams[0].squad.length'),0);
 run('view="setup";render()');assert(el('#app').innerHTML.includes('name="teamName"'));assert(el('#app').innerHTML.includes('name="players"'));assert(!el('#app').innerHTML.includes('Save teams'));assert(!el('#app').innerHTML.includes('Matchday archive'));
-run("createDay({preventDefault(){},target:{teamName:'Test United',players:['Avery','Jordan','Sam'].join(String.fromCharCode(10)),date:'2026-10-20',location:'Test field',opponents:['Visitors, 10:00','Other team, 11:00'].join(String.fromCharCode(10)),durationMinutes:'30',twoHalves:'on'}})");
+run("createDay({preventDefault(){},target:{pitchAgeGroup:'U10',pitchFormat:'7v7',teamName:'Test United',players:['Avery','Jordan','Sam'].join(String.fromCharCode(10)),date:'2026-10-20',location:'Test field',opponents:['Visitors, 10:00','Other team, 11:00'].join(String.fromCharCode(10)),durationMinutes:'30',twoHalves:'on'}})");
 assert.equal(run('teamDraft.stage'),'available');assert.equal(run('day().matches.length'),2);assert.equal(run('day().matches[1].lineup.join(",")'),'Avery,Jordan,Sam');
 run("teamNext();teamAssign('Avery','GK');teamAssign('Jordan','DF');saveTeamSelection();setInputMode('coach');setInputMode('player')");
 assert.equal(run('match().inputMode'),'player');const originalID=run('day().id');run('save()');const draft=c.saved;
@@ -15,7 +15,7 @@ run('demo()');assert.equal(c.saved,draft);assert(run('day().isDemo'));assert(!ru
 for(let i=0;i<10;i++){run('demo()');assert.equal(c.saved,draft);assert.equal(run('new Set(data.teams[0].squad).size'),10)}
 run('setInputMode("player");returnToFreeDraft()');assert.equal(run('day().id'),originalID);assert.equal(run('match().inputMode'),'player');
 run('startFreeSetup()');assert(el('#modal').innerHTML.includes('will delete'));assert.equal(run('day().id'),originalID);run('openFreeSetup()');assert(!el('#app').innerHTML.includes('value="Test United"'));assert(!el('#app').innerHTML.includes('>Avery'));
-run("createDay({preventDefault(){},target:{teamName:'Next team',players:['Casey','Taylor'].join(String.fromCharCode(10)),date:'2026-10-21',location:'New field',opponents:'Visitors'}})");
+run("createDay({preventDefault(){},target:{pitchAgeGroup:'U10',pitchFormat:'7v7',teamName:'Next team',players:['Casey','Taylor'].join(String.fromCharCode(10)),date:'2026-10-21',location:'New field',opponents:'Visitors'}})");
 assert.equal(run('day().id'),originalID);assert(el('#modal').innerHTML.includes('Replace your current matchday?'));run('freePendingDay=null;closeModal()');
 run('day().matches.forEach(m=>m.ended=true);startDayFlow();confirmDayReview();render()');assert(el('#app').innerHTML.includes('Check permission before adding a photo'));assert(el('#app').innerHTML.includes('image/webp" disabled'));assert(el('#app').innerHTML.includes('not consent itself'));
 run("addPhoto({files:[{type:'image/png',size:100}],value:'x'})");assert(!run('day().photo'));assert(el('#toast').textContent.includes('Confirm'));

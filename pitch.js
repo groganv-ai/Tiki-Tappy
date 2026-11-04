@@ -26,7 +26,8 @@ function entryPitchSVG(showAttack=true){
   const spots=MATCH_PITCH.spots.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('');
   return `<svg viewBox="0 0 360 560" aria-hidden="true"><defs><pattern id="v2grass" width="360" height="80" patternUnits="userSpaceOnUse"><rect width="360" height="40" fill="#fff" opacity=".04"/></pattern></defs><rect width="360" height="560" fill="url(#v2grass)"/><g fill="none" stroke="#e3f0cf" stroke-width="1.7">${paths}${circles}</g><g fill="#e3f0cf">${spots}</g>${showAttack?'<path d="M320 340v-70l-7 12m7-12 7 12" fill="none" stroke="#d6ee83" stroke-width="3"/>':''}</svg>`;
 }
-function drawMatchPitch(ctx,area,half=null){
+function drawMatchPitch(ctx,area,half=null,point=null){
+  if(typeof isTemplatePoint==='function'&&isTemplatePoint(point))return drawTemplateReplayPitch(ctx,area,half,point.geometry);
   const cropped=half==='north'||half==='south',viewHeight=cropped?280:560,viewY=half==='south'?280:0;
   const scale=Math.min(area.width/MATCH_PITCH.width,area.height/viewHeight);
   const visibleY=area.y+(area.height-viewHeight*scale)/2;
@@ -39,7 +40,7 @@ function drawMatchPitch(ctx,area,half=null){
   for(const p of MATCH_PITCH.paths){ctx.beginPath();for(const [op,...n] of p){if(op==='M')ctx.moveTo(...n);else if(op==='L')ctx.lineTo(...n);else if(op==='Q')ctx.quadraticCurveTo(...n);else if(op==='C')ctx.bezierCurveTo(...n);else if(op==='Z')ctx.closePath()}ctx.stroke()}
   for(const [x,y,r] of MATCH_PITCH.circles){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke()}
   ctx.fillStyle='#e3f0cf';for(const [x,y,r] of MATCH_PITCH.spots){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
-  ctx.restore();ctx.restore();return rect;
+  ctx.restore();ctx.restore();Object.defineProperty(rect,'legacyPitch',{value:true});return rect;
 }
 function replayHalfForGoal(e){
   if(e?.action!=='Goal')return null;
@@ -49,6 +50,10 @@ function replayHalfForGoal(e){
   return within(shot)&&(!e.assist||within(assist))?(e.opp?'south':'north'):null;
 }
 function replayPitchPoint(zone,point,rect){
+  if(typeof isTemplatePoint==='function'){
+    if(rect.geometry&&(!isTemplatePoint(point)||point.geometry.id!==rect.geometry.id||point.geometry.version!==rect.geometry.version))return null;
+    if(rect.legacyPitch&&isTemplatePoint(point))return null;
+  }
   if(point&&Number.isFinite(point.x)&&Number.isFinite(point.y))return {x:rect.x+point.x*rect.width,y:rect.y+point.y*rect.height};
   if(!Number.isInteger(zone)||zone<1||zone>12)return null;
   return {x:rect.x+((zone-1)%3+.5)*rect.width/3,y:rect.y+(3-Math.floor((zone-1)/3)+.5)*rect.height/4};
