@@ -1,0 +1,14 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const source=fs.readFileSync('coach-mode.js','utf8');
+const start=source.indexOf('function beginCoachGoal('),end=source.indexOf('function coachScreen(',start);
+assert(start>=0&&end>start);
+const calls=[],m={ended:false,clockStarted:true,lineup:['Haydo']};
+const ctx={match:()=>m,clockHasStarted:x=>!!x.clockStarted,toast:x=>calls.push(['toast',x]),lineupModal:()=>calls.push(['lineup']),beginV2:(...args)=>calls.push(['capture',...args])};
+vm.createContext(ctx);vm.runInContext(source.slice(start,end),ctx);
+ctx.beginCoachGoal(false);ctx.beginCoachGoal(true);
+assert.deepEqual(calls,[['capture','Goal','',false],['capture','Goal','',true]]);
+calls.length=0;m.ended=true;ctx.beginCoachGoal(false);assert.equal(calls[0][0],'toast');
+calls.length=0;m.ended=false;m.clockStarted=false;ctx.beginCoachGoal(true);assert.equal(calls[0][0],'toast');
+calls.length=0;m.clockStarted=true;m.lineup=[];ctx.beginCoachGoal(false);assert.deepEqual(calls,[['lineup']]);
+assert(!source.includes('eventModalBeforeCoach')&&!source.includes("stage:'scorer'"));
+console.log('PASS: Coach Mode goal buttons share V2 capture, match guards and lineup checks; legacy scorer override retired.');
