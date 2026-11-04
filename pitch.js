@@ -53,3 +53,23 @@ function replayPitchPoint(zone,point,rect){
   if(!Number.isInteger(zone)||zone<1||zone>12)return null;
   return {x:rect.x+((zone-1)%3+.5)*rect.width/3,y:rect.y+(3-Math.floor((zone-1)/3)+.5)*rect.height/4};
 }
+
+ // Input orientation is presentation-only. Saved points are always north-up:
+ // our attack towards y=0, opposition attack towards y=1.
+let pitchInputRotation=0;
+function rotateInputPitch(){pitchInputRotation=(pitchInputRotation+1)%4;
+  if(typeof captureV2!=='undefined'&&captureV2&&['location','assist-location'].includes(captureV2.stage))return drawV2Capture();
+  if(typeof spFlow!=='undefined'&&spFlow&&['origin','shot-location','assist-location'].includes(spFlow.stage))return spDrawFlow();
+}
+function pitchInputPoint(zone,opposition=false){
+  if(!zone)return null;
+  const x=(zone.x+zone.w/2)/MATCH_PITCH.width,y=(zone.y+zone.h/2)/MATCH_PITCH.height;
+  return opposition?{x:1-x,y:1-y}:{x,y};
+}
+function pitchInputZone(zone,opposition=false){
+  const point=pitchInputPoint(zone,opposition);
+  return {point,zone:zone?.id||null,locationLabel:zone?.label||'Location unknown'};
+}
+function pitchInputScale(){return pitchInputRotation%2?MATCH_PITCH.width/MATCH_PITCH.height:1}
+function pitchInputAngle(){return pitchInputRotation*90}
+function pitchInputDirection(){return ['↑','→','↓','←'][pitchInputRotation]}
