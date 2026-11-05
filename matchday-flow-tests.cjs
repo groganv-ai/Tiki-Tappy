@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const boot=Function('require',fs.readFileSync('free-matchday-tests.cjs','utf8').split('const {c,el,run}=boot();')[0]+';return boot')(require);
-const {c,el,run}=boot();run('demo();day().matches.forEach(m=>{m.running=false;m.ended=false});startDayFlow()');
+const {c,el,run}=boot();run('demo();day().matches=Array.from({length:3},(_,i)=>({...JSON.parse(JSON.stringify(match())),opponent:["Visitors","Rovers","Juniors"][i]}));day().matches.forEach(m=>{m.running=false;m.ended=false});startDayFlow()');
 assert.equal(run('dayFlow().stage'),'review');run("dayStep('award');playerDayModal()");assert.equal(run('dayFlow().stage'),'review');assert(!run('day().playerOfDay'));
 run('day().matches.forEach((m,i)=>{m.events=[{id:"goal"+i,action:"Goal",player:m.lineup[0],at:60000,point:{x:.5,y:.2}},{id:"pass"+i,action:"Pass",qualityRank:0,player:m.lineup[1],at:120000}];dayFinishMatch(i)});confirmDayReview();chooseDayPlayer(day().squad[0]);dayStep("content");daySetFilter("goals")');
 assert.equal(run('dayFlow().stage'),'content');assert.equal(run('dayCount("goals")'),3);

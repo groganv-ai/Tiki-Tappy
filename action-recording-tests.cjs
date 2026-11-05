@@ -1,6 +1,6 @@
 const fs=require('fs'),assert=require('assert');
 const boot=Function('require',fs.readFileSync('free-matchday-tests.cjs','utf8').split('const {c,el,run}=boot();')[0]+';return boot')(require);
-function fixture(){const f=boot();f.run('demo();freeDemoActive=false;match().running=false;match().clockStarted=true;setInputMode("player")');f.c.button={classList:{add(){},remove(){}}};return f}
+function fixture(){const f=boot();f.run('demo();day().matches=Array.from({length:3},(_,i)=>({...JSON.parse(JSON.stringify(match())),opponent:"Visitors "+i,events:i?[]:match().events}));freeDemoActive=false;match().running=false;match().clockStarted=true;setInputMode("player")');f.c.button={classList:{add(){},remove(){}}};return f}
 // A pointer release after leaving Match Centre must not save an invisible Pass.
 {
  const {run}=fixture();const before=run('match().events.length');

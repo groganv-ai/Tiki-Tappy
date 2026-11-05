@@ -36,3 +36,15 @@ console.log('PASS: blank free setup; shared squad across matches; both modes; re
   let resolveImage;p.c.createImageBitmap=()=>new Promise(resolve=>{resolveImage=resolve});p.run('confirmPhotoPermission(true)');const pending=p.run("addPhoto({files:[{type:'image/png',size:100}],value:'test'})");p.run('data=fresh()');resolveImage({width:100,height:100,close(){}});await pending;assert.equal(p.run('data.days.length'),0);
   console.log('PASS: acknowledged photos re-encoded to JPEG; confirmation recorded; late photo cannot attach after matchday changes.');
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+// The public demo has one match: finishing it unlocks reports and highlights.
+const single=boot();single.run('demo()');
+assert.equal(single.run('day().matches.length'),1);
+assert(single.run('match().events.length>0'));
+single.run('dayFinishMatch(0);startDayFlow();confirmDayReview();chooseDayPlayer(day().squad[0]);dayStep("content");daySetFilter("all");dayStep("output")');
+assert(single.run('dayReviewValid()'));
+assert.equal(single.run('dayFlow().stage'),'output');
+assert.equal(single.run('makeDayReplayModel().games.length'),1);
+assert(single.run('makeDayReplayModel().events.length>0'));
+assert(single.el('#app').innerHTML.includes('Match Report'));
+console.log('PASS: single-match demo reaches report output and provides populated highlights after one full-time confirmation.');

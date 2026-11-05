@@ -78,3 +78,7 @@ test site is updated for phone testing; GitHub main remains unchanged.
 ## Saved matchday missing pitch settings
 
 Older saved matchdays may have no pitch template. The location sheet now offers a direct Edit Matchday setup action instead of leaving the user at explanatory text. It cancels only the unfinished capture, preserves recorded events and opens the existing age/format form. Pitch selection remains in Matchday setup; no pitch dimensions are guessed. The legacy setup-save regression verifies configuration without rewriting existing events, and the new recovery regression verifies navigation and capture cleanup. All 22 test suites passed. Real-phone recovery remains to be checked.
+
+## Single-match demo
+
+The isolated fictional demo now includes one game, retaining its sample events. Confirming that game's full time allows result review, Player of the Day, report output and populated highlights without finishing two empty games. Real matchday creation still supports multiple opponents. The regression suite checks this single-game path; multi-game report and capture tests use explicit fixtures. All 22 suites passed. Phone export/share verification remains pending.

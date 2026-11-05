@@ -1,6 +1,6 @@
 const fs=require('fs'),assert=require('assert');
 const boot=Function('require',fs.readFileSync('free-matchday-tests.cjs','utf8').split('const {c,el,run}=boot();')[0]+';return boot')(require);
-const {c,el,run}=boot();run('demo();day().matches.forEach(m=>m.ended=true);startDayFlow();confirmDayReview();daySetFilter("all")');
+const {c,el,run}=boot();run('demo();day().matches=Array.from({length:3},(_,i)=>({...JSON.parse(JSON.stringify(match())),opponent:"Visitors "+i,events:i?[]:match().events}));day().matches.forEach(m=>m.ended=true);startDayFlow();confirmDayReview();daySetFilter("all")');
 c.fixtures=[
  {id:'goal',action:'Goal',player:'Alex',qualityLabel:'Amazing goal',at:60000,assist:{player:'Taylor'}},
  {id:'shot',action:'Shot',opp:true,player:'Opposition',qualityLabel:'Good effort',at:120000,save:{player:'Keeper',qualityLabel:'Great save'}},
