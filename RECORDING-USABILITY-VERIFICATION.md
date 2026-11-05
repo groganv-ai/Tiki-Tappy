@@ -90,3 +90,7 @@ The single demo game now has the configured U14 11v11 template and eleven mixed 
 ## Player of the Day reason and celebration
 
 The matchday award step now offers an optional 160-character reason, saved in the local draft with the selected recipient. A different recipient or removing the award clears the old reason. The reason is escaped in report HTML, included in report export award blocks and the text log, and wrapped beneath the recipient in the matchday highlight video. The stock video caption “Coach’s choice · the whole matchday” is removed. Selecting the award shows a gold celebration popup with trophy and congratulations. All 24 suites passed, including new reason persistence, limits, recipient cleanup, escaped HTML, export-block and video-canvas assertions. Phone viewing and encoded video/share verification remain pending.
+
+## Award card mobile layout
+
+The on-screen Match Report award is now a centred vertical card: uppercase title, larger player name, then optional reason. The reason has its own line height and no paragraph margins; long names and reasons wrap within the card. Relevant award and compact report regression suites passed. Phone visual confirmation remains pending.
