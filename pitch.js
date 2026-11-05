@@ -26,8 +26,8 @@ function entryPitchSVG(showAttack=true){
   const spots=MATCH_PITCH.spots.map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}"/>`).join('');
   return `<svg viewBox="0 0 360 560" aria-hidden="true"><defs><pattern id="v2grass" width="360" height="80" patternUnits="userSpaceOnUse"><rect width="360" height="40" fill="#fff" opacity=".04"/></pattern></defs><rect width="360" height="560" fill="url(#v2grass)"/><g fill="none" stroke="#e3f0cf" stroke-width="1.7">${paths}${circles}</g><g fill="#e3f0cf">${spots}</g>${showAttack?'<path d="M320 340v-70l-7 12m7-12 7 12" fill="none" stroke="#d6ee83" stroke-width="3"/>':''}</svg>`;
 }
-function drawMatchPitch(ctx,area,half=null,point=null){
-  if(typeof isTemplatePoint==='function'&&isTemplatePoint(point))return drawTemplateReplayPitch(ctx,area,half,point.geometry);
+function drawMatchPitch(ctx,area,half=null,point=null,opposition=false){
+  if(typeof isTemplatePoint==='function'&&isTemplatePoint(point))return drawTemplateReplayPitch(ctx,area,half,point.geometry,opposition);
   const cropped=half==='north'||half==='south',viewHeight=cropped?280:560,viewY=half==='south'?280:0;
   const scale=Math.min(area.width/MATCH_PITCH.width,area.height/viewHeight);
   const visibleY=area.y+(area.height-viewHeight*scale)/2;

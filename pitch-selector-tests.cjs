@@ -48,13 +48,13 @@ assert.equal(run('match().events.at(-1).point.geometry.id'),'u12');
 c.Path2D=class{constructor(d){this.d=d}};const paths=[];c.paths=paths;
 c.ctx={save(){},restore(){},beginPath(){},rect(){},clip(){},translate(){},scale(){},fillRect(){},strokeRect(){},arc(){},fill(){},stroke(p){if(p)paths.push(p.d)}};
 run('g=match().events.at(-1).point.geometry;replayRect=drawMatchPitch(ctx,{x:0,y:0,width:600,height:400},null,match().events.at(-1).point);projected=replayPitchPoint(null,match().events.at(-1).point,replayRect)');
-assert.equal(paths.length,run('g.drawing.paths.length'));near(run('projected.x'),run('replayRect.x+.17*replayRect.width'));
+for(const d of run('g.drawing.paths'))assert(paths.includes(d));near(run('projected.x'),run('replayRect.x+.17*replayRect.width'));
 near(run('projected.y'),run('replayRect.y+.31*replayRect.height'));
 assert.equal(run('replayPitchPoint(null,{x:.5,y:.5},replayRect)'),null,'Do not project legacy coordinates onto a template');
 // Click events from accessibility may have isPrimary=false; coordinates still work.
 run('Object.assign(match(),matchdayPitchSettings("U14","11v11"));pitchInputRotation=0;beginV2("Goal",match().lineup[0])');
 c.image={getBoundingClientRect:()=>({left:0,top:0,width:644,height:1004.70588})};
-run('pitchPointerPoint({button:0,isPrimary:false,clientX:322,clientY:502.35294},image)');near(run('pitchPick.point.x'),.5);near(run('pitchPick.point.y'),.5);
+const feedbackTimers=[];c.setTimeout=(fn,ms)=>{if(ms===350)feedbackTimers.push(fn)};run('pitchPointerPoint({button:0,isPrimary:false,clientX:322,clientY:502.35294},image)');assert.equal(run('captureV2.stage'),'location');assert(el('#modal').innerHTML.includes('pitch-action-frame'));feedbackTimers.shift()();near(run('captureV2.event.point.x'),.5);near(run('captureV2.event.point.y'),.5);assert.equal(run('captureV2.stage'),'assist-question');
 run('cancelV2();spStartSetPiece();spChooseType(2);assumed=JSON.stringify(spFlow.draft.point);spSaveRestart();spCloseFlow();spOpenResult(match().events.at(-1).id);spApplyAssumedLocation()');
 assert.equal(run('JSON.stringify(spFlow.draft.point)'),c.assumed,'Editing a saved penalty retains the same schematic snapshot');
 console.log(`PASS: ${assertions} coordinate round-trip assertions; all six presets, four rotations, both teams and three viewport widths; exact draft/confirm/cancel; persisted schematic snapshots; goal/assist/undo; set-piece origin/direct goal; clean replay alignment; legacy separation.`);

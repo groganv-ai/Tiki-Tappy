@@ -28,7 +28,7 @@ function highlightState(model,seconds){
 function highlightScore(model,index){return model.events.slice(0,index+1).reduce((s,e)=>{if(e.action==='Goal')s[e.opp?1:0]++;return s},[0,0])}
 function highlightGlyph(e){const a=String(e?.action||'').replace(/^(great|good|amazing)\s+/i,'').toLowerCase();return ({goal:'●',pass:'➜',tackle:'⊥',skill:'✧',save:'◇','team work':'∞',teamwork:'∞',sportsmanship:'♡',assist:'↗'})[a]||'✦'}
 paintReplay=function(ctx,model,seconds){
-  const state=highlightState(model,seconds),e=model.events[state.index],great=isGreatHighlight(e),award=state.type==='award',end=state.type==='final'||award,intro=state.type==='intro';
+  const state=highlightState(model,seconds),raw=model.events[state.index],e=raw?.opp?{...raw,player:model.opponent}:raw,great=isGreatHighlight(e),award=state.type==='award',end=state.type==='final'||award,intro=state.type==='intro';
   const C={paper:'#f5f5ed',ink:'#193e35',green:'#215e49',dark:'#133f36',muted:'#78857a',line:'#dce2d5',lime:'#d6ee83',gold:'#edc551'};
   function box(x,y,w,h,color,r=0){ctx.fillStyle=color;ctx.beginPath();if(r&&ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);ctx.fill()}
   function text(t,x,y,size=22,color=C.ink,weight='600',maxWidth){ctx.font=`${weight} ${size}px sans-serif`;ctx.fillStyle=color;if(maxWidth&&ctx.measureText){while(size>13&&ctx.measureText(String(t)).width>maxWidth){size--;ctx.font=`${weight} ${size}px sans-serif`}}ctx.fillText(String(t),x,y)}
@@ -48,7 +48,7 @@ paintReplay=function(ctx,model,seconds){
   text(state.type==='replay'?'GOAL REPLAY':award?'PLAYER OF THE DAY':end?'THE MATCHDAY STORY':'MATCH COMMENTARY',32,298,13,C.muted,'800');
   if(state.type==='replay'){
     box(24,316,672,512,'#fff',16);
-    const replayHalf=replayHalfForGoal(e),pitch=drawMatchPitch(ctx,{x:80,y:350,width:560,height:420},replayHalf,e.point);
+    const replayHalf=replayHalfForGoal(e),pitch=drawMatchPitch(ctx,{x:80,y:350,width:560,height:420},replayHalf,e.point,!!e.opp);
     const {x:px,y:py,width:pw,height:ph}=pitch;
     text(replayHalf?(e.opp?'OPPOSITION ATTACK · OUR GOAL':'ATTACKING HALF · OPPOSITION GOAL'):'OPPOSITION GOAL',replayHalf?200:270,340,13,C.muted);if(!replayHalf)text('OUR GOAL',322,788,13,C.muted);
     const shot=replayPitchPoint(e.zone,e.point,pitch),assist=replayPitchPoint(e.assist?.zone,e.assist?.point,pitch);

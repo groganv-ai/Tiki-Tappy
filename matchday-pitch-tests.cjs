@@ -11,7 +11,7 @@ assert.equal(run('day().matches[1].pitchTemplate.version'),2);assert.equal(run('
 assert(run('day().matches[0].pitchTemplate!==day().matches[1].pitchTemplate'));
 run('closeModal();match().clockStarted=true;beginV2("Goal",match().lineup[0])');
 assert(el('#modal').innerHTML.includes('pitch-full-size-r0.svg'));assert(!el('#modal').innerHTML.includes('<select'));
-assert(!el('#modal').innerHTML.includes('Choose age group'));assert(el('#modal').innerHTML.includes('Confirm location'));
+assert(!el('#modal').innerHTML.includes('Choose age group'));assert(!el('#modal').innerHTML.includes('Confirm location'));
 run('pitchPick.point={x:.321,y:.123};confirmPrecisePitchPoint();finishV2()');
 assert.equal(run('match().events.at(-1).point.x'),.321);
 const before=run('JSON.stringify(match().pitchTemplate)');c.edit={pitchAgeGroup:'U10',pitchFormat:'7v7',date:'2026-11-04',location:'Test field',opp0:'Visitors',opp1:'Rovers'};

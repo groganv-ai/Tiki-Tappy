@@ -14,8 +14,10 @@ All packaged file hashes were verified against its `SHA256SUMS.json`.
   matchday details. Existing events are preserved. Once a configured match has
   started or has recorded events, setup locks its pitch settings.
 - Goal, shot, assist and set-piece location screens immediately use the match's
-  saved template. They offer direct selection, a visible marker, adjustment by
-  tapping again or arrow keys, rotation, explicit confirmation and Unknown.
+  saved template. They offer direct selection, rotation and Unknown. Following
+  usability feedback, tapping shows a framed action icon for 350 ms and advances
+  automatically; there is no extra confirmation tap. Keyboard users can adjust
+  with arrow keys and select with Enter.
   Corners/penalties retain their optional assumed locations and can also choose
   an explicit origin. No visible zone grid remains.
 - Baked images select all six sizes, both teams and four orientations. There is
@@ -26,9 +28,10 @@ All packaged file hashes were verified against its `SHA256SUMS.json`.
   version, playing rectangle and drawing snapshot. Opposition images already
   face the correct way; points are not flipped again. No percentage rounding
   is applied to stored points.
-- Clean highlight backgrounds draw the exact approved SVG marking paths from
+- Highlight backgrounds draw the exact approved SVG marking paths from
   the saved snapshot using Path2D, including circular penalty Ds. Projection
-  uses the playing rectangle. The U14+ enlarged boxes remain an explicitly
+  uses the playing rectangle. Palette, stripes, direction arrows and labels now
+  match the selection templates. The U14+ enlarged boxes remain an explicitly
   schematic coordinate space, never silently mapped to regulation-scale boxes.
 - Legacy numeric/zone-based points retain the previous renderer and meaning.
   If a linked location uses a different geometry, it is omitted from that pitch

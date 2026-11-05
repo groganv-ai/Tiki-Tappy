@@ -9,9 +9,10 @@ const seed=currentBoot();seed.run('demo();freeDemoActive=false;freeRealDraft=nul
 for(const mode of ['coach','player'])for(const state of ['ready','paused','running','half','second','full']){
  const a=currentBoot(seed.c.saved),b=baseBoot(seed.c.saved);
  const script=`view='live';match().inputMode='${mode}';match().elapsed=120000;match().running=false;match().clockStarted=true;match().period=1;match().ended=false;match().halfTime=false;`+
- ({ready:'match().events=[];match().elapsed=0;match().clockStarted=false;',running:'match().running=true;match().started=Date.now();',half:'match().halfTime=true;',second:'match().period=2;match().firstHalfElapsed=900000;',full:'match().ended=true;'}[state]||'')+'render()';
+ ({ready:'match().events=[];match().elapsed=0;match().clockStarted=false;',running:'match().running=true;match().started=Date.now();',half:'match().halfTime=true;',second:'match().period=2;match().firstHalfElapsed=900000;',full:'match().ended=true;'}[state]||'')+'compactNames=false;render()';
  a.run(script);b.run(script);
- const normalize=s=>s.replace(/<div class="clock" id="clock">[^<]*<\/div>/g,'<clock>');
+ const opponent=a.run('esc(match().opponent)');
+ const normalize=s=>s.replace(/>Opposition</g,'>'+opponent+'<').replace(/aria-label="Opposition: /g,'aria-label="'+opponent+': ').replace(/<div class="clock" id="clock">[^<]*<\/div>/g,'<clock>');
  assert.equal(normalize(a.el('#app').innerHTML),normalize(b.el('#app').innerHTML),mode+' '+state);
 }
-console.log('PASS: final Match Centre markup matches pre-refactor v5 for both modes in six clock states (12 comparisons; live clock text excluded).');
+console.log('PASS: 12 Match Centre structural comparisons; live clock excluded and requested name/team-label changes normalized.');

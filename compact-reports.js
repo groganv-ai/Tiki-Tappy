@@ -1,10 +1,10 @@
 // The report has one event model for grouping, chronology and image export.
 // Linked contributions are expanded once, including restarts and goalkeeper saves.
 function compactReportItems(m){
- return v2Expanded(m).map((e,index)=>({...e,category:v2Category(e),reportId:String(e.id||e.sourceId||index)})).sort((a,b)=>(a.at||0)-(b.at||0));
+ return v2Expanded(m).map((e,index)=>({...e,opponentName:m.opponent,category:v2Category(e),reportId:String(e.id||e.sourceId||index)})).sort((a,b)=>(a.at||0)-(b.at||0));
 }
 function compactItemText(e){
- const time=eventTimeLabel(e),category=e.category,name=e.opp?'Opposition':e.player||'Team';
+ const time=eventTimeLabel(e),category=e.category,name=e.opp?(e.opponentName||'Opposition'):e.player||'Team';
  if(category==='Goal'&&e.opp)return `Goal (${time})`;
  if(category==='Assist')return `${name} · Assist (${time})`;
  return `${name} · ${v2Description(e)} (${time})`;
@@ -17,7 +17,7 @@ function compactGroups(items){
    const side=list.filter(e=>!!e.opp===opp);
    if(category==='Goal'||category==='Assist')return side.map(e=>({ids:[e.reportId],text:category==='Goal'&&opp?`(${eventTimeLabel(e)})`:compactItemText(e)}));
    const groups=new Map();
-   for(const e of side){const name=e.opp?'Opposition':e.player||'Team',label=v2Description(e),key=JSON.stringify([name,label]);if(!groups.has(key))groups.set(key,{name,label,events:[]});groups.get(key).events.push(e)}
+   for(const e of side){const name=e.opp?(e.opponentName||'Opposition'):e.player||'Team',label=v2Description(e),key=JSON.stringify([name,label]);if(!groups.has(key))groups.set(key,{name,label,events:[]});groups.get(key).events.push(e)}
    return [...groups.values()].map(g=>({ids:g.events.map(e=>e.reportId),text:`${g.name} · ${g.label}${g.events.length>1?' ×'+g.events.length:''} (${g.events.map(eventTimeLabel).join(', ')})`}));
   })};
  });
@@ -33,8 +33,9 @@ function compactGroupHTML(group){
  return `<section class="compact-action-group" data-report-item-ids="${esc(group.ids.join(' '))}"><h4>${v2Icon(group.category)}${esc(group.title)}</h4><div class="compact-report-sides">${group.sides.map(side=>`<div>${side.map(row=>`<p>${esc(row.text)}</p>`).join('')||'<span class="compact-empty">—</span>'}</div>`).join('')}</div></section>`;
 }
 function compactTimelineHTML(items){
- return `<div class="compact-report-timeline">${items.map(e=>`<div class="compact-timeline-item ${e.opp?'opponent':''}" data-report-item-ids="${esc(e.reportId)}"><time>${eventTimeLabel(e)}</time>${v2Icon(e.category)}<p>${esc((e.opp?'Opposition':e.player||'Team')+' · '+(e.category==='Assist'?'Assist':v2Description(e)))}</p></div>`).join('')}</div>`;
+ return `<div class="compact-report-timeline">${items.map(e=>{const text=esc((e.opp?(e.opponentName||'Opposition'):e.player||'Team')+' · '+(e.category==='Assist'?'Assist':v2Description(e)));return `<div class="compact-timeline-item ${e.opp?'opponent':''}" data-report-item-ids="${esc(e.reportId)}"><div class="compact-timeline-own">${!e.opp?'<p>'+text+'</p>':''}</div><div class="compact-timeline-time"><time>${eventTimeLabel(e)}</time>${v2Icon(e.category)}</div><div class="compact-timeline-opponent">${e.opp?'<p>'+text+'</p>':''}</div></div>`}).join('')}</div>`;
 }
+
 daySummaryHTML=function(){
  const model=compactReportModel();
  return `<article class="day-summary compact-matchday-report" aria-label="Shareable matchday report"><header class="compact-report-heading"><h2>${esc(model.team)}</h2><p>${esc(matchDateLabel(model.date))} · ${esc(model.location)}</p><small>${esc(model.filterLabel)} · ${model.mode==='summary'?'By action':'Timeline'} · ${model.games.length} games</small></header>${model.games.map(g=>`<section class="day-report-game"><div class="compact-game-meta">Match ${g.index+1}${g.time?' · '+esc(g.time):''} · ${g.ended?'FT':'Match so far'}${g.halfTime?' · HT '+g.halfTime.join('–'):''}</div><div class="compact-scoreline"><strong>${esc(model.team)}</strong><b>${g.score.join('–')}</b><strong>${esc(g.opponent)}</strong></div>${model.mode==='summary'?g.scoreGroups.map(compactGroupHTML).join('')+g.actionGroups.map(compactGroupHTML).join(''):compactTimelineHTML(g.items)}${!g.items.length?'<p class="compact-empty">No matching moments.</p>':''}${g.summary?`<p class="compact-match-note">${esc(g.summary)}</p>`:''}</section>`).join('')}${model.playerOfDay?`<section class="compact-day-award"><small>Matchday Player of the Day</small><strong>${esc(model.playerOfDay)}</strong></section>`:''}${model.summary?`<p class="compact-day-note">${esc(model.summary)}</p>`:''}${model.photo?`<img class="compact-report-photo" src="${model.photo}" alt="Matchday photo">`:''}<p class="compact-report-copyright">© 2026 Vincent Grogan. All rights reserved.</p></article>`;
@@ -59,7 +60,7 @@ function compactReportBlocks(model){
     for(let i=0;i<Math.max(...group.sides.map(s=>s.length));i++)blocks.push({type:'sides',left:group.sides[0][i]?.text||'',right:group.sides[1][i]?.text||'',ids:group.sides.flatMap(side=>side[i]?.ids||[])});
    }
   }else{
-   for(const e of game.items)blocks.push({type:'timeline',time:eventTimeLabel(e),icon:e.category,text:(e.opp?'Opposition':e.player||'Team')+' · '+(e.category==='Assist'?'Assist':v2Description(e)),ids:[e.reportId],opp:!!e.opp});
+   for(const e of game.items)blocks.push({type:'timeline',time:eventTimeLabel(e),icon:e.category,text:(e.opp?(e.opponentName||'Opposition'):e.player||'Team')+' · '+(e.category==='Assist'?'Assist':v2Description(e)),ids:[e.reportId],opp:!!e.opp});
   }
   if(!game.items.length)blocks.push({type:'note',text:'No matching moments.'});
   if(game.summary)blocks.push({type:'note',text:game.summary});
@@ -81,7 +82,7 @@ async function makeCompactReportPages(model=compactReportModel()){
    if(b.type==='game'){const left=wrap(measure,model.team,370,32,true),right=wrap(measure,b.game.opponent,370,32,true);return {...b,left,right,height:Math.max(left.length,right.length)*40+64}}
    if(b.type==='group')return {...b,height:42};
    if(b.type==='sides'){const left=wrap(measure,b.left||'—',col,size),right=wrap(measure,b.right||'—',col,size);return {...b,left,right,height:Math.max(left.length,right.length)*line+10}}
-   if(b.type==='timeline'){const lines=wrap(measure,b.text,W-2*M-155,size);return {...b,lines,height:Math.max(line,lines.length*line)+12}}
+   if(b.type==='timeline'){const lines=wrap(measure,b.text,(W-2*M-120)/2,size);return {...b,lines,height:Math.max(64,lines.length*line)+12}}
    if(b.type==='award')return {...b,lines:wrap(measure,b.text,W-2*M-32,size+4,true),height:wrap(measure,b.text,W-2*M-32,size+4,true).length*(line+4)+62};
    if(b.type==='photo')return {...b,height:Math.min(260,(W-2*M)*photo.height/photo.width)+20};
    const lines=wrap(measure,b.text,W-2*M,size);return {...b,lines,height:lines.length*line+24};
@@ -108,8 +109,8 @@ async function makeCompactReportPages(model=compactReportModel()){
   if(b.ids)pages.at(-1).reportItemIds.push(...b.ids);
   if(b.type==='game'){game=b.game;ctx.fillStyle=C.dark;ctx.fillRect(M,y,W-2*M,b.height-10);text(`MATCH ${game.index+1} · ${game.time||'Kick-off TBC'} · ${game.ended?'FT':'MATCH SO FAR'}${game.halfTime?' · HT '+game.halfTime.join('–'):''}`,M+18,y+26,18,'#c5d9bd',true);b.left.forEach((t,i)=>text(t,M+18,y+65+i*40,32,'#fff',true));b.right.forEach((t,i)=>text(t,W-M-18,y+65+i*40,32,'#fff',true,'right'));text(game.score.join('–'),W/2,y+65,42,C.lime,true,'center')}
   else if(b.type==='group'){rule(y+4);drawActionIcon(ctx,b.icon,M+14,y+25,22,C.ink);text(b.label,M+36,y+32,25,C.ink,true)}
-  else if(b.type==='sides'){b.left.forEach((t,i)=>text(t,M,y+fit.size+i*fit.line));b.right.forEach((t,i)=>text(t,W/2+18,y+fit.size+i*fit.line))}
-  else if(b.type==='timeline'){text(b.time,M,y+fit.size,21,C.muted);drawActionIcon(ctx,b.icon,M+109,y+fit.size-8,24,C.ink);b.lines.forEach((t,i)=>text(t,M+150,y+fit.size+i*fit.line,fit.size,b.opp?'#8a4845':C.ink));rule(y+b.height-5)}
+  else if(b.type==='sides'){b.left.forEach((t,i)=>text(t,M,y+fit.size+i*fit.line));b.right.forEach((t,i)=>text(t,W-M,y+fit.size+i*fit.line,fit.size,C.ink,false,'right'))}
+  else if(b.type==='timeline'){text(b.time,W/2,y+22,21,C.muted,false,'center');drawActionIcon(ctx,b.icon,W/2,y+48,24,C.ink);b.lines.forEach((t,i)=>text(t,b.opp?W-M:M,y+fit.size+i*fit.line,fit.size,b.opp?'#8a4845':C.ink,false,b.opp?'right':'left'));rule(y+b.height-5)}
   else if(b.type==='award'){ctx.fillStyle='#e7f1cc';ctx.fillRect(M,y+8,W-2*M,b.height-12);text('PLAYER OF THE DAY',M+16,y+34,19,C.muted,true);b.lines.forEach((t,i)=>text(t,M+16,y+70+i*(fit.line+4),fit.size+4,C.ink,true))}
   else if(b.type==='photo'){const height=b.height-20,width=height*photo.width/photo.height;ctx.drawImage(photo,(W-width)/2,y+10,width,height)}
   else b.lines.forEach((t,i)=>text(t,M,y+fit.size+10+i*fit.line,fit.size,C.muted));

@@ -12,13 +12,13 @@ function beginV2(action,known='',opposition=false){
  if(known&&action==='Goal')return v2ChoosePlayer(known,opposition);
  drawV2Capture();
 }
-function cancelV2(){captureV2=null;closeModal()}
+function cancelV2(){if(typeof cancelPitchFeedback==='function')cancelPitchFeedback();captureV2=null;closeModal()}
 function recordingContextValid(m){return !!m&&m===match()&&view==='live'&&!m.ended&&clockHasStarted(m)}
 function cancelStaleV2Input(){
  if(v2GridHold&&!recordingContextValid(v2GridHold.match))v2CancelGridHold();
  if(captureV2&&!recordingContextValid(captureV2.match))cancelV2();
 }
-function finishV2(){const f=captureV2;if(!f||!recordingContextValid(f.match))return cancelV2();match().events.push(f.event);captureV2=null;save();closeModal();render();showActionFeedback(v2Description(f.event),f.event.player+(f.event.save?' · '+f.event.save.qualityLabel+' by '+f.event.save.player:''))}
+function finishV2(){const f=captureV2;if(!f||!recordingContextValid(f.match))return cancelV2();match().events.push(f.event);captureV2=null;save();closeModal();render();showActionFeedback(v2Description(f.event),(f.event.opp?match().opponent:f.event.player)+(f.event.save?' · '+f.event.save.qualityLabel+' by '+f.event.save.player:''))}
 function v2StartGridHold(e,button,action,name,opp){if(undoMode||e.button>0||e.isPrimary===false||!recordingContextValid(match()))return;v2CancelGridHold();const h={button,action,name,opp,x:e.clientX,y:e.clientY,match:match(),time:captureEventTime(match(),elapsed(match())),rank:0};v2GridHold=h;button.classList.add('v2-held');showActionFeedback('Great pass',name+' · Keep holding for Brilliant or World-class',false,'clock');h.timer=setTimeout(()=>{if(v2GridHold!==h)return;h.rank=1;button.classList.add('v2-held');showActionFeedback(V2_QUALITY.Pass[1],name+' · Keep holding for World-class',false,'clock');h.timer=setTimeout(()=>{if(v2GridHold!==h)return;h.rank=2;showActionFeedback(V2_QUALITY.Pass[2],name,false,'clock')},1500)},1500)}
 function v2CancelGridHold(){if(!v2GridHold)return;clearTimeout(v2GridHold.timer);v2GridHold.button.classList.remove('v2-held');v2GridHold=null;hideHoldFeedback()}
 function v2MoveGridHold(e){const h=v2GridHold;if(h&&Math.hypot(e.clientX-h.x,e.clientY-h.y)>14){v2GridQuietUntil=Date.now()+700;v2CancelGridHold()}}
