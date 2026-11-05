@@ -24,7 +24,7 @@ function compactGroups(items){
 }
 function compactReportModel(d=day(),flow=dayFlow()){
  const mode=flow.reportView==='timeline'?'timeline':'summary',filter=flow.filter||'major';
- return {team:d.team,date:d.date,location:d.location,mode,filter,filterLabel:HIGHLIGHT_FILTERS.find(p=>p.id===filter)?.label||'All Events',summary:d.summary||'',photo:d.photo||'',playerOfDay:d.matches.every(m=>m.ended)?d.playerOfDay||'':'',games:dayFilteredMatches(d,filter).map((m,index)=>{
+ return {team:d.team,date:d.date,location:d.location,mode,filter,filterLabel:HIGHLIGHT_FILTERS.find(p=>p.id===filter)?.label||'All Events',playerOfDayReason:d.playerOfDayReason||'',summary:d.summary||'',photo:d.photo||'',playerOfDay:d.matches.every(m=>m.ended)?d.playerOfDay||'':'',games:dayFilteredMatches(d,filter).map((m,index)=>{
   const items=compactReportItems(m),groups=compactGroups(items);
   return {index,opponent:m.opponent,time:m.time,score:score(d.matches[index]),halfTime:halfTimeScore(d.matches[index]),ended:m.ended,items,groups,scoreGroups:groups.filter(g=>['Goal','Assist'].includes(g.category)),actionGroups:groups.filter(g=>!['Goal','Assist'].includes(g.category)),summary:m.summary||''};
  })};
@@ -38,7 +38,7 @@ function compactTimelineHTML(items){
 
 daySummaryHTML=function(){
  const model=compactReportModel();
- return `<article class="day-summary compact-matchday-report" aria-label="Shareable matchday report"><header class="compact-report-heading"><h2>${esc(model.team)}</h2><p>${esc(matchDateLabel(model.date))} · ${esc(model.location)}</p><small>${esc(model.filterLabel)} · ${model.mode==='summary'?'By action':'Timeline'} · ${model.games.length} games</small></header>${model.games.map(g=>`<section class="day-report-game"><div class="compact-game-meta">Match ${g.index+1}${g.time?' · '+esc(g.time):''} · ${g.ended?'FT':'Match so far'}${g.halfTime?' · HT '+g.halfTime.join('–'):''}</div><div class="compact-scoreline"><strong>${esc(model.team)}</strong><b>${g.score.join('–')}</b><strong>${esc(g.opponent)}</strong></div>${model.mode==='summary'?g.scoreGroups.map(compactGroupHTML).join('')+g.actionGroups.map(compactGroupHTML).join(''):compactTimelineHTML(g.items)}${!g.items.length?'<p class="compact-empty">No matching moments.</p>':''}${g.summary?`<p class="compact-match-note">${esc(g.summary)}</p>`:''}</section>`).join('')}${model.playerOfDay?`<section class="compact-day-award"><small>Matchday Player of the Day</small><strong>${esc(model.playerOfDay)}</strong></section>`:''}${model.summary?`<p class="compact-day-note">${esc(model.summary)}</p>`:''}${model.photo?`<img class="compact-report-photo" src="${model.photo}" alt="Matchday photo">`:''}<p class="compact-report-copyright">© 2026 Vincent Grogan. All rights reserved.</p></article>`;
+ return `<article class="day-summary compact-matchday-report" aria-label="Shareable matchday report"><header class="compact-report-heading"><h2>${esc(model.team)}</h2><p>${esc(matchDateLabel(model.date))} · ${esc(model.location)}</p><small>${esc(model.filterLabel)} · ${model.mode==='summary'?'By action':'Timeline'} · ${model.games.length} games</small></header>${model.games.map(g=>`<section class="day-report-game"><div class="compact-game-meta">Match ${g.index+1}${g.time?' · '+esc(g.time):''} · ${g.ended?'FT':'Match so far'}${g.halfTime?' · HT '+g.halfTime.join('–'):''}</div><div class="compact-scoreline"><strong>${esc(model.team)}</strong><b>${g.score.join('–')}</b><strong>${esc(g.opponent)}</strong></div>${model.mode==='summary'?g.scoreGroups.map(compactGroupHTML).join('')+g.actionGroups.map(compactGroupHTML).join(''):compactTimelineHTML(g.items)}${!g.items.length?'<p class="compact-empty">No matching moments.</p>':''}${g.summary?`<p class="compact-match-note">${esc(g.summary)}</p>`:''}</section>`).join('')}${model.playerOfDay?`<section class="compact-day-award"><small>Matchday Player of the Day</small><strong>${esc(model.playerOfDay)}</strong>${model.playerOfDayReason?`<p>${esc(model.playerOfDayReason)}</p>`:''}</section>`:''}${model.summary?`<p class="compact-day-note">${esc(model.summary)}</p>`:''}${model.photo?`<img class="compact-report-photo" src="${model.photo}" alt="Matchday photo">`:''}<p class="compact-report-copyright">© 2026 Vincent Grogan. All rights reserved.</p></article>`;
 };
 
 // Selection choices and navigation have separate, labelled areas.
@@ -65,7 +65,7 @@ function compactReportBlocks(model){
   if(!game.items.length)blocks.push({type:'note',text:'No matching moments.'});
   if(game.summary)blocks.push({type:'note',text:game.summary});
  }
- if(model.playerOfDay)blocks.push({type:'award',text:model.playerOfDay});
+ if(model.playerOfDay)blocks.push({type:'award',text:model.playerOfDay+(model.playerOfDayReason?'\n'+model.playerOfDayReason:'')});
  if(model.summary)blocks.push({type:'note',text:model.summary});
  if(model.photo)blocks.push({type:'photo',src:model.photo});
  return blocks;

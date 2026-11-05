@@ -1,0 +1,17 @@
+const fs=require('fs'),assert=require('assert');
+const boot=Function('require',fs.readFileSync('free-matchday-tests.cjs','utf8').split('const {c,el,run}=boot();')[0]+';return boot')(require);
+const {c,el,run}=boot();run('demo();freeDemoActive=false;freeRealDraft=null;dayFinishMatch(0);startDayFlow();confirmDayReview();chooseDayPlayer(day().squad[0]);setDayAwardReason("Brilliant teamwork & encouragement <all game>")');
+assert(el('#actionFeedback').innerHTML.includes('🏆 WHAT A MATCHDAY!'));
+run('render()');assert(el('#app').innerHTML.includes('maxlength="160"'));assert(el('#app').innerHTML.includes('&lt;all game&gt;'));
+assert(run('reportText().includes(day().playerOfDayReason)'));
+assert(run('daySummaryHTML().includes("&lt;all game&gt;")'));
+assert(run('compactReportBlocks(compactReportModel()).some(b=>b.type==="award"&&b.text.includes(day().playerOfDayReason))'));
+const restored=boot(c.saved);assert.equal(restored.run('day().playerOfDayReason'),'Brilliant teamwork & encouragement <all game>');
+const printed=[];c.ctx=new Proxy({measureText:t=>({width:String(t).length*13}),fillText:t=>printed.push(String(t))},{get:(o,k)=>k in o?o[k]:()=>{}});
+run('model=makeDayReplayModel();award=highlightPlan(model).find(s=>s.type==="day-award");paintReplay(ctx,model,award.start+1)');
+assert(printed.join(' ').includes('Brilliant teamwork & encouragement <all game>'));
+assert(!printed.some(t=>t.includes('Coach’s choice')));
+run('setDayAwardReason("x".repeat(200))');assert.equal(run('day().playerOfDayReason.length'),160);
+run('chooseDayPlayer(day().squad[1])');assert(!run('day().playerOfDayReason'));assert.equal(run('makeDayReplayModel().playerOfDayReason'),'');
+run('setDayAwardReason("Another reason");chooseDayPlayer("")');assert(!run('day().playerOfDayReason'));assert.equal(run('makeDayReplayModel().playerOfDayReason'),'');assert(!run('dayAwardStepHTML().includes("day-award-reason")'));
+console.log('PASS: optional award reason persists, escapes report markup, reaches report export blocks and video, clears on recipient change/removal; celebration and no stock video caption.');

@@ -10,9 +10,9 @@ function showActionFeedback(action,player,holding=false,kind='action'){
   clearTimeout(feedbackTimer);
   const box=$('#actionFeedback');box.classList.remove('hidden');box.classList.add('action-feedback');
   box.setAttribute('role','status');box.setAttribute('aria-live','polite');
-  const great=!holding&&/^great\s/i.test(action);box.classList.remove('is-great');if(great)box.classList.add('is-great');
-  box.innerHTML=`${kind==='clock'?'':`<span class="feedback-tag">${holding?'HOLDING · 1.5 SECONDS':great?'★ GREAT ACTION':'✓ RECORDED'}</span>`}<strong>${esc(holding?action+'…':action)}</strong><small>${esc(player)}</small>${holding?`<div class="hold-bar"><i></i></div><small>Release for ${esc(action)}<br>Keep holding for Great ${esc(action)}</small>`:''}`;
-  if(!holding)feedbackTimer=setTimeout(()=>box.classList.add('hidden'),great?2800:2200);
+  const great=!holding&&(kind==='award'||/^great\s/i.test(action));box.classList.remove('is-great');if(great)box.classList.add('is-great');
+  box.innerHTML=`${kind==='clock'?'':`<span class="feedback-tag">${holding?'HOLDING · 1.5 SECONDS':kind==='award'?'🏆 WHAT A MATCHDAY!':great?'★ GREAT ACTION':'✓ RECORDED'}</span>`}<strong>${esc(holding?action+'…':action)}</strong><small>${esc(player)}</small>${holding?`<div class="hold-bar"><i></i></div><small>Release for ${esc(action)}<br>Keep holding for Great ${esc(action)}</small>`:''}`;
+  if(!holding)feedbackTimer=setTimeout(()=>box.classList.add('hidden'),kind==='award'?3200:great?2800:2200);
 }
 function hideHoldFeedback(){const box=$('#actionFeedback');box.classList.add('hidden')}
 commitMoment=function(){
