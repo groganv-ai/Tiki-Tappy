@@ -74,3 +74,7 @@ time/icon/text grid while retaining the shared icons, animation and pause contro
 `home-moments-tests.cjs` checks all five examples without invoking the report
 renderer. All 22 regression scripts pass for this follow-up. The existing private
 test site is updated for phone testing; GitHub main remains unchanged.
+
+## Saved matchday missing pitch settings
+
+Older saved matchdays may have no pitch template. The location sheet now offers a direct Edit Matchday setup action instead of leaving the user at explanatory text. It cancels only the unfinished capture, preserves recorded events and opens the existing age/format form. Pitch selection remains in Matchday setup; no pitch dimensions are guessed. The legacy setup-save regression verifies configuration without rewriting existing events, and the new recovery regression verifies navigation and capture cleanup. All 22 test suites passed. Real-phone recovery remains to be checked.

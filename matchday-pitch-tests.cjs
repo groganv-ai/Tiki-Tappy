@@ -22,3 +22,16 @@ const legacy=boot();legacy.run('demo();freeDemoActive=false;freeRealDraft=null;d
 legacy.c.edit={...c.edit,pitchAgeGroup:'U10',pitchFormat:'7v7',opp2:'Juniors'};
 legacy.run('updateDay({preventDefault(){},target:edit})');assert.equal(legacy.run('JSON.stringify(match().events)'),legacy.c.legacy);assert.equal(legacy.run('match().pitchTemplate.id'),'u10-u11');
 console.log('PASS: age/format required in Matchday setup; independent match snapshots; no pitch dropdowns during action capture; persisted points; locked settings; legacy draft configuration without data rewrites.');
+// A pre-template saved match must offer a route to setup, never an age picker inside capture.
+const recovery=boot();
+recovery.run('demo();freeDemoActive=false;freeRealDraft=null;match().running=false;match().clockStarted=true;delete match().pitchTemplate;delete day().pitchTemplate;delete day().pitchAgeGroup;save();beginV2("Goal",match().lineup[0])');
+assert(recovery.el('#modal').innerHTML.includes('Edit Matchday setup'));
+assert(!recovery.el('#modal').innerHTML.includes('<select'));
+const savedEvents=recovery.run('JSON.stringify(match().events)');
+recovery.run('editMissingPitchSetup()');
+assert.equal(recovery.run('view'),'setup');
+assert.equal(recovery.run('captureV2'),null);
+assert.equal(recovery.run('pitchPick'),null);
+assert.equal(recovery.run('JSON.stringify(match().events)'),savedEvents);
+assert(recovery.el('#app').innerHTML.includes('name="pitchAgeGroup" required'));
+console.log('PASS: missing-pitch recovery opens existing Matchday setup, clears unfinished capture and preserves saved events.');

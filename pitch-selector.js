@@ -3,6 +3,12 @@
 const TEMPLATE_POINT_SPACE='tikitapper-template-v2';
 let pitchPick=null,pitchAdvanceTimer=null;
 function cancelPitchFeedback(){clearTimeout(pitchAdvanceTimer);pitchAdvanceTimer=null;pitchPick=null}
+function editMissingPitchSetup(){
+ cancelPitchFeedback();
+ if(typeof captureV2!=='undefined')captureV2=null;
+ if(typeof spFlow!=='undefined')spFlow=null;
+ closeModal();view='setup';render();
+}
 function previewPitchPoint(){
  const p=ensurePitchPick(),c=pitchCaptureContext();if(!p?.point||!c)return;
  clearTimeout(pitchAdvanceTimer);
@@ -83,7 +89,7 @@ function precisePitchHTML(){
  const p=ensurePitchPick();if(!p)return '';
  const v=p.preset&&templateVariant(p.preset),point=v&&p.point?templatePointToDisplay(p.point,p.preset,v.angle):null;
  const marker=point?`<span class="precise-pitch-marker ${p.feedbackIcon?'pitch-action-frame':''}" style="left:${(point.x-v.viewBox.x)/v.viewBox.width*100}%;top:${(point.y-v.viewBox.y)/v.viewBox.height*100}%" aria-hidden="true">${p.feedbackIcon?v2Icon(p.feedbackIcon):''}</span>`:'';
- return `<div class="v2-pitch-label"><span>${p.opp?'OPPOSITION':'OUR'} ATTACK · INPUT VIEW</span><button type="button" onclick="rotateInputPitch()" aria-label="Rotate pitch">Rotate ${pitchInputDirection()}</button></div>${v?`<div id="precisePitchBoard" class="precise-pitch-board" tabindex="0" role="group" aria-label="Select pitch location. Tap or use arrow keys, Enter to select." onkeydown="pitchKeyboardPoint(event)" onclick="pitchPointerPoint(event,this.querySelector('img'))"><img src="${p.opp?v.oppositionImage:v.image}" alt="${p.opp?'Opposition':'Our team'} ${p.preset.format} pitch, rotated ${v.angle} degrees" draggable="false">${marker}</div><p class="precise-pitch-help">${esc(p.age||p.preset.ages.join(' / '))} · ${p.preset.format} · ${Number(p.preset.length.toFixed(2))} × ${Number(p.preset.width.toFixed(2))} m${p.preset.id==='full-size'?' · enlarged selection boxes':''}<br>Tap a location to continue. With a keyboard, use arrow keys and Enter. Pitch configured in Matchday setup.</p>`:'<p class="precise-pitch-help">Set the age group and playing format in Matchday setup before choosing a location.</p>'}<p id="pitchPointStatus" class="precise-pitch-status" role="status">${p.feedbackIcon?'Location selected.':p.point?'Location selected. Press Enter to continue.':'No location selected.'}</p><div class="precise-pitch-actions"><button type="button" onclick="confirmPrecisePitchPoint(true)">Location unknown</button></div>`;
+ return `<div class="v2-pitch-label"><span>${p.opp?'OPPOSITION':'OUR'} ATTACK · INPUT VIEW</span><button type="button" onclick="rotateInputPitch()" aria-label="Rotate pitch">Rotate ${pitchInputDirection()}</button></div>${v?`<div id="precisePitchBoard" class="precise-pitch-board" tabindex="0" role="group" aria-label="Select pitch location. Tap or use arrow keys, Enter to select." onkeydown="pitchKeyboardPoint(event)" onclick="pitchPointerPoint(event,this.querySelector('img'))"><img src="${p.opp?v.oppositionImage:v.image}" alt="${p.opp?'Opposition':'Our team'} ${p.preset.format} pitch, rotated ${v.angle} degrees" draggable="false">${marker}</div><p class="precise-pitch-help">${esc(p.age||p.preset.ages.join(' / '))} · ${p.preset.format} · ${Number(p.preset.length.toFixed(2))} × ${Number(p.preset.width.toFixed(2))} m${p.preset.id==='full-size'?' · enlarged selection boxes':''}<br>Tap a location to continue. With a keyboard, use arrow keys and Enter. Pitch configured in Matchday setup.</p>`:'<p class="precise-pitch-help">This saved matchday needs an age group and playing format before a pitch can be shown. Your recorded events will be kept.</p><button type="button" class="primary v2-wide" onclick="editMissingPitchSetup()">Edit Matchday setup →</button>'}<p id="pitchPointStatus" class="precise-pitch-status" role="status">${p.feedbackIcon?'Location selected.':p.point?'Location selected. Press Enter to continue.':'No location selected.'}</p><div class="precise-pitch-actions"><button type="button" onclick="confirmPrecisePitchPoint(true)">Location unknown</button></div>`;
 }
 function confirmPrecisePitchPoint(unknown=false){
  const p=ensurePitchPick(),c=pitchCaptureContext();if(!p||!c||p.owner!==c.owner||!recordingContextValid(match())||(!unknown&&!p.point))return;
