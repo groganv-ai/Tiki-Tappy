@@ -64,3 +64,13 @@ Remaining acceptance: real-device mobile touch/readability and a complete
 encoded-video/share round trip. Part A mobile sign-off and Step 4 acceptance
 remain separate. No merge, hosted test-site publication or main deployment is
 included. The localhost preview contains these changes.
+
+## Homepage follow-up
+
+Mobile feedback exposed the homepage showcase still expecting the former flat
+report-timeline markup. Its player/action label landed in a 30px time column
+after the report changed to a two-team layout. The showcase now has its own
+time/icon/text grid while retaining the shared icons, animation and pause control.
+`home-moments-tests.cjs` checks all five examples without invoking the report
+renderer. All 22 regression scripts pass for this follow-up. The existing private
+test site is updated for phone testing; GitHub main remains unchanged.

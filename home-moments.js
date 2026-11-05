@@ -1,4 +1,4 @@
-// Fictional examples reuse the report renderer and approved action icons.
+// Fictional examples share report icons, with a dedicated responsive layout.
 const HOME_MOMENTS=[
  {action:'Goal',player:'Osian',qualityLabel:'Great goal',at:3*60000},
  {action:'Save',player:'Ava',qualityLabel:'Great save',at:5*60000},
@@ -8,7 +8,7 @@ const HOME_MOMENTS=[
 ];
 function homeMomentsHTML(){
  const description=HOME_MOMENTS.map(e=>e.player+' · '+e.qualityLabel).join('; ');
- return `<section class="home-moments" aria-label="Examples of tracked moments"><div class="home-moment-screen" role="img" aria-label="Example match report moments: ${esc(description)}">${HOME_MOMENTS.map((e,i)=>`<div class="home-moment-slide moment-${e.action.toLowerCase()}" style="--moment-delay:${i*4}s" aria-hidden="true"><div class="home-moment-meta"><span>Match Report</span><span>${esc(e.action)}</span></div>${compactTimelineHTML([{...e,category:e.action,reportId:'home-example-'+i}])}</div>`).join('')}</div><div class="home-moment-controls"><span>Example moments</span><button type="button" aria-pressed="false" onclick="toggleHomeMoments(this)">Pause examples</button></div></section>`;
+ return `<section class="home-moments" aria-label="Examples of tracked moments"><div class="home-moment-screen" role="img" aria-label="Example match report moments: ${esc(description)}">${HOME_MOMENTS.map((e,i)=>`<div class="home-moment-slide moment-${e.action.toLowerCase()}" style="--moment-delay:${i*4}s" aria-hidden="true"><div class="home-moment-meta"><span>Match Report</span><span>${esc(e.action)}</span></div><div class="home-moment-event"><time>${eventTimeLabel(e)}</time>${v2Icon(e.action)}<p>${esc(e.player)} · ${esc(e.qualityLabel)}</p></div></div>`).join('')}</div><div class="home-moment-controls"><span>Example moments</span><button type="button" aria-pressed="false" onclick="toggleHomeMoments(this)">Pause examples</button></div></section>`;
 }
 function toggleHomeMoments(button){
  const showcase=button.closest('.home-moments'),paused=showcase.classList.toggle('is-paused');
