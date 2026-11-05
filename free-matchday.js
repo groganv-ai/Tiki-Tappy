@@ -90,12 +90,35 @@ const FREE_DEMO_BOYS=['Alfie','Arthur','Ethan','Freddie','Harry','Henry','Jack',
 const FREE_DEMO_GIRLS=['Amelia','Ava','Charlotte','Ella','Emily','Evie','Grace','Isla','Lily','Mia','Olivia','Sophie'];
 function freeRandomIndex(n){const a=new Uint32Array(1),limit=Math.floor(4294967296/n)*n;do{crypto.getRandomValues(a)}while(a[0]>=limit);return a[0]%n}
 function freeShuffle(values){const a=[...values];for(let i=a.length-1;i>0;i--){const j=freeRandomIndex(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
-function freeDemoNames(){return freeShuffle([...freeShuffle(FREE_DEMO_BOYS).slice(0,5),...freeShuffle(FREE_DEMO_GIRLS).slice(0,5)])}
+function freeDemoNames(){return freeShuffle([...freeShuffle(FREE_DEMO_BOYS).slice(0,6),...freeShuffle(FREE_DEMO_GIRLS).slice(0,5)])}
+
+function configureFreeDemo(){
+ const d=day(),m=match(),names=[...d.squad],pitch=matchdayPitchSettings('U14','11v11');
+ Object.assign(d,pitch,{durationMinutes:70,twoHalves:true});
+ Object.assign(m,matchdayPitchSettings('U14','11v11'),{lineup:names,durationMinutes:70,twoHalves:true,period:1,elapsed:35*60000,firstHalfElapsed:35*60000,halfTime:true,clockStarted:true,running:false,started:null,ended:false,teamReady:true});
+ const roles=Object.fromEntries(names.map((n,i)=>[n,i===0?'GK':i<=4?'DF':i<=8?'MD':'AT']));
+ m.teamStart={onPitch:[...names],roles,captain:names[5]};m.goalkeeper=names[0];
+ d.teamSelection={...JSON.parse(JSON.stringify(m.teamStart)),roster:[...names]};
+ const point=(x,y)=>({x,y,coordinateSpace:TEMPLATE_POINT_SPACE,geometry:JSON.parse(JSON.stringify(pitch.pitchTemplate))});
+ const event=(action,player,minute,rank=0,extra={})=>({id:crypto.randomUUID(),action,category:action,player,...captureEventTime(m,minute*60000),qualityRank:rank,qualityLabel:V2_QUALITY[action][rank],...extra});
+ m.events=[
+  event('Goal',names[9],6,0,{point:point(.5,.1),assist:{player:names[7],point:point(.25,.25),locationLabel:'Left attacking channel'}}),
+  event('Shot','Opposition',10,0,{opp:true,outcome:'Saved',point:point(.4,.2),save:{player:names[0],qualityLabel:'Great save',qualityRank:1,assumedLocation:true,locationLabel:'Our defensive goal box'}}),
+  event('Goal','Opposition',14,0,{opp:true,point:point(.5,.1)}),
+  event('Shot',names[10],18,0,{outcome:'Saved',point:point(.65,.2)}),
+  event('Pass',names[5],22,1),
+  event('Skill',names[8],25,1),
+  event('Goal',names[10],29,1,{point:point(.6,.12)}),
+  event('Shot','Opposition',33,1,{opp:true,outcome:'Saved',point:point(.6,.18),save:{player:names[0],qualityLabel:'Incredible save',qualityRank:2,assumedLocation:true,locationLabel:'Our defensive goal box'}})
+ ];
+ save();
+}
+
 const freeOriginalDemo=demo;
 demo=function(){
   if(!freeDemoActive)freeRealDraft=data;
   freeDemoActive=true;data={...fresh(),teams:[{name:'Meadow United',squad:freeDemoNames()}]};
-  freeOriginalDemo();day().matches=day().matches.slice(0,1);day().isDemo=true;day().squad=[...data.teams[0].squad];day().clubName='Fictional demo team';render();
+  freeOriginalDemo();day().matches=day().matches.slice(0,1);day().isDemo=true;day().squad=[...data.teams[0].squad];day().clubName='Fictional demo team';configureFreeDemo();render();
 };
 const freeRenderBefore=render;
 render=function(){

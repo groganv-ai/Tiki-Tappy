@@ -1,7 +1,7 @@
 const fs=require('fs'),assert=require('assert');
 const boot=Function('require',fs.readFileSync('free-matchday-tests.cjs','utf8').split('const {c,el,run}=boot();')[0]+';return boot')(require);
 const {c,el,run}=boot();
-run('demo();freeDemoActive=false;match().running=false;match().clockStarted=true');
+run('demo();match().halfTime=false;freeDemoActive=false;match().running=false;match().clockStarted=true');
 const snapshot=run('JSON.stringify({...match(),inputMode:null})');
 for(const mode of ['coach','player']){
  run(`setInputMode('${mode}')`);

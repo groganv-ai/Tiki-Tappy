@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 function boot(saved){const els=new Map();function el(s){if(!els.has(s))els.set(s,{innerHTML:'',textContent:'',classList:{add(){},remove(){}},setAttribute(){}});return els.get(s)}class FormData{constructor(t){this.fields=t}get(k){return this.fields[k]??null}}
 const c={window:{addEventListener(){}},document:{querySelector:el,addEventListener(){}},localStorage:{getItem(){return saved},setItem(k,v){c.saved=v}},setTimeout(){},clearTimeout(){},setInterval(){},Date,FormData,atob,TextDecoder,crypto:require('crypto').webcrypto,location:{hash:'',pathname:'/',search:''},history:{replaceState(){}}};vm.createContext(c);const html=fs.readFileSync('index.html','utf8');vm.runInContext(fs.readFileSync('timing.js','utf8'),c);vm.runInContext(html.match(/<script>([\s\S]*?)<\/script>/)[1],c);for(const file of [...html.matchAll(/<script src="([^"?]+)(?:\?[^\"]*)?"/g)].map(m=>m[1]).filter(x=>x!=='timing.js'))vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});return {c,el,run:s=>vm.runInContext(s,c)}}
-const {c,el,run}=boot();run('demo()');
+const {c,el,run}=boot();run('demo();freeOriginalDemo()');
 assert.equal(run('eventTimeLabel({at:300000})'),'5′');assert.equal(run('eventTimeLabel({at:300001})'),'6′');
 assert.equal(run('eventTimeLabel({period:1,periodAt:960000,halfLengthMs:900000})'),'15+1′');assert.equal(run('eventTimeLabel({period:2,periodAt:60000,halfLengthMs:900000})'),'16′');assert.equal(run('eventTimeLabel({period:2,periodAt:1020000,halfLengthMs:900000})'),'30+2′');
 run('match().durationMinutes=30;match().period=1;match().elapsed=960000;match().running=false');assert.equal(run('clockText(match())'),'15:00 +01:00');

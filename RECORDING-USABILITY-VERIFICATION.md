@@ -82,3 +82,7 @@ Older saved matchdays may have no pitch template. The location sheet now offers 
 ## Single-match demo
 
 The isolated fictional demo now includes one game, retaining its sample events. Confirming that game's full time allows result review, Player of the Day, report output and populated highlights without finishing two empty games. Real matchday creation still supports multiple opponents. The regression suite checks this single-game path; multi-game report and capture tests use explicit fixtures. All 22 suites passed. Phone export/share verification remains pending.
+
+## U14 half-time demo scenario
+
+The single demo game now has the configured U14 11v11 template and eleven mixed fictional names assigned GK / 4 DF / 4 MD / 2 AT. It opens paused at half time (35:00 of a 70-minute game), ready for the existing Start second half control. First-half events give Meadow United a 2–1 lead: two goals (one assisted), an opposition goal, two opposition shots saved by the nominated goalkeeper, one saved team shot, a level-two Brilliant pass and a Skill. Location-bearing events retain template geometry for consistent highlights. New demo-scenario regression checks roles, pitch markup, scores, event linkage and the transition to second-half time without changing first-half events. Existing legacy tests use the original legacy fixture where needed. All 23 suites passed. Real-phone rendering and encoded video/share remain pending user verification.

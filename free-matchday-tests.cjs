@@ -12,7 +12,7 @@ assert.equal(run('match().inputMode'),'player');const originalID=run('day().id')
 const restored=boot(draft);assert.equal(restored.run('day().id'),originalID);assert.equal(restored.run('teamKeeper()'),'Avery');
 run('setInputMode("coach");save()');assert.equal(boot(c.saved).run('match().inputMode'),'coach');run('setInputMode("player");save()');
 run('demo()');assert.equal(c.saved,draft);assert(run('day().isDemo'));assert(!run('day().team.includes("Test")'));assert(run('match().lineup.some(n=>FREE_DEMO_BOYS.includes(n))'));assert(run('match().lineup.some(n=>FREE_DEMO_GIRLS.includes(n))'));
-for(let i=0;i<10;i++){run('demo()');assert.equal(c.saved,draft);assert.equal(run('new Set(data.teams[0].squad).size'),10)}
+for(let i=0;i<10;i++){run('demo()');assert.equal(c.saved,draft);assert.equal(run('new Set(data.teams[0].squad).size'),11)}
 run('setInputMode("player");returnToFreeDraft()');assert.equal(run('day().id'),originalID);assert.equal(run('match().inputMode'),'player');
 run('startFreeSetup()');assert(el('#modal').innerHTML.includes('will delete'));assert.equal(run('day().id'),originalID);run('openFreeSetup()');assert(!el('#app').innerHTML.includes('value="Test United"'));assert(!el('#app').innerHTML.includes('>Avery'));
 run("createDay({preventDefault(){},target:{pitchAgeGroup:'U10',pitchFormat:'7v7',teamName:'Next team',players:['Casey','Taylor'].join(String.fromCharCode(10)),date:'2026-10-21',location:'New field',opponents:'Visitors'}})");
