@@ -85,6 +85,11 @@ function pitchKeyboardPoint(event){
  const step=Math.min(p.preset.rect.width,p.preset.rect.height)*(event.shiftKey?.05:.01);
  p.point=templatePointFromDisplay(point.x+d[0]*100*step,point.y+d[1]*100*step,p.preset,v.angle)||p.point||{x:.5,y:.5};redrawPitchCapture();$('#precisePitchBoard')?.focus?.();
 }
+function inputSheetHeading(action,event,player,label,closeAction,backAction='',id=''){
+ const name=player==='Opposition'?match().opponent:player;
+ return `<div class="input-sheet-head">${backAction?`<button class="input-negative" type="button" aria-label="Back one step" onclick="${backAction}">←</button>`:''}<h2${id?` id="${id}"`:''}><span class="input-action-icon" role="img" aria-label="${esc(action)}">${v2Icon(action)}</span><span>${event?`<time>${eventTimeLabel(event.time?{...event.time,at:event.at}:event)}</time> · `:''}${name?esc(name)+' · ':''}${esc(label)}</span></h2><button class="input-negative" type="button" aria-label="Cancel input" onclick="${closeAction}">×</button></div>`;
+}
+
 function pitchLocationHeading(closeAction,backAction=''){
  const c=pitchCaptureContext(),e=c.owner.event||c.owner.draft,assist=c.stage==='assist-location',origin=c.stage==='origin';
  const action=assist?'Assist':origin?'Set piece':c.owner.event?.action||c.owner.outcome?.kind||'Shot';
