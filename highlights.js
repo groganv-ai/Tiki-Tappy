@@ -1,15 +1,14 @@
 // Text-led highlights. The timeline is always present; pitch animation is a
 // short goal replay, not the default view. Preview and video use one renderer.
-const replayModelBeforeTimeline=makeReplayModel;
-makeReplayModel=function(){
-  const model=replayModelBeforeTimeline(),m=match();
-  model.ended=!!m.ended;model.twoHalves=usesHalves(m);model.durationMinutes=durationFor(m);
-  model.playerOfDay=m.ended?m.playerOfDay||'':'';
-  model.firstHalfElapsed=m.firstHalfElapsed||0;
-  const played=(m.period===2?model.firstHalfElapsed:0)+elapsed(m);
-  model.timelineEnd=Math.max(1,played,model.events.at(-1)?.at||0);
-  return model;
-};
+function makeReplayModel(m=match(),d=day()){
+ const model={team:d.team,opponent:m.opponent,date:d.date,location:d.location,events:JSON.parse(JSON.stringify([...m.events].sort((a,b)=>a.at-b.at))),score:score(m),clubName:d.clubName||''};
+ model.ended=!!m.ended;model.twoHalves=usesHalves(m);model.durationMinutes=durationFor(m);
+ model.playerOfDay=m.ended?m.playerOfDay||'':'';
+ model.firstHalfElapsed=m.firstHalfElapsed||0;
+ const played=(m.period===2?model.firstHalfElapsed:0)+elapsed(m);
+ model.timelineEnd=Math.max(1,played,model.events.at(-1)?.at||0);
+ return model;
+}
 function isGreatHighlight(e){return /^great\s/i.test(e?.action||'')||e?.quality==='Great'}
 function highlightPlan(model){
   let time=2.5;const plan=[{type:'intro',start:0,end:time,index:-1}];

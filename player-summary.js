@@ -86,6 +86,4 @@ async function makePlayerSummaryPages(model){
  }
  return pages;
 }
-const playerSummaryPagesBefore=makeDayReportPages;
-makeDayReportPages=async function(){return dayFlow().reportView==='players'?makePlayerSummaryPages(playerSummaryModel(JSON.parse(JSON.stringify(day())),playerSummaryScope())):playerSummaryPagesBefore()};
 render();

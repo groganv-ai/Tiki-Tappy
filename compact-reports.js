@@ -118,5 +118,4 @@ async function makeCompactReportPages(model=compactReportModel()){
  });
  return pages;
 }
-makeDayReportPages=async function(){return makeCompactReportPages(compactReportModel(JSON.parse(JSON.stringify(day())),{...dayFlow()}))};
 render();

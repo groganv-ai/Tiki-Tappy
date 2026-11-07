@@ -62,15 +62,6 @@ async function makeMatchReportPages(snapshot=reportSnapshot()){
  footer();return pages;
 }
 function clearMatchReportFiles(){for(const url of matchReportURLs)URL.revokeObjectURL(url);matchReportURLs=[];matchReportFiles=[]}
-async function exportMatchReport(){
- if(matchReportBusy)return;matchReportBusy=true;toast('Creating your report…');
- try{const snapshot=reportSnapshot();disposeExport();clearMatchReportFiles();const pages=await makeMatchReportPages(snapshot);for(let i=0;i<pages.length;i++){const blob=await new Promise(resolve=>pages[i].toBlob(resolve,'image/png'));if(!blob)throw Error('Image creation failed');pages[i].width=0;pages[i].height=0;matchReportFiles.push({blob,name:`match-report-${snapshot.view==='summary'?'actions':'timeline'}${pages.length>1?'-'+(i+1):''}.png`});matchReportURLs.push(URL.createObjectURL(blob))}
- exportPanel('Your match report',`<p class="hint">${snapshot.view==='summary'?'By action':'Timeline'} report · ${pages.length} image${pages.length>1?'s':''}. Preview, then share or save.</p><div class="links"><button class="primary" onclick="shareMatchReportImages()">Share report ↗</button>${matchReportFiles.map((f,i)=>`<a href="${matchReportURLs[i]}" download="${f.name}">Save ${pages.length>1?'page '+(i+1):'image'}</a>`).join('')}</div><p class="hint" id="matchReportShareStatus">Choose WhatsApp in your phone’s share menu, or save the image and attach it.</p>${matchReportURLs.map((url,i)=>`<img src="${url}" alt="${snapshot.view==='summary'?'Action':'Timeline'} match report, page ${i+1}">`).join('')}`);
- }catch(e){toast('Could not create the report image. Try again, or use the text log.');clearMatchReportFiles()}finally{matchReportBusy=false}
-}
 async function shareMatchReportImages(){if(!matchReportFiles.length)return;const status=$('#matchReportShareStatus'),files=matchReportFiles.map(f=>new File([f.blob],f.name,{type:'image/png'}));if(!navigator.share||!navigator.canShare?.({files})){status.textContent='File sharing is unavailable here. Save the image pages, then attach them in WhatsApp.';return}try{await navigator.share({files,title:'TikiTapper match report'});status.textContent='Returned from sharing. Check your chosen app to confirm it was sent.'}catch(e){status.textContent=e.name==='AbortError'?'Sharing cancelled. Your report is still ready.':'Could not open sharing. Save the image pages and attach them in your chosen app.'}}
 reportCanvas=async function(){return (await makeMatchReportPages())[0]};
-exportImage=exportMatchReport;
-const closeExportBeforeReports=closeExport;
-closeExport=function(){if(playback?.recording)return closeExportBeforeReports();clearMatchReportFiles();closeExportBeforeReports()};
 render();

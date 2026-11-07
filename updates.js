@@ -88,7 +88,7 @@ renderReport=function(){originalRenderReport();const app=$('#app');app.innerHTML
 
 // Explicit second-tap sharing keeps navigator.share inside a user gesture.
 let preparedExport=null,exportURL=null,playback=null;
-function disposeExport(){if(exportURL)URL.revokeObjectURL(exportURL);exportURL=null;preparedExport=null;stopReplay()}
+function disposeExport(){if(typeof cancelReportExport==='function')cancelReportExport();if(typeof clearMatchReportFiles==='function')clearMatchReportFiles();if(exportURL)URL.revokeObjectURL(exportURL);exportURL=null;preparedExport=null;stopReplay()}
 function exportPanel(title,content){$('#modal').innerHTML=`<div class="modal"><div class="sheet export-sheet"><button class="close" aria-label="Close export" onclick="closeExport()">×</button><h2>${title}</h2>${content}</div></div>`}
 function closeExport(){if(playback?.recording)return toast('Wait for recording to finish or tap Cancel recording.');disposeExport();closeModal()}
 function showPrepared(blob,name){
@@ -106,7 +106,6 @@ async function sharePrepared(){
 exportImage=async function(){try{const c=await reportCanvas();const b=await new Promise(r=>c.toBlob(r,'image/png'));if(!b)throw Error();showPrepared(b,'match-report.png')}catch{toast('Could not create the image. Use Share text instead.')}};
 
 function pointForZone(z){if(!z||z<1||z>12)return null;return{x:90+((z-1)%3+.5)*180,y:265+(3-Math.floor((z-1)/3)+.5)*135}}
-function makeReplayModel(){const m=match(),d=day();return {team:d.team,opponent:m.opponent,date:d.date,location:d.location,events:JSON.parse(JSON.stringify([...m.events].sort((a,b)=>a.at-b.at))),score:score(m)}}
 function replayDuration(model){return Math.max(4,2+model.events.length*3)}
 function stopReplay(){if(playback){cancelAnimationFrame(playback.raf);playback.stream?.getTracks().forEach(t=>t.stop());playback=null}}
 function paintReplay(ctx,model,seconds){
