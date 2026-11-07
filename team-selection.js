@@ -32,16 +32,18 @@ function drawTeamSelection(){const f=teamDraft;if(!f||f.match!==match()||f.day!=
 function saveTeamSelection(){const f=teamDraft,m=match();if(!f||f.match!==m||f.day!==day()||m.ended)return teamClose();if(m.teamStart&&clockHasStarted(m))return teamClose();const roster=f.squad.filter(n=>f.available.includes(n)),onPitch=roster.filter(n=>TEAM_ROLES.includes(f.assignments[n]));if(onPitch.filter(n=>f.assignments[n]==='GK').length!==1){f.error='Choose one starting goalkeeper.';return drawTeamSelection()}if(onPitch.length<2){f.error='Add at least one outfield player to the starting team.';return drawTeamSelection()}const selection={onPitch,roles:Object.fromEntries(roster.filter(n=>TEAM_ROLES.includes(f.assignments[n])).map(n=>[n,f.assignments[n]])),captain:onPitch.includes(f.captain)?f.captain:''};const targets=f.scope==='day'?day().matches.filter(x=>!clockHasStarted(x)&&!x.events.length):[m];if(!targets.includes(m))targets.push(m);for(const target of targets){target.lineup=[...roster];target.teamStart=JSON.parse(JSON.stringify(selection));target.teamReady=target===m;teamSyncKeeper(target)}if(f.scope==='day')day().teamSelection={...JSON.parse(JSON.stringify(selection)),roster:[...roster]};save();teamClose();render();showActionFeedback('Team selected',onPitch.length+' starting · '+(roster.length-onPitch.length)+' substitutes',false,'clock')}
 lineupModal=function(){const m=match();if(m?.teamStart&&clockHasStarted(m))return openSubstitution();openTeamSelection(day().teamSelection?'match':'day')};
 function teamChoiceSections(handler,exclude='',m=match()){return teamFormationChoices(handler,exclude,m)}
-function teamFormationChoices(handler,exclude='',m=match()){
- const s=teamState(m),button=n=>`<button data-player="${esc(n)}" onclick="${handler}(this.dataset.player)">${teamName(n,m)}</button>`;
+function teamFormationChoices(handler,exclude='',m=match(),selected=''){
+ const s=teamState(m),button=n=>`<button class="${n===selected?'selected':''}" aria-pressed="${n===selected}" data-player="${esc(n)}" onclick="${handler}(this.dataset.player)">${teamName(n,m)}</button>`;
  if(!s)return `<div class="team-pitch team-action-pitch" aria-label="Choose player from formation"><section><h3>Players · positions not set</h3><div>${teamPlayers(m).filter(n=>n!==exclude).map(button).join('')}</div></div></section></div>`;
  const pitch=`<div class="team-pitch team-action-pitch" aria-label="Choose player from formation">${[...TEAM_ROLES].reverse().map(role=>`<section><h3>${TEAM_ROLE_NAMES[role]}</h3><div>${teamOrdered(m,s.onPitch.filter(n=>s.roles[n]===role&&n!==exclude),s.roles).map(button).join('')||'<small>—</small>'}</div></section>`).join('')}</div>`;
- const bench=teamPlayers(m).filter(n=>!s.onPitch.includes(n)&&n!==exclude);
+ const bench=teamPlayers(m).filter(n=>!s.onPitch.includes(n)&&n!==exclude);if(!bench.length)return pitch;
  return pitch+`<section class="team-action-bench"><h4>Substitutes</h4><div>${bench.map(button).join('')||'<p class="hint">No substitutes available.</p>'}</div></section>`;
 }
 // Guard every player picker, including assists and alternative goalkeepers.
 const teamChoosePlayerBefore=v2ChoosePlayer;
 v2ChoosePlayer=function(name,opp=false){if(captureV2?.match===match()&&!opp&&teamIsSubstitute(name))return promptBenchPlayer(name,{kind:'v2',match:match(),name,capture:captureV2,time:captureFields(captureV2.event)});return teamChoosePlayerBefore(name,opp)};
+const teamSetPieceTakerBefore=spChooseTaker;
+spChooseTaker=function(name){if(spValid()&&name&&teamIsSubstitute(name))return promptBenchPlayer(name,{kind:'sp-taker',match:match(),name,flow:spFlow,time:spFlow.draft.time});return teamSetPieceTakerBefore(name)};
 const teamSetPiecePlayerBefore=spChoosePlayer;
 spChoosePlayer=function(name){if(spValid()&&teamIsSubstitute(name))return promptBenchPlayer(name,{kind:'sp',match:match(),name,flow:spFlow,time:spFlow.outcome?.time||spFlow.draft.time});return teamSetPiecePlayerBefore(name)};
 v2PlayersHTML=function(includeOpp=false,assist=false){const f=captureV2,m=match(),keeper=f.stage==='keeper'?teamKeeper(m):'';return `<section class="v2-players team-player-picker"><h3>${assist?'Assist by':f.stage==='keeper'?'Goalkeeper':'Player'}</h3>${keeper?`<div class="keeper-confirm-row"><button class="primary keeper-confirm" aria-label="Record save for ${esc(keeper)}" data-player="${esc(keeper)}" onclick="v2ChoosePlayer(this.dataset.player)">${esc(keeper)}</button></div><details class="team-other-keeper"><summary>Different goalkeeper</summary>${teamChoiceSections('v2ChoosePlayer')}</details>`:teamChoiceSections('v2ChoosePlayer',assist?f.event.player:'')}${includeOpp?`<button class="v2-opposition v2-wide" onclick="v2ChoosePlayer('Opposition',true)">${esc(m.opponent)}</button>`:''}</section>`};
@@ -55,6 +57,7 @@ function continueBenchAction(next,off){
  if(!next||next.match!==match()||match().ended||teamIsSubstitute(next.name))return;
  const m=match(),before=m.events.length;
  if(next.kind==='v2'){captureV2=next.capture;v2ChoosePlayer(next.name)}
+ else if(next.kind==='sp-taker'){spFlow=next.flow;spChooseTaker(next.name)}
  else if(next.kind==='sp'){spFlow=next.flow;spChoosePlayer(next.name)}
  else if(next.kind==='action'){
   beginV2(next.action,next.name);

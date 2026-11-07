@@ -124,3 +124,15 @@ Pitch assets are warmed only for the configured template (four rotations, both t
 Highlight assists use a white line without an arrowhead, including the completed pass trail. The goal shot uses the previous assist green and retains its arrowhead; player marker colours are swapped consistently. Animation timings and saved geometry are unchanged.
 
 All 31 suites passed. New coverage checks escaped opponent labels without changing storage sentinels; all three restart taker/scorer/assist/keeper paths; penalty no-assist behaviour; bench-taker continuation; eight warmed assets without duplicate requests; reserved image dimensions; and exact white-line/green-arrow canvas stroke counts. Existing direct/indirect free-kick, penalty, restart/outcome undo, timestamp and geometry regressions also pass. Real-browser first-use timing and visual checks remain pending on the private preview.
+
+## Restart-derived locations and inline takers
+
+All set-piece takers are now selected directly from the formation on the main details screen, with a selected state and optional No taker control. Bench selection still uses the existing substitution continuation. Empty substitute panels are omitted.
+
+Penalty setup exposes no pitch-location action. Results are Goal / Saved / Missed, and all use the configured template's penalty spot at the appropriate attacking end (mirrored for the opposition). The approved schematic geometry is unchanged. Own attempts use the nominated taker, with a fallback player choice if needed; opposition saves still link our keeper. Penalties never request assists or an extra location. Legacy stored coordinates are not silently rewritten.
+
+Corners offer only Left / Right, defaulting to Unknown if neither is selected; no restart-location picker is shown. A goal assisted by its corner taker reuses the side-derived corner coordinate. Free-kick taker assists likewise reuse the restart origin, including an explicit unknown point when no origin was provided. Other assisters can still record their own location.
+
+Free-kick Shot now asks Direct / Indirect, matching Goal. Direct attempts reuse the taker and saved free-kick origin; if the origin is absent they request it once, with Skip remaining available. Direct shots retain selected quality and their saved/off-target/blocked outcome, including linked opposition saves. Indirect attempts retain a separate shooter and shot location. New shot mode metadata is stored alongside the restart; legacy free-kick goal metadata remains readable. Going Back from an unfinished direct-location prompt does not commit an attempt.
+
+All 32 suites passed. New tests cover both teams' penalty results/spots, inline and bench takers, corner default/side coordinates, reused taker assists, direct goals/shots with existing/missing origins and quality, indirect shot locations, Skip and Back. Real-browser visual and video/share acceptance remains pending on the private preview. Main is unchanged.

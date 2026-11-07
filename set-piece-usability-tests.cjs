@@ -5,8 +5,8 @@ function fixture(){const f=boot();f.run('demo();match().opponent="Visitors & <Ro
 for(const type of [0,1,2]){
  const f=fixture();f.run(`spStartSetPiece();spChooseType(${type})`);let html=f.el('#modal').innerHTML;
  assert(html.includes('Visitors &amp; &lt;Rovers&gt;'));assert(!html.includes('<select id="taker"'));
- f.run('stamp=spFlow.draft.at;spFlow.stage="taker";spDrawFlow()');assert(f.el('#modal').innerHTML.includes('Choose player from formation'));f.run('spBackFlow()');assert.equal(f.run('spFlow.stage'),'details');
- f.run('spFlow.stage="taker";spDrawFlow();spChoosePlayer(match().lineup[7])');assert.equal(f.run('spFlow.draft.taker'),f.run('match().lineup[7]'));assert.equal(f.run('spFlow.draft.at'),f.run('stamp'));
+ f.run('stamp=spFlow.draft.at');assert(f.el('#modal').innerHTML.includes('Choose player from formation'));assert.equal(f.run('spFlow.stage'),'details');
+ f.run('spChooseTaker(match().lineup[7])');assert.equal(f.run('spFlow.draft.taker'),f.run('match().lineup[7]'));assert.equal(f.run('spFlow.draft.at'),f.run('stamp'));
  f.run('spSaveRestart();spChooseResult("Goal")');if(type===1)f.run('spChooseFreeKickGoal("indirect")');if(type===2)f.run('spFlow.stage="player";spDrawFlow()');
  assert(f.el('#modal').innerHTML.includes('Choose player from formation'));
  f.run('spChoosePlayer(match().lineup[9]);confirmPrecisePitchPoint(true)');if(type!==2){f.run('spAssistAnswer(true)');assert(f.el('#modal').innerHTML.includes('Choose player from formation'));f.run('spChoosePlayer(match().lineup[7]);confirmPrecisePitchPoint(true)');assert(f.run('match().events.at(-1).assist'))}else assert(!f.run('match().events.at(-1).assist'));assert(f.run('match().events.at(-1).setPiece'));
@@ -15,7 +15,7 @@ for(const type of [0,1,2]){
  assert(f.el('#modal').innerHTML.includes('Choose player from formation'));f.run('spChoosePlayer(match().lineup[0])');assert.equal(f.run('match().events.at(-1).save.player'),f.run('match().lineup[0]'));
 }
 // Takers selected from the bench use the existing substitution continuation.
-{const f=fixture();f.run('match().lineup.push("Casey");spStartSetPiece();spChooseType(0);spFlow.stage="taker";spDrawFlow();spChoosePlayer("Casey")');assert(f.run('benchSwapDraft'));f.run('chooseBenchSwap(match().lineup[4]);confirmSubstitution()');assert.equal(f.run('spFlow.stage'),'details');assert.equal(f.run('spFlow.draft.taker'),'Casey')}
+{const f=fixture();f.run('match().lineup.push("Casey");spStartSetPiece();spChooseType(0);spChooseTaker("Casey")');assert(f.run('benchSwapDraft'));f.run('chooseBenchSwap(match().lineup[4]);confirmSubstitution()');assert.equal(f.run('spFlow.stage'),'details');assert.equal(f.run('spFlow.draft.taker'),'Casey')}
 // Warm just the configured template and reuse the eight cached rotation/team images.
 {const f=fixture(),loaded=[];f.c.Image=class {set src(value){loaded.push(value)}decode(){return Promise.resolve()}};f.run('preloadMatchPitch();preloadMatchPitch()');assert.equal(loaded.length,8);assert(loaded.every(p=>p.includes('pitch-full-size')));f.run('beginV2("Goal",match().lineup[9])');assert(f.el('#modal').innerHTML.includes('loading="eager" fetchpriority="high"'));assert(f.el('#modal').innerHTML.includes('<img width='));assert.equal(loaded.length,8)}
 // Capture stroke commands: assist has one white segment, goal has a green segment and two arrowhead strokes.

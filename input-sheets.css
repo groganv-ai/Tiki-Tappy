@@ -44,3 +44,5 @@
 
 /* The generic set-piece player grid must not split formation role rows. */
 .input-modal.sp-modal .players>.team-action-pitch{display:block}.input-modal.sp-modal .players .team-action-pitch section>div{display:flex;flex-wrap:wrap;justify-content:center}.input-modal.sp-modal .players>.team-action-pitch section{display:flex;flex-direction:column}.input-modal.sp-modal .players>.team-action-pitch button{border-radius:20px;padding:6px 9px}
+
+.input-sheet .team-action-pitch button.selected{background:#193e35;color:#fff;border-color:#193e35;box-shadow:inset 0 0 0 1px #d6ee83}
