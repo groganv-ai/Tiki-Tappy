@@ -134,7 +134,6 @@ function paintReplay(ctx,model,seconds){
   if(e.action==='Goal'&&(!shot||(e.assist&&!assist)))text('Missing location: path not reconstructed',28,1040,15,'#9eb8b3');
   else if(!shot)text('One-tap moment · location not recorded',28,1040,17,'#9eb8b3');
 }
-function startReplay(canvas,model){stopReplay();const start=performance.now();playback={raf:null,model,canvas};function frame(now){if(!playback)return;paintReplay(canvas.getContext('2d'),model,((now-start)/1000)%replayDuration(model));playback.raf=requestAnimationFrame(frame)}playback.raf=requestAnimationFrame(frame)}
 exportVideo=function(){
   disposeExport();const model=makeReplayModel();
   exportPanel('Match highlights',`<canvas id="replayCanvas" width="720" height="1080" aria-label="Animated match highlights"></canvas><p class="export-status" id="recordStatus">${model.events.length} moments · ${Math.ceil(replayDuration(model))} seconds. Goals replay the assist pass, then the shot. Pitch zones are approximate, not tracking footage.</p><div class="links"><button id="recordButton" class="primary" onclick="recordReplay()">Create video file</button><button onclick="exportImage()">Report image instead</button></div><p class="hint">Keep this screen open while recording. You’ll get a video preview and a separate Share button when it finishes.</p>`);

@@ -1,11 +1,11 @@
 // One owner for current matchday image output. Renderers receive a saved snapshot;
 // asynchronous encoders publish complete files only while their request is current.
 let activeReportExport=null;
-function reportOutputSnapshot(){return {day:JSON.parse(JSON.stringify(day())),flow:{...dayFlow()},scope:playerSummaryScope()}}
+function reportOutputSnapshot(){return {day:JSON.parse(JSON.stringify(day())),flow:{...dayFlow()},scope:playerSummaryScope(),sort:playerSummarySort}}
 function reportOutputKey(snapshot=reportOutputSnapshot()){return JSON.stringify(snapshot)}
 async function makeDayReportPages(snapshot=reportOutputSnapshot()){
  return snapshot.flow.reportView==='players'
-  ?makePlayerSummaryPages(playerSummaryModel(snapshot.day,snapshot.scope))
+  ?makePlayerSummaryPages(playerSummaryModel(snapshot.day,snapshot.scope,snapshot.sort))
   :makeCompactReportPages(compactReportModel(snapshot.day,snapshot.flow));
 }
 function cancelReportExport(){activeReportExport=null;matchReportBusy=false}
@@ -19,7 +19,7 @@ async function exportMatchReport(){
  const snapshot=reportOutputSnapshot(),request={snapshot,key:reportOutputKey(snapshot)};
  activeReportExport=request;matchReportBusy=true;
  const isPlayerSummary=snapshot.flow.reportView==='players';
- const exportScope=isPlayerSummary?playerSummaryModel(snapshot.day,snapshot.scope).scopeLabel:'All '+snapshot.day.matches.length+' games';
+ const exportScope=isPlayerSummary?playerSummaryModel(snapshot.day,snapshot.scope,snapshot.sort).scopeLabel:'All '+snapshot.day.matches.length+' games';
  const filterLabel=HIGHLIGHT_FILTERS.find(p=>p.id===snapshot.flow.filter)?.label;
  let pages=[],urls=[];
  toast('Creating the whole matchday report…');
