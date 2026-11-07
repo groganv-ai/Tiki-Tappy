@@ -3,3 +3,16 @@
 
 /* Keep capture focused on the event and tappable pitch. */
 .precise-pitch-toolbar{display:flex;justify-content:flex-end;margin:0 0 8px}.precise-pitch-toolbar button{min-height:44px}.pitch-location-capture>.eyebrow{font-size:18px;line-height:1.4;padding-right:48px;letter-spacing:.08em}.pitch-location-capture h2{font-size:26px;line-height:1.2;margin:12px 48px 12px 0}.pitch-location-capture .flow-head .eyebrow{font-size:16px;line-height:1.4}.pitch-location-capture .precise-pitch-board{margin:8px auto}.pitch-location-capture .precise-pitch-actions{margin-top:12px}.pitch-location-sr{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+/* Fit the pitch between a single heading and always-visible controls. */
+.modal.pitch-location-modal{height:100vh;height:100dvh;bottom:auto;padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));align-items:stretch;box-sizing:border-box}
+.pitch-location-modal .sheet.pitch-location-capture{box-sizing:border-box;display:flex;flex-direction:column;gap:6px;width:100%;max-width:680px;height:100%;max-height:100%;min-height:0;overflow:hidden;margin:0 auto;padding:10px!important;border-radius:16px}
+.pitch-location-head{display:flex;align-items:center;gap:8px;flex:none;min-width:0}
+.pitch-location-head h2{display:flex;align-items:center;gap:8px;flex:1;min-width:0;margin:0!important;font-size:clamp(15px,3.8vw,20px)!important;line-height:1.25;overflow-wrap:anywhere}
+.pitch-location-icon{display:flex;flex:none}.pitch-location-icon svg{width:26px;height:26px}
+.pitch-location-head button{flex:none;min-width:40px;min-height:40px;padding:4px;font-size:22px}
+.pitch-location-capture .precise-pitch-toolbar{flex:none;margin:0}.pitch-location-capture .precise-pitch-toolbar button{min-height:40px;padding:7px 12px}
+.precise-pitch-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
+.pitch-location-capture .precise-pitch-stage .precise-pitch-board{flex:none;margin:0;width:min(100%,calc((100svh - 200px) * var(--pitch-ratio)),560px);max-width:100%}
+@supports(width:1cqw){.pitch-location-capture .precise-pitch-stage .precise-pitch-board{width:min(100cqw,calc(100cqh * var(--pitch-ratio)),560px)}}
+.pitch-location-capture .precise-pitch-actions{flex:none;margin:0}.pitch-location-capture .precise-pitch-actions button{min-height:44px;padding:9px}

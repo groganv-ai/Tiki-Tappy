@@ -98,3 +98,9 @@ The on-screen Match Report award is now a centred vertical card: uppercase title
 ## Compact location capture screen
 
 Location capture now prioritises event/time, a short Shot Location heading, Rotate pitch and the pitch image. Assist/free-kick locations use corresponding short headings. Removed the attack/input-view label, dimensions/setup description and visible empty-selection status; changed Location unknown to Skip while preserving its existing unknown-location semantics. Keyboard help and location announcements remain available to assistive technology. Event/time typography is larger and location-only spacing is tighter. Missing-pitch setup recovery is retained. The existing regression suites passed; phone visual acceptance remains pending.
+
+## Viewport-fitted pitch capture
+
+Location sheets now use a single compact heading: action icon, event time, player/team and Add location. The header removes duplicate event/title rows and the extra top spacing. A flex layout keeps heading, Rotate pitch and Skip outside the pitch's resizable middle stage. The stage sizes the complete image to its available width/height without object-fit letterboxing, keeping the marker and image coordinate rectangles aligned; all four rotations use the selected template's viewBox ratio. The sheet fits the dynamic viewport with safe-area padding. Set-piece location screens use the same header/layout and retain Back.
+
+Capture, geometry, skipped-location and full regression checks pass. The browser tool could not connect to the local preview, so this change has not been visually verified at a real mobile viewport. Phone checks of small portrait and landscape viewports remain required.

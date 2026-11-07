@@ -22,6 +22,7 @@ function drawV2Capture(){
  if(f.stage==='assist-question'){title='Was there an assist?';body='<div class="v2-choices"><button onclick="captureV2.stage=\'assist-player\';drawV2Capture()">Yes, add assist</button><button onclick="finishV2()">No assist</button></div>'}
  if(f.stage==='assist-player'){title='Who made the assist?';body=v2PlayersHTML(false,true)}
  if(f.stage==='keeper'){title='Who made the save?';body=v2QualityHTML('Save')+v2PlayersHTML()}
+ if(['location','assist-location'].includes(f.stage)){$('#modal').innerHTML=`<div class="modal pitch-location-modal"><div class="sheet v2-capture pitch-location-capture ${f.event.opp?'opposition-capture':''}">${pitchLocationHeading('cancelV2()')}${body}</div></div>`;return}
  $('#modal').innerHTML=`<div class="modal"><div class="sheet v2-capture ${['location','assist-location'].includes(f.stage)?'pitch-location-capture':''} ${f.event.opp&&f.stage!=='keeper'?'opposition-capture':''}"><button class="close" aria-label="Cancel action" onclick="cancelV2()">×</button><div class="eyebrow">${esc(a)} · ${eventTimeLabel(f.event)}${['location','assist-location'].includes(f.stage)?'':' · time captured'}</div><h2>${esc(title)}</h2>${body}</div></div>`;
 }
 function v2Subtype(i){const f=captureV2,items=f.stage==='defence'?['Tackle','Block','Clearance']:V2_SPECIAL;f.event.action=items[i];f.quality=0;f.stage='player';drawV2Capture()}

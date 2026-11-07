@@ -20,3 +20,19 @@ assert.equal(run('MATCH_PITCH.goals.north.y'),9);assert.equal(run('MATCH_PITCH.g
 c.pitchContext.rect=(...n)=>calls.push(['rect',...n]);c.pitchContext.clip=()=>calls.push(['clip']);
 run('halfRect=drawMatchPitch(pitchContext,{x:80,y:350,width:560,height:420},"north")');assert.equal(run('halfRect.width'),540);assert.equal(run('halfRect.height'),840);assert(calls.some(x=>x[0]==='clip'));assert.deepEqual(calls.find(x=>x[0]==='rect'),['rect',90,350,540,420]);
 console.log('PASS: shared entry/replay geometry; portrait aspect ratio; unwarped centre circle; penalty arcs and four corners; all 26 captured zone centres aligned; legacy numeric locations preserved; no replay grid or attack arrow.');
+// Compact location header and fitted image container retain unknown-location semantics.
+const compact=boot();compact.run('demo();beginV2("Goal",match().lineup[9])');
+for(let rotation=0;rotation<4;rotation++){
+ const html=compact.el('#modal').innerHTML;
+ assert(html.includes('pitch-location-modal'));
+ assert(html.includes('aria-label="Goal"'));
+ assert(html.includes('Add location'));
+ assert(!html.includes('<h2>Shot Location</h2>'));
+ assert(html.includes(compact.run('match().lineup[9]')));
+ assert(html.includes('--pitch-ratio:'+compact.run('(()=>{const v=templateVariant(ensurePitchPick().preset).viewBox;return v.width/v.height})()')));
+ compact.run('rotateInputPitch()');
+}
+compact.run('confirmPrecisePitchPoint(true)');
+assert.equal(compact.run('captureV2.event.point'),null);
+assert.equal(compact.run('captureV2.stage'),'assist-question');
+console.log('PASS: one icon/time/player/Add location heading, rotation-specific fitted pitch ratios and Skip retains an unknown location.');
