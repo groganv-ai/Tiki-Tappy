@@ -18,11 +18,11 @@ function drawV2Capture(){
  if(f.stage==='player'){title=a==='Goal'?'Who scored?':a==='Shot'?'Who took the shot?':'Choose quality, then player';body=v2QualityHTML(a)+v2PlayersHTML(a==='Goal'||a==='Shot');if(f.known){title=(V2_SPECIAL.includes(a)?'Choose contribution for ':'Choose quality for ')+f.known;body=v2QualityHTML(a)+`<div class="v2-players"><h3>Selected player</h3><button class="primary" data-player="${esc(f.known)}" onclick="v2ChoosePlayer(this.dataset.player,${!!f.event.opp})">Record for ${esc(f.known)}</button></div>`}}
  if(f.stage==='player'&&f.known&&a==='Shot'){title='Shot by '+(f.event.opp?match().opponent:f.known);body=v2QualityHTML('Shot')+'<section class="v2-players"><h3>Shot outcome</h3>'+v2Choices(['Saved','Off target','Blocked'],'v2KnownShotOutcome')+'</section>'}
  if(f.stage==='outcome'){title='What happened to the shot?';body=v2Choices(['Saved','Off target','Blocked'],'v2Outcome')}
- if(f.stage==='location'||f.stage==='assist-location'){title=f.stage==='location'?'Where was the shot taken?':'Where was the assist played?';body=v2PitchHTML()}
+ if(f.stage==='location'||f.stage==='assist-location'){title=f.stage==='location'?'Shot Location':'Assist Location';body=v2PitchHTML()}
  if(f.stage==='assist-question'){title='Was there an assist?';body='<div class="v2-choices"><button onclick="captureV2.stage=\'assist-player\';drawV2Capture()">Yes, add assist</button><button onclick="finishV2()">No assist</button></div>'}
  if(f.stage==='assist-player'){title='Who made the assist?';body=v2PlayersHTML(false,true)}
  if(f.stage==='keeper'){title='Who made the save?';body=v2QualityHTML('Save')+v2PlayersHTML()}
- $('#modal').innerHTML=`<div class="modal"><div class="sheet v2-capture ${f.event.opp&&f.stage!=='keeper'?'opposition-capture':''}"><button class="close" aria-label="Cancel action" onclick="cancelV2()">×</button><div class="eyebrow">${esc(a)} · ${eventTimeLabel(f.event)} · time captured</div><h2>${esc(title)}</h2>${body}</div></div>`;
+ $('#modal').innerHTML=`<div class="modal"><div class="sheet v2-capture ${['location','assist-location'].includes(f.stage)?'pitch-location-capture':''} ${f.event.opp&&f.stage!=='keeper'?'opposition-capture':''}"><button class="close" aria-label="Cancel action" onclick="cancelV2()">×</button><div class="eyebrow">${esc(a)} · ${eventTimeLabel(f.event)}${['location','assist-location'].includes(f.stage)?'':' · time captured'}</div><h2>${esc(title)}</h2>${body}</div></div>`;
 }
 function v2Subtype(i){const f=captureV2,items=f.stage==='defence'?['Tackle','Block','Clearance']:V2_SPECIAL;f.event.action=items[i];f.quality=0;f.stage='player';drawV2Capture()}
 function v2ChoosePlayer(player,opp=false){

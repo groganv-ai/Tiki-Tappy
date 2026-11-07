@@ -94,3 +94,7 @@ The matchday award step now offers an optional 160-character reason, saved in th
 ## Award card mobile layout
 
 The on-screen Match Report award is now a centred vertical card: uppercase title, larger player name, then optional reason. The reason has its own line height and no paragraph margins; long names and reasons wrap within the card. Relevant award and compact report regression suites passed. Phone visual confirmation remains pending.
+
+## Compact location capture screen
+
+Location capture now prioritises event/time, a short Shot Location heading, Rotate pitch and the pitch image. Assist/free-kick locations use corresponding short headings. Removed the attack/input-view label, dimensions/setup description and visible empty-selection status; changed Location unknown to Skip while preserving its existing unknown-location semantics. Keyboard help and location announcements remain available to assistive technology. Event/time typography is larger and location-only spacing is tighter. Missing-pitch setup recovery is retained. The existing regression suites passed; phone visual acceptance remains pending.
