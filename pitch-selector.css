@@ -15,4 +15,4 @@
 .precise-pitch-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
 .pitch-location-capture .precise-pitch-stage .precise-pitch-board{flex:none;margin:0;width:min(100%,calc((100svh - 200px) * var(--pitch-ratio)),560px);max-width:100%}
 @supports(width:1cqw){.pitch-location-capture .precise-pitch-stage .precise-pitch-board{width:min(100cqw,calc(100cqh * var(--pitch-ratio)),560px)}}
-.pitch-location-capture .precise-pitch-actions{flex:none;margin:0}.pitch-location-capture .precise-pitch-actions button{min-height:44px;padding:9px}
+.pitch-location-capture .precise-pitch-actions{flex:none;margin:0}.pitch-location-capture .precise-pitch-actions button{min-height:44px;padding:9px;background:#e6e8e7;border-color:#c9cecb;color:#42534b}
