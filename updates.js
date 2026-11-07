@@ -83,8 +83,6 @@ reportCanvas=async function(events=match().events){return originalReportCanvas(e
 
 const originalRender=render;
 render=function(){originalRender();const app=$('#app');app.innerHTML=app.innerHTML.replace('Tap beside a player → choose quality → pitch zone. Swipe actions sideways. Time captured on your first tap.','Pass, tackle, skill and teamwork: one tap. Goal → shot location → assist. Swipe actions sideways.').replace('9 positive actions','One-tap positive actions').replace('Action → player → pitch zone.','Player + action → saved.');};
-const originalRenderReport=renderReport;
-renderReport=function(){originalRenderReport();const app=$('#app');app.innerHTML=app.innerHTML.replace('Timeline video','Highlights & video').replace('Video export uses WebM where supported; image and text are the reliable fallbacks.','Preview the linked pass → shot → goal animation, then create a video. MP4 is preferred when your browser supports it. Exported files have their own Share and Save buttons.').replace('create a retro image or short timeline video','create a retro image or animated pitch highlights');};
 
 // Explicit second-tap sharing keeps navigator.share inside a user gesture.
 let preparedExport=null,exportURL=null,playback=null;
@@ -92,8 +90,9 @@ function disposeExport(){if(typeof cancelReportExport==='function')cancelReportE
 function exportPanel(title,content){$('#modal').innerHTML=`<div class="modal"><div class="sheet export-sheet"><button class="close" aria-label="Close export" onclick="closeExport()">×</button><h2>${title}</h2>${content}</div></div>`}
 function closeExport(){if(playback?.recording)return toast('Wait for recording to finish or tap Cancel recording.');disposeExport();closeModal()}
 function showPrepared(blob,name){
+  const matchday=name.startsWith('matchday-');
   disposeExport();preparedExport={blob,name};exportURL=URL.createObjectURL(blob);
-  exportPanel('Ready to preview & share',`${blob.type.startsWith('video')?`<video controls playsinline src="${exportURL}"></video>`:`<img src="${exportURL}" alt="Exported match report">`}<p class="export-status">${esc(name)} · ${(blob.size/1024/1024).toFixed(2)} MB\nPreview first, then tap Share. Choose WhatsApp and your group.</p><div class="links"><button class="primary" onclick="sharePrepared()">Share file ↗</button><a href="${exportURL}" download="${name}">Save file</a><button onclick="shareReport()">Share text instead</button></div><p class="hint" id="shareStatus">If WhatsApp is missing, save the file and attach it inside WhatsApp.</p>`);
+  exportPanel('Ready to preview & share',`${blob.type.startsWith('video')?`<video controls playsinline src="${exportURL}"></video>`:`<img src="${exportURL}" alt="Exported match report">`}<p class="export-status">${esc(name)} · ${(blob.size/1024/1024).toFixed(2)} MB\nPreview first, then tap Share. Choose WhatsApp and your group.</p><div class="links"><button class="primary" onclick="sharePrepared()">Share file ↗</button><a href="${exportURL}" download="${name}">Save file</a>${matchday?'<button onclick="closeExport();leaveDayFlow()">Save for later</button>':'<button onclick="shareReport()">Share text instead</button>'}</div><p class="hint" id="shareStatus">${matchday?'Download the file to keep it. Save for later retains your matchday and selections on this device; you can regenerate the video when you return.':'If WhatsApp is missing, save the file and attach it inside WhatsApp.'}</p>`);
 }
 async function sharePrepared(){
   if(!preparedExport)return;
@@ -107,7 +106,6 @@ exportImage=async function(){try{const c=await reportCanvas();const b=await new 
 
 function pointForZone(z){if(!z||z<1||z>12)return null;return{x:90+((z-1)%3+.5)*180,y:265+(3-Math.floor((z-1)/3)+.5)*135}}
 function replayDuration(model){return Math.max(4,2+model.events.length*3)}
-function stopReplay(){if(playback){cancelAnimationFrame(playback.raf);playback.stream?.getTracks().forEach(t=>t.stop());playback=null}}
 function paintReplay(ctx,model,seconds){
   const W=720,H=1080,events=model.events,idx=Math.min(events.length-1,Math.floor(Math.max(0,seconds-2)/3)),e=seconds<2?null:events[idx],phase=((seconds-2)%3)/3;
   ctx.fillStyle='#122b36';ctx.fillRect(0,0,W,H);ctx.fillStyle='#215c58';ctx.fillRect(0,0,W,88);
@@ -142,35 +140,6 @@ exportVideo=function(){
   exportPanel('Match highlights',`<canvas id="replayCanvas" width="720" height="1080" aria-label="Animated match highlights"></canvas><p class="export-status" id="recordStatus">${model.events.length} moments · ${Math.ceil(replayDuration(model))} seconds. Goals replay the assist pass, then the shot. Pitch zones are approximate, not tracking footage.</p><div class="links"><button id="recordButton" class="primary" onclick="recordReplay()">Create video file</button><button onclick="exportImage()">Report image instead</button></div><p class="hint">Keep this screen open while recording. You’ll get a video preview and a separate Share button when it finishes.</p>`);
   startReplay($('#replayCanvas'),model);
 };
-function cancelRecording(){if(playback?.recorder?.state==='recording'){playback.cancelled=true;playback.recorder.stop()}else closeExport()}
-async function recordReplay(){
-  const current=playback;if(!current)return;
-  const {canvas,model}=current,status=$('#recordStatus');
-  if(typeof MediaRecorder==='undefined'||!canvas.captureStream){status.textContent='This browser cannot record a canvas video. The animated preview works; use the Report image fallback or try another browser.';return}
-  const mime=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
-  if(!mime){status.textContent='No compatible video encoder is available. Use Report image instead.';return}
-  const modelCopy=model;stopReplay();
-  let stream,rec,timer;
-  try{
-    paintReplay(canvas.getContext('2d'),modelCopy,0);
-    stream=canvas.captureStream(24);const chunks=[];
-    rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:2200000});
-    playback={canvas,model:modelCopy,stream,recording:true,recorder:rec,raf:null,cancelled:false};
-    const state=playback;
-    const done=new Promise((resolve,reject)=>{rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};rec.onerror=e=>reject(e.error||new Error('Encoder error'));rec.onstop=resolve});
-    $('#recordButton').disabled=true;
-    const cancel=document.createElement('button');cancel.textContent='Cancel recording';cancel.onclick=cancelRecording;status.after(cancel);
-    const duration=replayDuration(modelCopy),start=performance.now();
-    rec.start(250);
-    function frame(now){if(playback!==state)return;const sec=Math.min(duration,(now-start)/1000);paintReplay(canvas.getContext('2d'),modelCopy,sec);status.textContent=`Recording ${Math.floor(sec)} / ${Math.ceil(duration)} seconds · ${mime.startsWith('video/mp4')?'MP4':'WebM'}. Keep this tab open.`;if(sec>=duration){if(rec.state==='recording')rec.stop()}else state.raf=requestAnimationFrame(frame)}
-    state.raf=requestAnimationFrame(frame);
-    timer=setTimeout(()=>{if(rec.state==='recording'){state.cancelled=true;rec.stop()}},duration*1000+20000);
-    await done;clearTimeout(timer);const cancelled=state.cancelled;stopReplay();
-    if(cancelled){toast('Recording cancelled or interrupted. Try again with this tab in the foreground.');return exportVideo(modelCopy.highlightFilter||'major')}
-    const type=rec.mimeType.split(';')[0],blob=new Blob(chunks,{type});if(blob.size<1000)throw new Error('The encoder produced an empty video');
-    showPrepared(blob,(modelCopy.isMatchday?'matchday-highlights.':'match-highlights.')+(type.includes('mp4')?'mp4':'webm'));
-  }catch(e){clearTimeout(timer);if(rec?.state==='recording')rec.stop();stream?.getTracks().forEach(t=>t.stop());stopReplay();status.textContent='Video could not be created: '+e.message+'. Try another browser, or use Report image.';const b=$('#recordButton');if(b)b.disabled=false}
-}
 // Demo goals have a linked assist for easy testing without entering a real game.
 const originalDemo=demo;
 demo=function(){originalDemo();const m=match(),g=m.events.find(e=>e.action==='Goal');if(g&&m.lineup.length>1){g.assist={player:m.lineup[0],zone:7};save();render()}};

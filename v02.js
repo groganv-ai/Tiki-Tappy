@@ -86,8 +86,6 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)v2CancelGri
 render();
 const v2OldFeedback=showActionFeedback;
 showActionFeedback=function(...args){v2OldFeedback(...args);const box=$('#actionFeedback');box.innerHTML=box.innerHTML.replace('★ GREAT ACTION','RECORDED').replace('✓ RECORDED','RECORDED')};
-const v2OldReport=renderReport;
-renderReport=function(){v2OldReport();$('#app').innerHTML=$('#app').innerHTML.replace('gold-star Great moments','quality labels')};
 
 window.addEventListener('pointerup',v2ReleaseGridHold);
 window.addEventListener('pointercancel',v2CancelGridHold);

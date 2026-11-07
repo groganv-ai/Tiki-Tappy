@@ -15,13 +15,6 @@ function clearPlayerDay(){if(awardMatch!==match())return;delete awardMatch.playe
 function awardControls(m){return `<div class="award-inline"><div class="eyebrow">★ Player of the Day</div><strong>${m.playerOfDay?esc(m.playerOfDay):'Choose your standout player'}</strong><button onclick="playerDayModal()">${m.playerOfDay?'Change selection':'Choose player'}</button></div>`}
 const renderBeforeAward=render;
 render=function(){renderBeforeAward();if(view!=='live'||!match()?.ended)return;const app=$('#app');app.innerHTML=app.innerHTML.replace('<div class="card" style="margin-top:20px">',`<div class="card award-card" style="margin-top:20px">${awardControls(match())}</div><div class="card" style="margin-top:20px">`)};
-const reportBeforeAward=renderReport;
-renderReport=function(){
-  reportBeforeAward();const m=match();if(!m?.ended)return;
-  const app=$('#app');let html=app.innerHTML.replace('<h2>Add the finishing touches</h2>','<h2>Add the finishing touches</h2>'+awardControls(m));
-  if(m.playerOfDay)html=html.replace('<div style="font-size:10px;color:#89aaa2;margin-top:25px">',`<div class="award-report"><span>★ PLAYER OF THE DAY</span><strong>${esc(m.playerOfDay)}</strong></div><div style="font-size:10px;color:#89aaa2;margin-top:25px">`);
-  app.innerHTML=html;
-};
 const textBeforeAward=reportText;
 reportText=function(all=true){const text=textBeforeAward(all),ms=all?day().matches:[match()],awards=ms.filter(m=>m.ended&&m.playerOfDay);return text+(awards.length?'\n\nPlayer of the Day\n'+awards.map(m=>(all?'vs '+m.opponent+': ':'')+m.playerOfDay).join('\n'):'')};
 const imageBeforeAward=reportCanvas;

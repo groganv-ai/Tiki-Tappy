@@ -2,8 +2,6 @@
 let photoPermissionDay=null;
 function photoSafetyHTML(){return `<section class="photo-safety" aria-label="Photo permissions"><strong>Check permission before adding a photo</strong><p>Only add a photo if you have the necessary permission for everyone identifiable in it. For children, follow your club’s safeguarding policy and parent/carer permission requirements, and respect the child’s wishes.</p><label><input id="photo-permission" type="checkbox" onchange="confirmPhotoPermission(this.checked)"><span>I confirm this photo is permitted to be added to this device and used in this team’s match report.</span></label><p class="hint">This records your confirmation, not consent itself. Check permission covers the intended audience before sharing. Squad numbers do not hide faces. You can continue without a photo.</p></section>`}
 function confirmPhotoPermission(checked){photoPermissionDay=checked?day()?.id:null;const input=$('#reportphoto');if(input){input.disabled=!checked;if(!checked)input.value=''}}
-const photoRenderBefore=renderReport;
-renderReport=function(){photoRenderBefore();photoPermissionDay=null;const app=$('#app');app.innerHTML=app.innerHTML.replace('<input id="reportphoto" type="file" accept="image/*" onchange="addPhoto(this)">',`${photoSafetyHTML()}<input id="reportphoto" type="file" accept="image/jpeg,image/png,image/webp" disabled aria-describedby="photo-local-note" onchange="addPhoto(this)"><small id="photo-local-note" class="hint">Photos stay in this browser’s temporary matchday draft unless you export or share them.</small>`)};
 addPhoto=async function(input){
   const d=day(),f=input.files?.[0];if(!f||!d)return;
   if(photoPermissionDay!==d.id){input.value='';return toast('Confirm the photo permission acknowledgement first.')}

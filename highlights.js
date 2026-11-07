@@ -131,5 +131,3 @@ paintReplay=function(ctx,model,seconds){
 };
 const timelineExportBefore=exportVideo;
 exportVideo=function(){timelineExportBefore();const status=$('#recordStatus');status.textContent=String(status.textContent||'').replace('Goals replay the assist pass, then the shot. Pitch zones are approximate, not tracking footage.','Text-led timeline highlights. Goals cut to a short pass → shot replay, then return to the timeline. Great actions have a gold star burst. Pitch locations are approximate.');};
-const reportBeforeTimeline=renderReport;
-renderReport=function(){reportBeforeTimeline();const app=$('#app');app.innerHTML=app.innerHTML.replace('create a retro image or animated pitch highlights','create a report image or text-led timeline highlights').replace('Preview the linked pass → shot → goal animation, then create a video.','Follow the text-led timeline, with short goal replays and quality labels, then create a video.');};

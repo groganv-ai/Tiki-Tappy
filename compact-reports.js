@@ -41,13 +41,6 @@ daySummaryHTML=function(){
  return `<article class="day-summary compact-matchday-report" aria-label="Shareable matchday report"><header class="compact-report-heading"><h2>${esc(model.team)}</h2><p>${esc(matchDateLabel(model.date))} · ${esc(model.location)}</p><small>${esc(model.filterLabel)} · ${model.mode==='summary'?'By action':'Timeline'} · ${model.games.length} games</small></header>${model.games.map(g=>`<section class="day-report-game"><div class="compact-game-meta">Match ${g.index+1}${g.time?' · '+esc(g.time):''} · ${g.ended?'FT':'Match so far'}${g.halfTime?' · HT '+g.halfTime.join('–'):''}</div><div class="compact-scoreline"><strong>${esc(model.team)}</strong><b>${g.score.join('–')}</b><strong>${esc(g.opponent)}</strong></div>${model.mode==='summary'?g.scoreGroups.map(compactGroupHTML).join('')+g.actionGroups.map(compactGroupHTML).join(''):compactTimelineHTML(g.items)}${!g.items.length?'<p class="compact-empty">No matching moments.</p>':''}${g.summary?`<p class="compact-match-note">${esc(g.summary)}</p>`:''}</section>`).join('')}${model.playerOfDay?`<section class="compact-day-award"><small>Matchday Player of the Day</small><strong>${esc(model.playerOfDay)}</strong>${model.playerOfDayReason?`<p>${esc(model.playerOfDayReason)}</p>`:''}</section>`:''}${model.summary?`<p class="compact-day-note">${esc(model.summary)}</p>`:''}${model.photo?`<img class="compact-report-photo" src="${model.photo}" alt="Matchday photo">`:''}<p class="compact-report-copyright">© 2026 Vincent Grogan. All rights reserved.</p></article>`;
 };
 
-// Selection choices and navigation have separate, labelled areas.
-const compactAwardBefore=dayAwardStepHTML;
-dayAwardStepHTML=function(){
- const selected=day().playerOfDay||'No award selected';
- return compactAwardBefore().replace('</div><div class="links"><button onclick="chooseDayPlayer(\'\')">No award</button><button class="primary" onclick="dayStep(\'content\')">Continue →</button></div>',`<button class="${day().playerOfDay?'':'selected'}" aria-pressed="${!day().playerOfDay}" onclick="chooseDayPlayer('')">No award</button></div><div class="day-award-navigation" aria-label="Continue after player selection"><p><small>Selected</small><strong>${esc(selected)}</strong></p><button class="primary" onclick="dayStep('content')">Continue →</button></div>`);
-};
-
 // Layout all games as one report, measure before rendering, and use the largest
 // readable type size that fits one portrait page. Overflow is paginated safely.
 function compactReportBlocks(model){
