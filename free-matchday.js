@@ -118,7 +118,7 @@ const freeOriginalDemo=demo;
 demo=function(){
   if(!freeDemoActive)freeRealDraft=data;
   freeDemoActive=true;data={...fresh(),teams:[{name:'Meadow United',squad:freeDemoNames()}]};
-  freeOriginalDemo();day().matches=day().matches.slice(0,1);day().isDemo=true;day().squad=[...data.teams[0].squad];day().clubName='Fictional demo team';configureFreeDemo();render();
+  freeOriginalDemo();day().matches=day().matches.slice(0,1);day().isDemo=true;day().squad=[...data.teams[0].squad];day().clubName='Fictional demo team';configureFreeDemo();preloadMatchPitch();render();
 };
 const freeRenderBefore=render;
 render=function(){

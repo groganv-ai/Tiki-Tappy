@@ -5,6 +5,7 @@
 let captureV2=null,v2GridHold=null,v2GridQuietUntil=0;
 function cancelHeldRecordingActions(){cancelActionHold();v2CancelGridHold()}
 function beginV2(action,known='',opposition=false){
+ preloadMatchPitch();
  const m=match();if(m.ended)return toast('Match finished. Reopen to add actions.');if(!clockHasStarted(m))return toast('Start the match clock first.');
  if(undoMode){const e=[...v2Expanded(m)].reverse().find(e=>(opposition?e.opp:!e.opp&&(!known||e.player===known))&&(action==='Defence'?['Tackle','Block','Clearance'].includes(e.category):action==='Special'?V2_SPECIAL.includes(e.category):e.category===action));return e?removeUndoEvent(e.sourceId):toast('No matching action to remove.');}
  if(!undoMode&&!opposition&&known&&typeof teamIsSubstitute==='function'&&teamIsSubstitute(known,m))return promptBenchAction(known,action);

@@ -53,13 +53,13 @@ paintReplay=function(ctx,model,seconds){
     const shot=replayPitchPoint(e.zone,e.point,pitch),assist=replayPitchPoint(e.assist?.zone,e.assist?.point,pitch);
     const goalPoint=MATCH_PITCH.goals[e.opp?'south':'north'];
     const goal=pitch.geometry?{x:px+pw/2,y:py+(e.opp?ph:0)}:{x:px+goalPoint.x/MATCH_PITCH.width*pw,y:py+goalPoint.y/MATCH_PITCH.height*ph};
-    function path(a,b,color){line(a.x,a.y,b.x,b.y,color,4);const angle=Math.atan2(b.y-a.y,b.x-a.x);line(b.x,b.y,b.x-13*Math.cos(angle-.5),b.y-13*Math.sin(angle-.5),color,4);line(b.x,b.y,b.x-13*Math.cos(angle+.5),b.y-13*Math.sin(angle+.5),color,4)}
+    function path(a,b,color,arrow=true){line(a.x,a.y,b.x,b.y,color,4);if(!arrow)return;const angle=Math.atan2(b.y-a.y,b.x-a.x);line(b.x,b.y,b.x-13*Math.cos(angle-.5),b.y-13*Math.sin(angle-.5),color,4);line(b.x,b.y,b.x-13*Math.cos(angle+.5),b.y-13*Math.sin(angle+.5),color,4)}
     function player(p,name,color){if(!p)return;circle(p.x,p.y,9,color);text(name,Math.max(px+4,Math.min(p.x-30,px+pw-120)),p.y+27,17,color,'700',125)}
     if(shot){
-      player(shot,e.player,'#fff');if(assist)player(assist,e.assist.player,C.lime);
+      player(shot,e.player,C.lime);if(assist)player(assist,e.assist.player,'#fff');
       const passEnd=.48,shotEnd=.9,p=state.progress;let a=shot,b=goal,t=Math.min(1,p/shotEnd);
-      if(assist&&p<passEnd){a=assist;b=shot;t=p/passEnd;path(a,b,C.lime)}
-      else {if(assist)path(assist,shot,'#9cba71');t=Math.min(1,(p-(assist?passEnd:0))/(shotEnd-(assist?passEnd:0)));path(shot,goal,'#fff')}
+      if(assist&&p<passEnd){a=assist;b=shot;t=p/passEnd;path(a,b,'#fff',false)}
+      else {if(assist)path(assist,shot,'#fff',false);t=Math.min(1,(p-(assist?passEnd:0))/(shotEnd-(assist?passEnd:0)));path(shot,goal,C.lime)}
       ball(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t,9);
     }else text('Shot location not recorded',198,550,23,'#fff','600',330);
     text(e.assist?e.assist.player+' → '+e.player:e.player+' → Goal',46,806,23,C.ink,'700',628);

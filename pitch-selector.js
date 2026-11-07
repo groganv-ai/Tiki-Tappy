@@ -2,6 +2,18 @@
 // No opposition flip: its SVG already points towards the bottom goal.
 const TEMPLATE_POINT_SPACE='tikitapper-template-v2';
 let pitchPick=null,pitchAdvanceTimer=null;
+// Warm only today's configured template, once per asset; retain images for browser decoding/cache reuse.
+const pitchImageCache=new Map();
+function preloadPitchTemplate(preset){
+ if(!preset||typeof Image==='undefined')return;
+ for(const variant of preset.rotations)for(const src of [variant.image,variant.oppositionImage]){
+  if(pitchImageCache.has(src))continue;
+  const image=new Image();pitchImageCache.set(src,image);image.decoding='async';image.onerror=()=>pitchImageCache.delete(src);image.src=src;
+  image.decode?.()?.catch(()=>{});
+ }
+}
+function preloadMatchPitch(){preloadPitchTemplate(PITCH_TEMPLATES.find(p=>p.id===match()?.pitchTemplate?.id))}
+
 function cancelPitchFeedback(){clearTimeout(pitchAdvanceTimer);pitchAdvanceTimer=null;pitchPick=null}
 function editMissingPitchSetup(){
  cancelPitchFeedback();
@@ -34,7 +46,7 @@ function pitchMatchdayFields(prefix,d=null,locked=false){
  return `<section class="matchday-pitch-settings"><h3>Pitch for today’s matches</h3><div class="precise-pitch-fields"><label for="${prefix}Age">Age group</label><select id="${prefix}Age" name="pitchAgeGroup" required ${disabled} onchange="changeMatchdayPitch(this,'${prefix}')"><option value="">Choose age group</option>${PITCH_TEMPLATES.flatMap(p=>p.ages).map(a=>`<option value="${a}" ${a===age?'selected':''}>${a.startsWith('U')?'Under '+a.slice(1):a}</option>`).join('')}</select><label for="${prefix}Format">Playing format</label><select id="${prefix}Format" name="pitchFormat" required ${disabled} onchange="refreshMatchdayPitch('${prefix}')">${pitchFormatOptions(age,format)}</select></div><p class="hint" role="status" id="${prefix}Summary">${esc(pitchSetupSummary(age,format))}</p>${locked?'<p class="hint">Pitch settings are locked for recorded matches.</p>':''}</section>`;
 }
 function changeMatchdayPitch(select,prefix){$('#'+prefix+'Format').innerHTML=pitchFormatOptions(select.value);refreshMatchdayPitch(prefix)}
-function refreshMatchdayPitch(prefix){$('#'+prefix+'Summary').textContent=pitchSetupSummary($('#'+prefix+'Age').value,$('#'+prefix+'Format').value)}
+function refreshMatchdayPitch(prefix){const age=$('#'+prefix+'Age').value,format=$('#'+prefix+'Format').value;$('#'+prefix+'Summary').textContent=pitchSetupSummary(age,format);preloadPitchTemplate(pitchPresetFor(age,format))}
 function templateGeometry(p){return {id:p.id,version:p.version,coordinateSpace:TEMPLATE_POINT_SPACE,format:p.format,length:p.length,width:p.width,rect:{...p.rect},viewBox:{...p.viewBox},drawing:JSON.parse(JSON.stringify(p.drawing)),displayProjection:p.displayProjection||'regulation-scale',penaltySpot:p.penaltySpot||null}}
 function pitchCaptureContext(){
  if(typeof spFlow!=='undefined'&&spFlow&&['origin','shot-location','assist-location'].includes(spFlow.stage))return {owner:spFlow,stage:spFlow.stage,opp:!!spFlow.draft.opp};
@@ -102,7 +114,7 @@ function precisePitchHTML(){
  const p=ensurePitchPick();if(!p)return '';
  const v=p.preset&&templateVariant(p.preset),point=v&&p.point?templatePointToDisplay(p.point,p.preset,v.angle):null;
  const marker=point?`<span class="precise-pitch-marker ${p.feedbackIcon?'pitch-action-frame':''}" style="left:${(point.x-v.viewBox.x)/v.viewBox.width*100}%;top:${(point.y-v.viewBox.y)/v.viewBox.height*100}%" aria-hidden="true">${p.feedbackIcon?v2Icon(p.feedbackIcon):''}</span>`:'';
- return `<div class="precise-pitch-toolbar"><button type="button" onclick="rotateInputPitch()" aria-label="Rotate pitch"><span aria-hidden="true">↻</span> Rotate pitch</button></div>${v?`<div class="precise-pitch-stage" style="--pitch-ratio:${v.viewBox.width/v.viewBox.height}"><div id="precisePitchBoard" class="precise-pitch-board" tabindex="0" role="group" aria-label="Select pitch location" aria-describedby="pitchKeyboardHelp" onkeydown="pitchKeyboardPoint(event)" onclick="pitchPointerPoint(event,this.querySelector('img'))"><img src="${p.opp?v.oppositionImage:v.image}" alt="${p.opp?'Opposition':'Our team'} ${p.preset.format} pitch, rotated ${v.angle} degrees" draggable="false">${marker}</div></div><p id="pitchKeyboardHelp" class="pitch-location-sr">Tap a location to continue. With a keyboard, use arrow keys and Enter.</p>`:'<p class="precise-pitch-help">This saved matchday needs an age group and playing format before a pitch can be shown. Your recorded events will be kept.</p><button type="button" class="primary v2-wide" onclick="editMissingPitchSetup()">Edit Matchday setup →</button>'}<p id="pitchPointStatus" class="precise-pitch-status pitch-location-sr" role="status">${p.feedbackIcon?'Location selected.':p.point?'Location selected. Press Enter to continue.':'No location selected.'}</p><div class="precise-pitch-actions"><button type="button" onclick="confirmPrecisePitchPoint(true)">Skip</button></div>`;
+ return `<div class="precise-pitch-toolbar"><button type="button" onclick="rotateInputPitch()" aria-label="Rotate pitch"><span aria-hidden="true">↻</span> Rotate pitch</button></div>${v?`<div class="precise-pitch-stage" style="--pitch-ratio:${v.viewBox.width/v.viewBox.height}"><div id="precisePitchBoard" class="precise-pitch-board" tabindex="0" role="group" aria-label="Select pitch location" aria-describedby="pitchKeyboardHelp" onkeydown="pitchKeyboardPoint(event)" onclick="pitchPointerPoint(event,this.querySelector('img'))"><img width="${v.viewBox.width}" height="${v.viewBox.height}" loading="eager" fetchpriority="high" decoding="async" src="${p.opp?v.oppositionImage:v.image}" alt="${p.opp?'Opposition':'Our team'} ${p.preset.format} pitch, rotated ${v.angle} degrees" draggable="false">${marker}</div></div><p id="pitchKeyboardHelp" class="pitch-location-sr">Tap a location to continue. With a keyboard, use arrow keys and Enter.</p>`:'<p class="precise-pitch-help">This saved matchday needs an age group and playing format before a pitch can be shown. Your recorded events will be kept.</p><button type="button" class="primary v2-wide" onclick="editMissingPitchSetup()">Edit Matchday setup →</button>'}<p id="pitchPointStatus" class="precise-pitch-status pitch-location-sr" role="status">${p.feedbackIcon?'Location selected.':p.point?'Location selected. Press Enter to continue.':'No location selected.'}</p><div class="precise-pitch-actions"><button type="button" onclick="confirmPrecisePitchPoint(true)">Skip</button></div>`;
 }
 function confirmPrecisePitchPoint(unknown=false){
  const p=ensurePitchPick(),c=pitchCaptureContext();if(!p||!c||p.owner!==c.owner||!recordingContextValid(match())||(!unknown&&!p.point))return;
@@ -140,3 +152,5 @@ function drawTemplateReplayPitch(ctx,area,half,geometry,opposition=false){
  if(cue){ctx.font='600 22px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=4;ctx.strokeStyle=palette.edge;ctx.fillStyle=palette.text;for(const label of cue.labels){ctx.strokeText?.(label.text,label.x,label.y);ctx.fillText?.(label.text,label.x,label.y)}}
  ctx.restore();return {x:x+(r.x-v.x)*scale,y:y+(r.y-v.y)*scale,width:r.width*scale,height:r.height*scale,geometry};
 }
+
+preloadMatchPitch();
